@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户管理 — CRM 客户列表空状态演示</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-soft: #eff6ff;
+    --text-1: #1e293b;
+    --text-2: #64748b;
+    --text-3: #94a3b8;
+    --border: #e2e8f0;
+    --bg: #f1f5f9;
+    --card: #ffffff;
+    --chip-bg: #f8fafc;
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text-1);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .app { max-width: 1080px; margin: 0 auto; padding: 24px 20px 60px; }
+
+  /* ===== 顶部 ===== */
+  .page-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 16px; }
+  .page-header h1 { font-size: 20px; font-weight: 600; }
+  .page-header .sub { color: var(--text-2); font-size: 13px; }
+
+  /* ===== 演示视角切换（仅供预览，非业务控件） ===== */
+  .demo-bar {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+    padding: 8px 12px; margin-bottom: 16px; font-size: 12px; color: #92400e;
+  }
+  .demo-bar .label { font-weight: 600; }
+  .demo-bar button {
+    border: 1px solid #fde68a; background: #fffdf5; color: #92400e;
+    border-radius: 6px; padding: 3px 10px; font-size: 12px; cursor: pointer;
+  }
+  .demo-bar button.active { background: #92400e; color: #fffbeb; border-color: #92400e; }
+
+  /* ===== 工具栏 ===== */
+  .toolbar {
+    background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center;
+    margin-bottom: 12px;
+  }
+  .search-wrap { position: relative; flex: 1 1 260px; min-width: 220px; }
+  .search-wrap svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
+  .search-input {
+    width: 100%; padding: 8px 30px 8px 32px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 14px; color: var(--text-1); background: #fbfdff; outline: none;
+  }
+  .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.12); }
+  .search-clear {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    border: none; background: transparent; color: var(--text-3); cursor: pointer;
+    width: 22px; height: 22px; border-radius: 50%; font-size: 14px; line-height: 1;
+  }
+  .search-clear:hover { background: var(--border); color: var(--text-2); }
+  select.filter-select {
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    font-size: 14px; color: var(--text-1); background: #fbfdff; cursor: pointer; outline: none;
+  }
+  select.filter-select:focus { border-color: var(--primary); }
+  .toolbar .spacer { flex: 1; }
+
+  .btn { border: none; border-radius: 8px; padding: 9px 16px; font-size: 14px; cursor: pointer; }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-secondary { background: #fff; color: var(--primary); border: 1px solid var(--primary); }
+  .btn-secondary:hover { background: var(--primary-soft); }
+  .btn-ghost { background: transparent; color: var(--primary); padding: 4px 8px; }
+  .btn-ghost:hover { background: var(--primary-soft); }
+  .btn-lg { padding: 10px 22px; font-size: 15px; border-radius: 8px; }
+
+  /* ===== 已选条件标签 ===== */
+  .active-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; min-height: 0; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--chip-bg); border: 1px solid var(--border); border-radius: 999px;
+    padding: 4px 6px 4px 12px; font-size: 13px; color: var(--text-2);
+  }
+  .chip b { color: var(--text-1); font-weight: 500; }
+  .chip .x {
+    border: none; background: transparent; cursor: pointer; color: var(--text-3);
+    width: 18px; height: 18px; border-radius: 50%; font-size: 13px; line-height: 1;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .chip .x:hover { background: var(--border); color: var(--text-1); }
+
+  /* ===== 列表卡片 ===== */
+  .list-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--border); }
+  th { font-size: 12px; font-weight: 600; color: var(--text-2); background: #f8fafc; white-space: nowrap; }
+  td { font-size: 13px; color: var(--text-1); }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; }
+  .tag-vip { background: #fff7ed; color: #c2410c; }
+  .tag-normal { background: #f1f5f9; color: #475569; }
+  .tag-doing { background: #eff6ff; color: #1d4ed8; }
+  .tag-won { background: #ecfdf5; color: #047857; }
+  .tag-idle { background: #fef2f2; color: #b91c1c; }
+
+  /* ===== 空状态通用 ===== */
+  .empty {
+    padding: 72px 24px 80px;
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    gap: 0; color: var(--text-2);
+  }
+  .empty .art { margin-bottom: 20px; }
+  .empty h2 { font-size: 17px; font-weight: 600; color: var(--text-1); margin-bottom: 6px; }
+  .empty p.desc { font-size: 13px; max-width: 460px; }
+  .empty .actions { display: flex; gap: 12px; margin-top: 24px; align-items: center; flex-wrap: wrap; justify-content: center; }
+
+  /* 搜索建议 / 条件标签（空状态内部） */
+  .empty .conditions { margin-top: 18px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .empty .suggestions {
+    margin-top: 14px; text-align: left; background: var(--chip-bg);
+    border: 1px solid var(--border); border-radius: 8px; padding: 10px 16px;
+    font-size: 13px; color: var(--text-2); max-width: 420px;
+  }
+  .empty .suggestions li { margin: 4px 0 4px 18px; }
+  .empty .suggestions .hl { color: var(--primary); font-weight: 500; }
+  .empty .link-row { margin-top: 14px; font-size: 13px; }
+  .empty .divider { width: 1px; height: 16px; background: var(--border); align-self: center; }
+
+  /* ===== Toast（演示按钮反馈） ===== */
+  .toast {
+    position: fixed; top: 20px; right: 20px; background: var(--text-1); color: #fff;
+    padding: 10px 16px; border-radius: 8px; font-size: 13px; opacity: 0;
+    transform: translateY(-8px); transition: all .25s ease; pointer-events: none; z-index: 99;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 640px) {
+    th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4) { display: none; }
+    .empty { padding: 48px 16px 56px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="page-header">
+    <h1>客户管理</h1>
+    <span class="sub">共 <span id="total-count">0</span> 位客户</span>
+  </div>
+
+  <!-- 演示视角切换：仅供预览四种形态，实际产品中依据数据自动判定 -->
+  <div class="demo-bar">
+    <span class="label">演示视角（仅供预览）：</span>
+    <button data-demo="firstuse" class="active">新用户 · 0 客户</button>
+    <button data-demo="search">搜索无果</button>
+    <button data-demo="filter">筛选无果</button>
+    <button data-demo="normal">正常数据</button>
+  </div>
+
+  <!-- 工具栏：搜索 + 筛选 + 新增 -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="search" class="search-input" type="text" placeholder="搜索客户名称、公司或手机号" autocomplete="off">
+      <button id="search-clear" class="search-clear" title="清除关键词" hidden>×</button>
+    </div>
+    <select id="filter-level" class="filter-select">
+      <option value="all">客户等级：全部</option>
+      <option value="vip">重点客户</option>
+      <option value="normal">普通客户</option>
+    </select>
+    <select id="filter-status" class="filter-select">
+      <option value="all">跟进状态：全部</option>
+      <option value="doing">跟进中</option>
+      <option value="won">已成交</option>
+      <option value="idle">未跟进</option>
+    </select>
+    <span class="spacer"></span>
+    <button class="btn btn-primary" onclick="demoToast('演示页面：此处打开“新增客户”表单')">＋ 新增客户</button>
+  </div>
+
+  <!-- 已选条件标签（列表有结果时也保留在页面，可逐个移除） -->
+  <div id="active-chips" class="active-chips"></div>
+
+  <!-- 列表卡片：内部根据数据切换 列表 / 空状态 -->
+  <div class="list-card">
+    <div id="view-table" hidden>
+      <table>
+        <thead>
+          <tr><th>客户名称</th><th>公司</th><th>手机号</th><th>客户等级</th><th>跟进状态</th><th>最近跟进</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- 空状态一：首次使用 First-use（客户数为 0） -->
+    <div id="view-firstuse" class="empty" hidden>
+      <div class="art">
+        <svg width="120" height="96" viewBox="0 0 120 96" fill="none">
+          <rect x="14" y="20" width="72" height="56" rx="8" fill="#eff6ff"/>
+          <rect x="14" y="20" width="72" height="16" rx="8" fill="#dbeafe"/>
+          <circle cx="38" cy="56" r="8" fill="#93c5fd"/>
+          <path d="M38 66c-6 0-10 3-10 7h20c0-4-4-7-10-7z" fill="#93c5fd"/>
+          <rect x="52" y="50" width="26" height="4" rx="2" fill="#bfdbfe"/>
+          <rect x="52" y="60" width="18" height="4" rx="2" fill="#bfdbfe"/>
+          <circle cx="92" cy="64" r="14" fill="#2563eb"/>
+          <path d="M92 57v14M85 64h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>还没有客户</h2>
+      <p class="desc">添加第一位客户后，就可以记录跟进、创建商机了。可以从零新增，也可以把已有的客户表格一键导入。</p>
+      <div class="actions">
+        <button class="btn btn-primary btn-lg" onclick="demoToast('演示页面：此处打开“新增客户”表单')">＋ 新增客户</button>
+        <button class="btn btn-secondary btn-lg" onclick="demoToast('演示页面：此处打开“导入客户（Excel/CSV）”向导')">导入客户（Excel/CSV）</button>
+      </div>
+    </div>
+
+    <!-- 空状态二：搜索无果 / 筛选无果（动态组合渲染） -->
+    <div id="view-noresult" class="empty" hidden>
+      <div class="art">
+        <svg width="120" height="96" viewBox="0 0 120 96" fill="none">
+          <circle cx="52" cy="44" r="24" fill="#eff6ff"/>
+          <circle cx="52" cy="44" r="16" stroke="#93c5fd" stroke-width="4" fill="none"/>
+          <path d="M69 61l16 16" stroke="#93c5fd" stroke-width="6" stroke-linecap="round"/>
+          <path d="M44 44h16M44 36h10" stroke="#bfdbfe" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <!-- 内容由 JS 按关键词 / 筛选条件动态生成 -->
+      <div id="noresult-body"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  // ===== 示例数据 =====
+  var ALL_CUSTOMERS = [
+    { name: '陈志远', company: '远航物流',      phone: '138****2046', level: 'vip',    status: 'doing', last: '2026-10-26' },
+    { name: '刘雨桐', company: '桐雨设计工作室', phone: '139****7312', level: 'normal', status: 'won',   last: '2026-10-21' },
+    { name: '王建国', company: '建达建材',      phone: '137****8890', level: 'vip',    status: 'won',   last: '2026-10-25' },
+    { name: '赵晓萌', company: '萌宠之家连锁',  phone: '136****4521', level: 'normal', status: 'doing', last: '2026-10-27' },
+    { name: '孙海涛', company: '海涛餐饮管理',  phone: '135****6034', level: 'normal', status: 'idle',  last: '2026-09-30' },
+    { name: '林静怡', company: '怡然民宿',      phone: '188****9127', level: 'vip',    status: 'doing', last: '2026-10-24' },
+    { name: '周天磊', company: '磊鑫五金',      phone: '150****3388', level: 'normal', status: 'idle',  last: '2026-10-11' },
+    { name: '吴梦琪', company: '琪迹旅游',      phone: '186****7754', level: 'normal', status: 'won',   last: '2026-10-18' }
+  ];
+
+  var LEVEL_TEXT = { vip: '重点客户', normal: '普通客户' };
+  var STATUS_TEXT = { doing: '跟进中', won: '已成交', idle: '未跟进' };
+  var STATUS_CLASS = { doing: 'tag-doing', won: 'tag-won', idle: 'tag-idle' };
+
+  // ===== 演示模式：firstuse | search | filter | normal =====
+  var demoMode = 'firstuse';
+
+  var elSearch = document.getElementById('search');
+  var elSearchClear = document.getElementById('search-clear');
+  var elLevel = document.getElementById('filter-level');
+  var elStatus = document.getElementById('filter-status');
+  var elChips = document.getElementById('active-chips');
+  var elTotal = document.getElementById('total-count');
+  var viewTable = document.getElementById('view-table');
+  var viewFirstuse = document.getElementById('view-firstuse');
+  var viewNoresult = document.getElementById('view-noresult');
+  var elNoresultBody = document.getElementById('noresult-body');
+  var elTbody = document.getElementById('tbody');
+
+  function getCustomers() {
+    return demoMode === 'firstuse' ? [] : ALL_CUSTOMERS;
+  }
+
+  function getKeyword() { return elSearch.value.trim(); }
+  function hasFilters() { return elLevel.value !== 'all' || elStatus.value !== 'all'; }
+
+  function activeConditions() {
+    var list = [];
+    if (elLevel.value !== 'all') list.push({ key: 'level', label: '客户等级', value: LEVEL_TEXT[elLevel.value] });
+    if (elStatus.value !== 'all') list.push({ key: 'status', label: '跟进状态', value: STATUS_TEXT[elStatus.value] });
+    return list;
+  }
+
+  function applyFilters() {
+    var q = getKeyword();
+    var level = elLevel.value;
+    var status = elStatus.value;
+    return getCustomers().filter(function (c) {
+      var okQ = !q || c.name.indexOf(q) > -1 || c.company.indexOf(q) > -1 || c.phone.indexOf(q) > -1;
+      var okL = level === 'all' || c.level === level;
+      var okS = status === 'all' || c.status === status;
+      return okQ && okL && okS;
+    });
+  }
+
+  // ===== 渲染 =====
+  function render() {
+    var total = getCustomers().length;
+    var filtered = applyFilters();
+    var q = getKeyword();
+    var conditions = activeConditions();
+    elTotal.textContent = demoMode === 'firstuse' ? 0 : total;
+    elSearchClear.hidden = !q;
+
+    viewTable.hidden = true;
+    viewFirstuse.hidden = true;
+    viewNoresult.hidden = true;
+    elChips.innerHTML = '';
+
+    // 判定优先级：0 客户 → First-use；过滤后为空 → 搜索/筛选无果
+    if (total === 0) {
+      viewFirstuse.hidden = false;
+      return;
+    }
+
+    renderChips(conditions);
+
+    if (filtered.length === 0) {
+      renderNoResult(q, conditions);
+      viewNoresult.hidden = false;
+      return;
+    }
+
+    renderRows(filtered);
+    viewTable.hidden = false;
+  }
+
+  function renderRows(list) {
+    var html = list.map(function (c) {
+      return '<tr>' +
+        '<td><b>' + c.name + '</b></td>' +
+        '<td>' + c.company + '</td>' +
+        '<td>' + c.phone + '</td>' +
+        '<td><span class="tag ' + (c.level === 'vip' ? 'tag-vip' : 'tag-normal') + '">' + LEVEL_TEXT[c.level] + '</span></td>' +
+        '<td><span class="tag ' + STATUS_CLASS[c.status] + '">' + STATUS_TEXT[c.status] + '</span></td>' +
+        '<td>' + c.last + '</td>' +
+      '</tr>';
+    }).join('');
+    elTbody.innerHTML = html;
+  }
+
+  function renderChips(conditions) {
+    if (!conditions.length) { elChips.style.display = 'none'; return; }
+    elChips.style.display = 'flex';
+    elChips.innerHTML = conditions.map(function (c) {
+      return '<span class="chip">' + c.label + '：<b>' + c.value + '</b>' +
+             '<button class="x" data-remove="' + c.key + '" title="移除该条件">×</button></span>';
+    }).join('') +
+    '<button class="btn btn-ghost" data-remove="all" style="font-size:13px;">清除全部筛选</button>';
+  }
+
+  function renderNoResult(q, conditions) {
+    var hasQ = !!q;
+    var hasC = conditions.length > 0;
+    var html = '';
+
+    if (hasQ && !hasC) {
+      // 搜索无果：保留关键词，给修改建议，不放大的按钮
+      html += '<h2>没有找到与“' + esc(q) + '”相关的客户</h2>';
+      html += '<p class="desc">关键词已保留在搜索框中，你可以调整后重新搜索。</p>';
+      html += '<ul class="suggestions">' +
+        '<li>检查关键词拼写是否正确</li>' +
+        '<li>试试更短的关键词，例如只输入姓氏或公司名的前两个字</li>' +
+        '<li>也可以按手机号搜索</li>' +
+      '</ul>';
+      html += '<div class="link-row"><button class="btn btn-ghost" data-clear-q>清除关键词，查看全部客户</button></div>';
+    } else if (!hasQ && hasC) {
+      // 筛选无果：当前条件保留在页面，可逐个移除
+      html += '<h2>没有客户满足当前筛选条件</h2>';
+      html += '<p class="desc">筛选条件已保留在页面上方，点击标签上的 × 可以逐个减少条件。</p>';
+      html += '<div class="conditions">' + conditions.map(function (c) {
+        return '<span class="chip">' + c.label + '：<b>' + c.value + '</b>' +
+               '<button class="x" data-remove="' + c.key + '" title="移除该条件">×</button></span>';
+      }).join('') + '</div>';
+      html += '<div class="link-row"><button class="btn btn-ghost" data-remove="all">清除全部筛选，查看全部客户</button></div>';
+    } else {
+      // 关键词 + 条件同时无果：两个出口都给出
+      html += '<h2>没有客户同时满足关键词和筛选条件</h2>';
+      html += '<p class="desc">当前搜索的是“<span class="hl">' + esc(q) + '</span>”，且带有筛选条件。</p>';
+      html += '<div class="conditions">' + conditions.map(function (c) {
+        return '<span class="chip">' + c.label + '：<b>' + c.value + '</b>' +
+               '<button class="x" data-remove="' + c.key + '" title="移除该条件">×</button></span>';
+      }).join('') + '</div>';
+      html += '<ul class="suggestions">' +
+        '<li>检查关键词拼写，或<span class="hl">试试更短的关键词</span></li>' +
+        '<li>点击上方标签的 ×，减少一个筛选条件</li>' +
+      '</ul>';
+      html += '<div class="link-row">' +
+        '<button class="btn btn-ghost" data-clear-q>清除关键词</button>' +
+        '<span class="divider"></span>' +
+        '<button class="btn btn-ghost" data-remove="all">清除全部筛选</button>' +
+      '</div>';
+    }
+    elNoresultBody.innerHTML = html;
+  }
+
+  function esc(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // ===== 事件 =====
+  elSearch.addEventListener('input', render);
+  elSearchClear.addEventListener('click', function () { elSearch.value = ''; render(); });
+  elLevel.addEventListener('change', render);
+  elStatus.addEventListener('change', render);
+
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-remove],[data-clear-q]');
+    if (!t) return;
+    if (t.hasAttribute('data-clear-q')) {
+      elSearch.value = '';
+    } else {
+      var key = t.getAttribute('data-remove');
+      if (key === 'all') { elLevel.value = 'all'; elStatus.value = 'all'; }
+      else if (key === 'level') elLevel.value = 'all';
+      else if (key === 'status') elStatus.value = 'all';
+    }
+    render();
+  });
+
+  // 演示视角切换（仅供预览）
+  document.querySelectorAll('.demo-bar button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.demo-bar button').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      demoMode = btn.getAttribute('data-demo');
+      elSearch.value = '';
+      elLevel.value = 'all';
+      elStatus.value = 'all';
+      if (demoMode === 'search') {
+        elSearch.value = '张伟';
+      } else if (demoMode === 'filter') {
+        // 构造一个无匹配的组合：重点客户 + 未跟进
+        elLevel.value = 'vip';
+        elStatus.value = 'idle';
+      }
+      render();
+    });
+  });
+
+  function demoToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function () { t.classList.remove('show'); }, 2200);
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

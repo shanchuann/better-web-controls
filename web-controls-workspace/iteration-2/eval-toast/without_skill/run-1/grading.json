@@ -1,0 +1,27 @@
+{
+  "run": "without_skill",
+  "eval_id": 5,
+  "expectations": [
+    {
+      "text": "使用了轻提示 Toast（出现几秒自动消失），而不是 alert()/弹窗 Modal 这类打断式反馈",
+      "passed": true,
+      "evidence": "顶部居中非模态 Toast，无 alert() 与模态框"
+    },
+    {
+      "text": "Toast 说清了位置（如右上角/底部居中）与消失时机（约 2-3 秒自动消失）",
+      "passed": true,
+      "evidence": "top:24px 顶部居中，2 秒后自动消失"
+    },
+    {
+      "text": "没有用阻塞式交互（保存后页面仍可继续操作）",
+      "passed": true,
+      "evidence": "pointer-events:none 不拦截任何点击，保存后页面可继续操作"
+    },
+    {
+      "text": "若选了带操作的轻提示 Snackbar，附带可立即执行的按钮（如“查看”）也视为合格",
+      "passed": true,
+      "evidence": "纯 Toast 合格；notes.md 说明选 Toast 而非 alert/模态框的原因"
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}

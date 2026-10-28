@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>橙石云 · 登录</title>
+<style>
+  :root {
+    /* 品牌色：陶橙 Terracotta */
+    --terracotta: #E2725B;
+    --terracotta-deep: #C2543A;
+    --terracotta-dark: #8A3A28;
+    --ink: #2B2320;          /* 暖棕黑正文 */
+    --ink-soft: #6E625C;     /* 次级文字 */
+    --paper: #FAF6F2;        /* 暖白底 */
+    --line: #E8DEDA;         /* 分隔线 */
+    --field-bg: #FFFFFF;
+    --error: #C0392B;
+    --radius: 12px;
+    --gap-unit: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", -apple-system, sans-serif;
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ========== Split Screen：左 6 右 4 ========== */
+  .split {
+    display: grid;
+    grid-template-columns: 6fr 4fr;
+    min-height: 100vh;
+  }
+
+  /* ---------- 左：陶橙品牌面板 ---------- */
+  .brand {
+    position: relative;
+    background: linear-gradient(150deg, var(--terracotta) 0%, var(--terracotta-deep) 62%, var(--terracotta-dark) 100%);
+    color: #FFF7F2;
+    padding: clamp(40px, 6vh, 72px) clamp(40px, 6vw, 88px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    overflow: hidden;
+  }
+
+  /* 背景装饰：留白 + 克制的几何形，不做花哨动效 */
+  .brand::before, .brand::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .brand::before {
+    width: 46vw; height: 46vw; max-width: 640px; max-height: 640px;
+    right: -14%; bottom: -22%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.14), rgba(255,255,255,0) 68%);
+  }
+  .brand::after {
+    width: 300px; height: 300px;
+    left: -90px; top: -90px;
+    border: 1.5px solid rgba(255,255,255,.18);
+  }
+
+  .brand-logo {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 18px; font-weight: 700; letter-spacing: .5px;
+  }
+  .brand-logo .mark {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(255,255,255,.16);
+    border: 1px solid rgba(255,255,255,.35);
+    display: grid; place-items: center;
+    font-size: 18px;
+    backdrop-filter: blur(4px);
+  }
+
+  .brand-main { max-width: 560px; position: relative; z-index: 1; }
+  .brand-main h1 {
+    font-size: clamp(30px, 3.4vw, 46px);
+    line-height: 1.3;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 18px;
+  }
+  .brand-main p {
+    font-size: 16px;
+    line-height: 1.9;
+    color: rgba(255,247,242,.85);
+    max-width: 26em;
+  }
+
+  /* 信任元素：三格，分隔线分组（不做卡片堆砌） */
+  .brand-proof {
+    display: flex;
+    gap: clamp(28px, 4vw, 56px);
+    margin-top: 48px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(255,255,255,.22);
+  }
+  .proof-item .num {
+    font-size: 26px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .proof-item .num sup { font-size: 14px; font-weight: 600; margin-left: 2px; }
+  .proof-item .label { font-size: 13px; color: rgba(255,247,242,.75); margin-top: 4px; }
+
+  .brand-foot { font-size: 12.5px; color: rgba(255,247,242,.55); position: relative; z-index: 1; }
+
+  /* ---------- 右：无卡片表单 ---------- */
+  .panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: clamp(32px, 6vh, 72px) clamp(28px, 5vw, 88px);
+    background: var(--paper);
+  }
+  .panel-inner { width: 100%; max-width: 400px; margin: 0 auto; }
+
+  .panel-head { margin-bottom: 36px; }
+  .panel-head .mobile-logo { display: none; }
+  .panel-head h2 { font-size: 26px; font-weight: 700; letter-spacing: .5px; }
+  .panel-head p { margin-top: 10px; font-size: 14.5px; color: var(--ink-soft); }
+  .panel-head p a { color: var(--terracotta-deep); text-decoration: none; font-weight: 600; }
+  .panel-head p a:hover { text-decoration: underline; }
+
+  /* 字段：标签在上，错误在下 —— 失焦校验 */
+  .field { margin-bottom: 22px; }
+  .field-label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 14px; font-weight: 600; margin-bottom: 8px;
+  }
+  .field-label .optional { font-size: 12px; font-weight: 400; color: var(--ink-soft); }
+  .field-label .helper { font-size: 12px; font-weight: 400; color: var(--ink-soft); }
+
+  .input-wrap {
+    position: relative;
+    display: flex; align-items: center;
+  }
+  .input-wrap input {
+    width: 100%;
+    height: 48px;
+    padding: 0 44px 0 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--ink);
+    background: var(--field-bg);
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .input-wrap input::placeholder { color: #B7AAA2; }
+  .input-wrap input:hover { border-color: #D8C9C2; }
+  .input-wrap input:focus {
+    border-color: var(--terracotta);
+    box-shadow: 0 0 0 3.5px rgba(226,114,91,.16);
+  }
+  .field.invalid input {
+    border-color: var(--error);
+    box-shadow: 0 0 0 3.5px rgba(192,57,43,.10);
+  }
+
+  /* 密码显隐切换 */
+  .toggle-pwd {
+    position: absolute; right: 6px;
+    width: 36px; height: 36px;
+    display: grid; place-items: center;
+    background: none; border: none; cursor: pointer;
+    color: var(--ink-soft); border-radius: 8px;
+  }
+  .toggle-pwd:hover { color: var(--ink); background: #F3EAE4; }
+  .toggle-pwd svg { width: 19px; height: 19px; }
+
+  /* 行内校验信息：输入框下方，说明"哪里错、怎么改" */
+  .field-msg {
+    display: none;
+    margin-top: 7px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: var(--error);
+  }
+  .field-msg.ok { display: block; color: #2E7D5B; }
+  .field.invalid .field-msg:not(.ok) { display: block; }
+
+  /* 辅助行：记住我 + 忘记密码（文字按钮） */
+  .aux-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 4px 0 26px;
+  }
+  .remember {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13.5px; color: var(--ink-soft); cursor: pointer; user-select: none;
+  }
+  .remember input {
+    appearance: none; -webkit-appearance: none;
+    width: 16px; height: 16px;
+    border: 1.5px solid #CDBEB6; border-radius: 5px;
+    background: #fff; cursor: pointer;
+    display: grid; place-items: center;
+    transition: background .15s, border-color .15s;
+  }
+  .remember input:hover { border-color: var(--terracotta); }
+  .remember input:checked {
+    background: var(--terracotta); border-color: var(--terracotta);
+  }
+  .remember input:checked::after {
+    content: ""; width: 9px; height: 5px;
+    border-left: 2px solid #fff; border-bottom: 2px solid #fff;
+    transform: rotate(-45deg) translate(0.5px, -1px);
+  }
+  .text-btn {
+    background: none; border: none; cursor: pointer;
+    font-size: 13.5px; font-family: inherit;
+    color: var(--terracotta-deep); font-weight: 500;
+    padding: 4px 2px; border-radius: 6px;
+  }
+  .text-btn:hover { color: var(--terracotta-dark); text-decoration: underline; }
+
+  /* 主操作：面状 + 全宽 + 陶橙实心（全页唯一主色按钮） */
+  .submit-btn {
+    width: 100%;
+    height: 50px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    font-size: 16px; font-weight: 600; font-family: inherit; letter-spacing: 6px; text-indent: 6px;
+    color: #FFF7F2;
+    background: linear-gradient(135deg, var(--terracotta), var(--terracotta-deep));
+    border: none; border-radius: var(--radius);
+    cursor: pointer;
+    transition: transform .15s, box-shadow .15s, filter .15s;
+    box-shadow: 0 6px 18px rgba(194,84,58,.28);
+  }
+  .submit-btn:hover { filter: brightness(1.05); box-shadow: 0 8px 22px rgba(194,84,58,.36); transform: translateY(-1px); }
+  .submit-btn:active { transform: translateY(0); filter: brightness(.97); }
+  .submit-btn:focus-visible { outline: 3px solid rgba(226,114,91,.45); outline-offset: 2px; }
+  .submit-btn:disabled { cursor: not-allowed; filter: saturate(.6) brightness(.96); transform: none; }
+
+  /* 不确定进度：按钮内循环 spinner（等待时长未知，不显示百分比） */
+  .spinner {
+    width: 18px; height: 18px; flex: none;
+    border: 2.5px solid rgba(255,247,242,.35);
+    border-top-color: #FFF7F2;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .submit-btn.loading .spinner { display: block; }
+
+  /* 分隔线 */
+  .divider {
+    display: flex; align-items: center; gap: 14px;
+    margin: 30px 0 22px;
+    color: #B7AAA2; font-size: 12.5px; white-space: nowrap;
+  }
+  .divider::before, .divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--line);
+  }
+
+  /* 次操作：线状按钮（仅一圈描边，不与主按钮争夺注意力） */
+  .sso-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .sso-btn {
+    height: 46px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 14px; font-family: inherit; font-weight: 500;
+    color: var(--ink);
+    background: transparent;
+    border: 1.5px solid var(--line); border-radius: var(--radius);
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .sso-btn:hover { border-color: #CDB2A8; background: #FFF; }
+  .sso-btn svg { width: 18px; height: 18px; flex: none; }
+
+  .panel-foot {
+    margin-top: 40px;
+    font-size: 12.5px; color: #B7AAA2; text-align: center;
+  }
+
+  /* ========== 轻提示 Toast：右上角，数秒自动消失 ========== */
+  .toast {
+    position: fixed;
+    top: 24px; right: 24px;
+    z-index: 99;
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 18px;
+    font-size: 14px;
+    color: var(--ink);
+    background: #FFFFFF;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 10px 32px rgba(43,35,32,.14);
+    opacity: 0; transform: translateY(-12px);
+    pointer-events: none;
+    transition: opacity .28s ease, transform .28s ease;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast .dot {
+    width: 8px; height: 8px; border-radius: 50%; flex: none;
+  }
+  .toast.success .dot { background: #2E7D5B; }
+  .toast.error .dot { background: var(--error); }
+
+  /* ========== 移动端：折叠单栏，品牌侧收为窄条 ========== */
+  @media (max-width: 900px) {
+    .split { grid-template-columns: 1fr; }
+    .brand {
+      padding: 26px 28px 30px;
+      justify-content: flex-start;
+      gap: 16px;
+    }
+    .brand::after { display: none; }
+    .brand-main h1 { font-size: 21px; margin-bottom: 6px; }
+    .brand-main p { display: none; }
+    .brand-proof { display: none; }
+    .brand-foot { display: none; }
+    .panel { padding: 36px 24px 48px; }
+    .panel-head .mobile-logo { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="split">
+
+  <!-- 左：品牌面板（陶橙） -->
+  <aside class="brand" aria-label="品牌介绍">
+    <div class="brand-logo">
+      <span class="mark" aria-hidden="true">◈</span>
+      <span>橙石云 OrangeStone</span>
+    </div>
+
+    <div class="brand-main">
+      <h1>让团队协作，<br>像陶土一样温润可靠。</h1>
+      <p>橙石云一站式项目协作平台，覆盖任务、文档与数据看板，帮助 3.2 万支团队把复杂项目理得井井有条。</p>
+
+      <div class="brand-proof">
+        <div class="proof-item">
+          <div class="num">3.2<sup>万+</sup></div>
+          <div class="label">企业团队正在使用</div>
+        </div>
+        <div class="proof-item">
+          <div class="num">99.99<sup>%</sup></div>
+          <div class="label">服务可用性保障</div>
+        </div>
+        <div class="proof-item">
+          <div class="num">ISO 27001</div>
+          <div class="label">信息安全体系认证</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-foot">© 2026 橙石云科技有限公司 · 沪ICP备00000000号</div>
+  </aside>
+
+  <!-- 右：登录表单（无卡片，留白分区） -->
+  <main class="panel">
+    <div class="panel-inner">
+      <header class="panel-head">
+        <h2>欢迎回来 👋</h2>
+        <p>还没有账号？<a href="#" id="signupLink">免费注册</a></p>
+      </header>
+
+      <form id="loginForm" novalidate>
+
+        <div class="field" id="fieldEmail">
+          <label class="field-label" for="email">邮箱 <span class="helper">用于登录的注册邮箱</span></label>
+          <div class="input-wrap">
+            <input type="email" id="email" name="email" placeholder="name@company.com" autocomplete="email">
+          </div>
+          <p class="field-msg" id="emailMsg"></p>
+        </div>
+
+        <div class="field" id="fieldPwd">
+          <label class="field-label" for="password">密码</label>
+          <div class="input-wrap">
+            <input type="password" id="password" name="password" placeholder="请输入密码" autocomplete="current-password">
+            <button type="button" class="toggle-pwd" id="togglePwd" aria-label="显示或隐藏密码" title="显示/隐藏密码">
+              <svg id="eyeOn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-7.5 11-7.5S23 12 23 12s-4 7.5-11 7.5S1 12 1 12z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg id="eyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 19.5C5 19.5 1 12 1 12a19.8 19.8 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a19.9 19.9 0 0 1-2.16 3.19"/><path d="M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+            </button>
+          </div>
+          <p class="field-msg" id="pwdMsg"></p>
+        </div>
+
+        <div class="aux-row">
+          <label class="remember">
+            <input type="checkbox" id="remember" checked> 记住我
+          </label>
+          <button type="button" class="text-btn" id="forgotBtn">忘记密码？</button>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <span class="spinner" aria-hidden="true"></span>
+          <span id="submitText">登 录</span>
+        </button>
+      </form>
+
+      <div class="divider">或使用以下方式登录</div>
+
+      <div class="sso-row">
+        <button type="button" class="sso-btn" data-sso="企业微信">
+          <svg viewBox="0 0 24 24" fill="#2E7D5B" aria-hidden="true"><path d="M8.5 3C4.9 3 2 5.6 2 8.8c0 1.8.9 3.4 2.4 4.5l-.6 2.1 2.4-1.2c.7.2 1.5.3 2.3.3h.3c-.2-.6-.3-1.2-.3-1.8 0-3.2 3-5.8 6.7-5.8h.2C14.7 4.6 11.8 3 8.5 3zM6.3 6.5c.5 0 .9.4.9.9s-.4.9-.9.9-.9-.4-.9-.9.4-.9.9-.9zm4.4 0c.5 0 .9.4.9.9s-.4.9-.9.9-.9-.4-.9-.9.4-.9.9-.9zM15.5 9c-3.1 0-5.6 2.1-5.6 4.8 0 2.6 2.5 4.8 5.6 4.8.6 0 1.2-.1 1.8-.3l2 1-.5-1.8c1.3-.9 2.2-2.2 2.2-3.7 0-2.7-2.5-4.8-5.5-4.8zm-1.9 2.6c.4 0 .8.3.8.8s-.4.8-.8.8-.8-.3-.8-.8.4-.8.8-.8zm3.8 0c.4 0 .8.3.8.8s-.4.8-.8.8-.8-.3-.8-.8.4-.8.8-.8z"/></svg>
+          企业微信
+        </button>
+        <button type="button" class="sso-btn" data-sso="飞书">
+          <svg viewBox="0 0 24 24" fill="#3B7BEA" aria-hidden="true"><path d="M6.2 3.5h5.1l-1.6 4.6H4.6c0-.1 1.6-4.6 1.6-4.6zm1 7.4h5.2l-1.7 4.7H5.5l1.7-4.7zm6.4-2.8h5.9l-2.3 6.4c-1 2.7-3.6 5-7.4 5l1.9-5.4c.5-1.4 1-3.4 1.9-6z"/></svg>
+          飞书
+        </button>
+      </div>
+
+      <p class="panel-foot">登录即代表同意 <a href="#" style="color:inherit">服务条款</a> 与 <a href="#" style="color:inherit">隐私政策</a></p>
+    </div>
+  </main>
+</div>
+
+<!-- 轻提示 Toast：右上角，3 秒自动消失 -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="dot" aria-hidden="true"></span>
+  <span id="toastText"></span>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- 工具 ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+
+  // 轻提示 Toast：右上角出现，3 秒后自动消失，不打断操作
+  var toastTimer = null;
+  function showToast(text, type) {
+    var toast = $("toast");
+    $("toastText").textContent = text;
+    toast.className = "toast " + (type || "success");
+    // 强制重排以重启动画
+    void toast.offsetWidth;
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 3000);
+  }
+
+  /* ---------- 失焦校验：字段少且相互独立，离开即查；错误显示在输入框下方 ---------- */
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+  function setFieldState(fieldId, msgId, ok, msg) {
+    var field = $(fieldId);
+    field.classList.toggle("invalid", !ok);
+    var el = $(msgId);
+    el.classList.toggle("ok", ok === "ok");
+    el.textContent = msg || "";
+    return ok === true || ok === "ok";
+  }
+
+  function validateEmail(showOk) {
+    var v = $("email").value.trim();
+    if (!v) {
+      setFieldState("fieldEmail", "emailMsg", false, "请输入邮箱地址");
+      return false;
+    }
+    if (!EMAIL_RE.test(v)) {
+      setFieldState("fieldEmail", "emailMsg", false, "邮箱格式不正确，请检查 @ 与域名，例如 name@company.com");
+      return false;
+    }
+    setFieldState("fieldEmail", "emailMsg", showOk ? "ok" : true, showOk ? "邮箱格式正确" : "");
+    return true;
+  }
+
+  function validatePwd(showOk) {
+    var v = $("password").value;
+    if (!v) {
+      setFieldState("fieldPwd", "pwdMsg", false, "请输入密码");
+      return false;
+    }
+    if (v.length < 8) {
+      setFieldState("fieldPwd", "pwdMsg", false, "密码至少 8 位，请重新输入");
+      return false;
+    }
+    setFieldState("fieldPwd", "pwdMsg", showOk ? "ok" : true, showOk ? "" : "");
+    return true;
+  }
+
+  $("email").addEventListener("blur", function () { validateEmail(true); });
+  $("password").addEventListener("blur", function () { validatePwd(false); });
+  // 输入时若此前有错，即时清除错误状态
+  $("email").addEventListener("input", function () {
+    if ($("fieldEmail").classList.contains("invalid")) validateEmail(false);
+  });
+  $("password").addEventListener("input", function () {
+    if ($("fieldPwd").classList.contains("invalid")) validatePwd(false);
+  });
+
+  /* ---------- 密码显隐 ---------- */
+  $("togglePwd").addEventListener("click", function () {
+    var input = $("password");
+    var show = input.type === "password";
+    input.type = show ? "text" : "password";
+    $("eyeOn").style.display = show ? "none" : "";
+    $("eyeOff").style.display = show ? "" : "none";
+    this.setAttribute("aria-label", show ? "隐藏密码" : "显示密码");
+    input.focus();
+  });
+
+  /* ---------- 提交：先统一校验，再模拟请求；等待用按钮内 spinner（不编造百分比） ---------- */
+  var form = $("loginForm");
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    // 提交校验兜底，滚动定位到第一个错误项
+    var okEmail = validateEmail(true);
+    if (!okEmail) { $("email").focus(); return; }
+    var okPwd = validatePwd(true);
+    if (!okPwd) { $("password").focus(); return; }
+
+    var btn = $("submitBtn");
+    btn.disabled = true;
+    btn.classList.add("loading");
+    $("submitText").textContent = "登录中";
+
+    // 演示：模拟接口等待 1.4s 后成功
+    setTimeout(function () {
+      btn.disabled = false;
+      btn.classList.remove("loading");
+      $("submitText").textContent = "登 录";
+      showToast("登录成功，正在进入工作台…", "success");
+    }, 1400);
+  });
+
+  /* ---------- 次操作演示 ---------- */
+  $("forgotBtn").addEventListener("click", function () {
+    showToast("重置密码邮件已发送（演示）", "success");
+  });
+  document.querySelectorAll(".sso-btn").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      showToast(btn.getAttribute("data-sso") + " 登录暂未接入（演示）", "error");
+    });
+  });
+  $("signupLink").addEventListener("click", function (e) {
+    e.preventDefault();
+    showToast("注册页暂未接入（演示）", "error");
+  });
+})();
+</script>
+</body>
+</html>

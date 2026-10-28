@@ -3,7 +3,7 @@
   "eval_id": 2,
   "expectations": [
     {
-      "text": "没有使用默认形式：主图浏览没有做成"translateX 左右滑动 + 仅三个圆点指示器"的默认组合",
+      "text": "没有使用默认形式：主图浏览没有做成“translateX 左右滑动 + 仅三个圆点指示器”的默认组合",
       "passed": true,
       "evidence": "主舞台为 360° 拖动旋转的 CSS 3D 圆筒音箱（24 刻面），指示器为缩略图导轨+角度读数，全无圆点；代码中唯一的 translateX 只是提示胶囊的 sway 动画"
     },

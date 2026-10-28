@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目设置 · 后台管理</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --border: #e4e7ec;
+    --text: #1f2329;
+    --text-2: #6b7280;
+    --text-3: #9aa1ad;
+    --danger: #d92d20;
+    --danger-dark: #b42318;
+    --danger-bg: #fef3f2;
+    --danger-border: #fecdca;
+    --primary: #2563eb;
+    --radius: 10px;
+    --shadow: 0 1px 3px rgba(16,24,40,.08), 0 1px 2px rgba(16,24,40,.04);
+    --shadow-lg: 0 20px 50px rgba(16,24,40,.22);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  /* ── 顶栏 ── */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .topbar .logo { font-weight: 700; font-size: 15px; display: flex; align-items: center; gap: 8px; }
+  .topbar .logo .mark {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    display: inline-block;
+  }
+  .topbar nav { display: flex; gap: 4px; margin-left: 12px; }
+  .topbar nav a {
+    color: var(--text-2); text-decoration: none; padding: 6px 12px; border-radius: 6px;
+  }
+  .topbar nav a.active { color: var(--text); background: #f2f4f7; font-weight: 500; }
+  .breadcrumb { margin-left: auto; color: var(--text-3); font-size: 13px; }
+
+  /* ── 主体 ── */
+  .main { max-width: 720px; margin: 32px auto; padding: 0 24px; }
+  .page-title { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .page-sub { color: var(--text-2); margin-bottom: 24px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  .section { padding: 20px 24px; }
+  .section + .section { border-top: 1px solid var(--border); }
+  .section h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
+  .section .desc { color: var(--text-2); font-size: 13px; margin-bottom: 16px; }
+
+  /* 项目信息行 */
+  .meta-row { display: flex; gap: 32px; flex-wrap: wrap; }
+  .meta-item .k { color: var(--text-3); font-size: 12px; }
+  .meta-item .v { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* 危险区 */
+  .danger-section { background: #fffafa; }
+  .danger-section h3 { color: var(--danger-dark); }
+
+  /* 按钮三步公式：面状实心危险按钮（本页唯一主操作） */
+  .btn {
+    font-family: inherit; font-size: 14px; font-weight: 500;
+    border-radius: 8px; border: 1px solid transparent;
+    padding: 8px 16px; cursor: pointer;
+    transition: background .15s, box-shadow .15s, opacity .15s;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .btn-danger-solid {
+    background: var(--danger); color: #fff;
+  }
+  .btn-danger-solid:hover:not(:disabled) { background: var(--danger-dark); }
+  .btn-danger-solid:disabled { background: #f2b3ae; cursor: not-allowed; }
+  .btn-outline {
+    background: var(--surface); color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-outline:hover { background: #f9fafb; }
+  .btn-text {
+    background: none; border: none; color: var(--text-2); padding: 6px 10px;
+  }
+  .btn-text:hover { color: var(--text); background: #f2f4f7; }
+
+  /* 删除后的空状态 */
+  .empty-state {
+    display: none;
+    text-align: center;
+    padding: 80px 24px;
+  }
+  .empty-state.show { display: block; }
+  .empty-state .icon {
+    width: 56px; height: 56px; border-radius: 50%;
+    background: var(--danger-bg); color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px; font-size: 24px;
+  }
+  .empty-state h2 { font-size: 17px; margin-bottom: 6px; }
+  .empty-state p { color: var(--text-2); margin-bottom: 20px; }
+
+  /* ── Modal 居中弹窗 ── */
+  .overlay {
+    position: fixed; inset: 0;
+    background: rgba(16, 24, 40, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    opacity: 0; visibility: hidden;
+    transition: opacity .18s ease, visibility .18s;
+    z-index: 100;
+  }
+  .overlay.open { opacity: 1; visibility: visible; }
+  .modal {
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: var(--shadow-lg);
+    width: 100%; max-width: 460px;
+    transform: translateY(10px) scale(.97);
+    transition: transform .18s ease;
+    outline: none;
+  }
+  .overlay.open .modal { transform: translateY(0) scale(1); }
+  .modal-head {
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 24px 24px 0;
+  }
+  .modal-icon {
+    flex: none; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--danger-bg); color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-head h2 { font-size: 16px; font-weight: 600; line-height: 40px; }
+  .modal-body { padding: 12px 24px 0 78px; color: var(--text-2); font-size: 13.5px; }
+  .modal-body b { color: var(--text); }
+
+  .consequence-list {
+    margin: 14px 0 0;
+    padding: 12px 14px;
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    border-radius: 8px;
+    list-style: none;
+    color: var(--danger-dark);
+    font-size: 13px;
+  }
+  .consequence-list li { display: flex; align-items: center; gap: 8px; padding: 2px 0; }
+  .consequence-list .num { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .confirm-field { margin-top: 16px; }
+  .confirm-field label {
+    display: block; font-size: 13px; color: var(--text); font-weight: 500; margin-bottom: 6px;
+  }
+  .confirm-field label code {
+    background: #f2f4f7; border: 1px solid var(--border);
+    border-radius: 4px; padding: 1px 6px; font-size: 12.5px;
+  }
+  .confirm-field input {
+    width: 100%; font-family: inherit; font-size: 14px;
+    padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); background: var(--surface);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .confirm-field input:focus {
+    outline: none; border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(217,45,32,.12);
+  }
+  .confirm-field .hint { font-size: 12px; color: var(--text-3); margin-top: 6px; }
+
+  .modal-foot {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 20px 24px 24px;
+  }
+
+  /* 按钮内不确定进度：循环同步 spinner */
+  .spinner {
+    width: 14px; height: 14px; flex: none;
+    border: 2px solid rgba(255,255,255,.35);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  .loading .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── Toast 轻提示 ── */
+  .toast {
+    position: fixed; top: 20px; right: 20px; z-index: 200;
+    background: #1f2329; color: #fff;
+    padding: 11px 16px; border-radius: 10px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: var(--shadow-lg);
+    font-size: 13.5px;
+    opacity: 0; transform: translateY(-8px);
+    transition: opacity .2s, transform .2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast .dot { width: 8px; height: 8px; border-radius: 50%; background: #32d583; flex: none; }
+
+  @media (max-width: 520px) {
+    .modal-body { padding-left: 24px; }
+    .modal-foot { flex-direction: column-reverse; }
+    .modal-foot .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <span class="logo"><span class="mark"></span>云枢管理后台</span>
+  <nav>
+    <a href="#">概览</a>
+    <a href="#" class="active">项目</a>
+    <a href="#">成员</a>
+    <a href="#">设置</a>
+  </nav>
+  <span class="breadcrumb">项目 / 星云营销系统 2.0 / 设置</span>
+</header>
+
+<main class="main">
+  <!-- 项目未删除时的内容 -->
+  <div id="projectView">
+    <div class="page-title">项目设置</div>
+    <p class="page-sub">管理项目的基础信息与危险操作。</p>
+
+    <div class="card">
+      <div class="section">
+        <h3>项目信息</h3>
+        <p class="desc">项目名称将用于删除确认，需完整输入才能执行删除。</p>
+        <div class="meta-row">
+          <div class="meta-item"><div class="k">项目名称</div><div class="v" id="projName">星云营销系统 2.0</div></div>
+          <div class="meta-item"><div class="k">任务</div><div class="v" id="statTasks">128 个</div></div>
+          <div class="meta-item"><div class="k">文件</div><div class="v" id="statFiles">342 个</div></div>
+          <div class="meta-item"><div class="k">成员</div><div class="v">6 人</div></div>
+        </div>
+      </div>
+
+      <div class="section danger-section">
+        <h3>危险操作</h3>
+        <p class="desc">删除项目将永久移除该项目下的所有任务与文件，此操作不可恢复。</p>
+        <!-- 触发：红色面状按钮，点击弹出居中 Modal -->
+        <button class="btn btn-danger-solid" id="deleteBtn">删除项目</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 删除后的空状态：说明结果，提供演示重置入口 -->
+  <div class="empty-state" id="emptyState">
+    <div class="icon">🗑</div>
+    <h2>项目已删除</h2>
+    <p>“星云营销系统 2.0”及其全部任务与文件已被永久删除，此操作不可恢复。</p>
+    <button class="btn btn-text" id="resetBtn">重置演示</button>
+  </div>
+</main>
+
+<!-- 输入文字确认 Type to Confirm · 居中 Modal -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" id="modal">
+    <div class="modal-head">
+      <div class="modal-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h2 id="modalTitle">删除项目</h2>
+    </div>
+
+    <div class="modal-body">
+      <p>你正在删除 <b id="modalProjName">星云营销系统 2.0</b>。该操作<b>不可恢复</b>，将永久移除：</p>
+      <ul class="consequence-list">
+        <li>◆ 全部任务 <span class="num" id="modalTasks">128</span> 个</li>
+        <li>◆ 全部文件 <span class="num" id="modalFiles">342</span> 个</li>
+        <li>◆ 项目配置与成员记录</li>
+      </ul>
+
+      <div class="confirm-field">
+        <label for="confirmInput">请输入项目名称 <code id="confirmName">星云营销系统 2.0</code> 以确认</label>
+        <input type="text" id="confirmInput" placeholder="请输入项目名称以确认" autocomplete="off">
+        <p class="hint">输入完全一致后，删除按钮才会启用。</p>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <!-- 取消：线状按钮 -->
+      <button class="btn btn-outline" id="cancelBtn">取消</button>
+      <!-- 确认：红色面状按钮，输入匹配前禁用 -->
+      <button class="btn btn-danger-solid" id="confirmBtn" disabled>
+        <span class="spinner" aria-hidden="true"></span>
+        <span id="confirmBtnText">永久删除</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast 轻提示：右上角，数秒自动消失 -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="dot"></span><span id="toastText">项目已删除</span>
+</div>
+
+<script>
+(function () {
+  var PROJECT_NAME = '星云营销系统 2.0';
+
+  var overlay = document.getElementById('overlay');
+  var modal = document.getElementById('modal');
+  var deleteBtn = document.getElementById('deleteBtn');
+  var cancelBtn = document.getElementById('cancelBtn');
+  var confirmBtn = document.getElementById('confirmBtn');
+  var confirmInput = document.getElementById('confirmInput');
+  var confirmBtnText = document.getElementById('confirmBtnText');
+  var toast = document.getElementById('toast');
+  var toastText = document.getElementById('toastText');
+  var projectView = document.getElementById('projectView');
+  var emptyState = document.getElementById('emptyState');
+  var resetBtn = document.getElementById('resetBtn');
+
+  var toastTimer = null;
+
+  function openModal() {
+    overlay.classList.add('open');
+    // 关闭时清空输入并禁用按钮，防止残留状态造成误删
+    confirmInput.value = '';
+    confirmBtn.disabled = true;
+    confirmBtn.classList.remove('loading');
+    confirmBtnText.textContent = '永久删除';
+    // 焦点移入输入框
+    setTimeout(function () { confirmInput.focus(); }, 60);
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    confirmInput.value = '';
+    confirmBtn.disabled = true;
+    // 焦点返回触发按钮
+    deleteBtn.focus();
+  }
+
+  // 触发：点击删除按钮弹出 Modal，蒙版阻断页面
+  deleteBtn.addEventListener('click', openModal);
+  // 关闭方式一：取消按钮
+  cancelBtn.addEventListener('click', closeModal);
+  // 关闭方式二：点击蒙版（点击弹窗本身不关闭）
+  overlay.addEventListener('mousedown', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+  // 关闭方式三：按 Esc
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+  });
+  // Tab 焦点锁定在弹窗内
+  modal.addEventListener('keydown', function (e) {
+    if (e.key !== 'Tab') return;
+    var focusable = modal.querySelectorAll('button:not(:disabled), input');
+    var first = focusable[0], last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault(); last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault(); first.focus();
+    }
+  });
+
+  // 核心规则：输入与项目名称完全一致时，删除按钮才启用
+  confirmInput.addEventListener('input', function () {
+    confirmBtn.disabled = confirmInput.value !== PROJECT_NAME;
+  });
+  // 输入匹配时按回车等同于点击确认
+  confirmInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !confirmBtn.disabled) confirmBtn.click();
+  });
+
+  // 确认：按钮进入加载态（循环同步 spinner），完成后 Toast 反馈并切换空状态
+  confirmBtn.addEventListener('click', function () {
+    confirmBtn.disabled = true;
+    confirmBtn.classList.add('loading');
+    confirmBtnText.textContent = '删除中…';
+    confirmInput.disabled = true;
+
+    // 模拟删除请求；不确定进度的短等待不编造百分比
+    setTimeout(function () {
+      closeModal();
+      confirmInput.disabled = false;
+      projectView.style.display = 'none';
+      emptyState.classList.add('show');
+      showToast('项目已删除，任务与文件已全部移除');
+    }, 1100);
+  });
+
+  function showToast(msg) {
+    toastText.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 3200);
+  }
+
+  // 演示重置：恢复初始状态便于验收
+  resetBtn.addEventListener('click', function () {
+    emptyState.classList.remove('show');
+    projectView.style.display = '';
+    window.scrollTo({ top: 0 });
+  });
+})();
+</script>
+</body>
+</html>

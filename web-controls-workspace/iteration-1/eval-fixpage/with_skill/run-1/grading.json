@@ -3,24 +3,24 @@
   "eval_id": 1,
   "expectations": [
     {
-      "text": "修复"图片看着偏/歪"：房型卡图片改用 object-fit: cover 填满容器（代码中出现 cover，且不再是 contain）",
+      "text": "修复“图片看着偏/歪”：房型卡图片改用 object-fit: cover 填满容器（代码中出现 cover，且不再是 contain）",
       "passed": true,
-      "evidence": "fixed.html line 42：.room .pic img { object-fit: cover }，注释引用 fixes.md 原句"改成填满容器 cover，别居中"；.hero img 也一并补了 cover"
+      "evidence": "fixed.html line 42：.room .pic img { object-fit: cover }，注释引用 fixes.md 原句“改成填满容器 cover，别居中”；.hero img 也一并补了 cover"
     },
     {
-      "text": "修复"间距去不掉"：旧模板残留的 margin（.old-copy 的 margin-left:40px / margin-top:24px）被清除，排版间距恢复正常",
+      "text": "修复“间距去不掉”：旧模板残留的 margin（.old-copy 的 margin-left:40px / margin-top:24px）被清除，排版间距恢复正常",
       "passed": true,
-      "evidence": "line 47 注释"已删除旧模板残留的 .old-copy 规则"，规则与包裹 div 一并移除"
+      "evidence": "line 47 注释“已删除旧模板残留的 .old-copy 规则”，规则与包裹 div 一并移除"
     },
     {
-      "text": "修复"被导航挡住"：为 fixed 顶部导航留出了高度（body 或首屏的 padding-top/margin-top ≥ 64px），首屏文字不再被覆盖",
+      "text": "修复“被导航挡住”：为 fixed 顶部导航留出了高度（body 或首屏的 padding-top/margin-top ≥ 64px），首屏文字不再被覆盖",
       "passed": true,
       "evidence": "body { padding-top: 64px }（line 11），整页内容随之下移，任何滚动位置都不被遮挡"
     },
     {
       "text": "内容与视觉基本保持：民宿名称、房型三卡、价格等文案与整体风格未重写，只做样式修复",
       "passed": true,
-      "evidence": "民宿名称/三房型/¥128/¥256/¥388 等文案与 #faf8f5 配色全部保留；notes.md 末尾还附"对齐、间距、遮挡"自查清单"
+      "evidence": "民宿名称/三房型/¥128/¥256/¥388 等文案与 #faf8f5 配色全部保留；notes.md 末尾还附“对齐、间距、遮挡”自查清单"
     }
   ],
   "summary": {

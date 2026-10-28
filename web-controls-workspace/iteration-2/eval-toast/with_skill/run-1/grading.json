@@ -1,0 +1,27 @@
+{
+  "run": "with_skill",
+  "eval_id": 5,
+  "expectations": [
+    {
+      "text": "使用了轻提示 Toast（出现几秒自动消失），而不是 alert()/弹窗 Modal 这类打断式反馈",
+      "passed": true,
+      "evidence": "右上角 Toast，无 alert() 与 Modal，浮层不拦截点击"
+    },
+    {
+      "text": "Toast 说清了位置（如右上角/底部居中）与消失时机（约 2-3 秒自动消失）",
+      "passed": true,
+      "evidence": "右上角滑入，3 秒自动消失（带剩余时间进度条），可点 × 关闭、悬停暂停计时"
+    },
+    {
+      "text": "没有用阻塞式交互（保存后页面仍可继续操作）",
+      "passed": true,
+      "evidence": "fixed 浮层不遮挡表单，保存后可继续操作；连续保存复用同一条不堆叠"
+    },
+    {
+      "text": "若选了带操作的轻提示 Snackbar，附带可立即执行的按钮（如“查看”）也视为合格",
+      "passed": true,
+      "evidence": "按断言第 4 条，纯 Toast（无附操作）即合格；notes.md 对比 5 个提示等级并给排除理由"
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}

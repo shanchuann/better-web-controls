@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月度经营报告 · 2026年10月</title>
+<style>
+  :root {
+    --ink: #1a2233;
+    --ink-2: #5a6478;
+    --ink-3: #8b93a5;
+    --line: #e6e9f0;
+    --bg: #f4f6fa;
+    --card: #ffffff;
+    --blue: #2f54eb;
+    --blue-soft: #eef2ff;
+    --orange: #f59e0b;
+    --green: #16a34a;
+    --red: #dc2626;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 1080px; margin: 0 auto; padding: 40px 28px 64px; }
+
+  /* ===== 头部 ===== */
+  .header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    padding-bottom: 20px; border-bottom: 2px solid var(--ink);
+    margin-bottom: 28px;
+  }
+  .header h1 { font-size: 26px; font-weight: 700; letter-spacing: 1px; }
+  .header .sub { color: var(--ink-2); font-size: 14px; margin-top: 4px; }
+  .header .meta { text-align: right; color: var(--ink-3); font-size: 13px; }
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; margin-left: 8px; vertical-align: 3px;
+  }
+  .badge.up { background: #e7f6ec; color: var(--green); }
+
+  /* ===== 通用卡片 ===== */
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 22px 24px; margin-bottom: 20px;
+    box-shadow: 0 1px 2px rgba(26,34,51,.04);
+  }
+  .card h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .card .desc { font-size: 13px; color: var(--ink-3); margin-bottom: 16px; }
+  .section-title { display: flex; align-items: center; gap: 8px; }
+  .section-title::before {
+    content: ""; width: 4px; height: 16px; border-radius: 2px; background: var(--blue);
+  }
+
+  /* ===== KPI 卡片 ===== */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+  .kpi {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .kpi .label { font-size: 13px; color: var(--ink-2); }
+  .kpi .value { font-size: 30px; font-weight: 700; margin: 4px 0 2px; letter-spacing: -.5px; }
+  .kpi .value small { font-size: 15px; font-weight: 500; color: var(--ink-2); margin-left: 2px; }
+  .kpi .delta { font-size: 13px; font-weight: 600; }
+  .delta.up { color: var(--green); }
+  .delta.down { color: var(--red); }
+  .kpi.hero { background: linear-gradient(135deg, #1e3a8a 0%, #2f54eb 100%); border: none; color: #fff; }
+  .kpi.hero .label, .kpi.hero .value small { color: rgba(255,255,255,.75); }
+  .kpi.hero .delta.up { color: #86efac; }
+
+  /* ===== 布局 ===== */
+  .grid-2 { display: grid; grid-template-columns: 7fr 5fr; gap: 20px; }
+  @media (max-width: 860px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+
+  /* ===== 图表 ===== */
+  svg text { font-family: inherit; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; }
+  .legend .item { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
+  .legend .dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ===== 产品线占比列表 ===== */
+  .pl-rows { margin-top: 8px; }
+  .pl-row { margin-bottom: 12px; }
+  .pl-row .head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .pl-row .head b { font-weight: 600; }
+  .pl-row .head span { color: var(--ink-2); }
+  .pl-track { height: 8px; border-radius: 4px; background: #eef1f6; overflow: hidden; }
+  .pl-fill { height: 100%; border-radius: 4px; width: 0; transition: width 1s ease; }
+
+  /* ===== 渠道漏斗 ===== */
+  .funnel { margin: 8px 0 4px; }
+  .fun-stage { margin-bottom: 10px; }
+  .fun-stage .head { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 4px; }
+  .fun-stage .head .name { font-weight: 600; }
+  .fun-stage .head .num { color: var(--ink-2); }
+  .fun-stage .head .conv { color: var(--blue); font-weight: 600; margin-left: 8px; }
+  .fun-track { height: 26px; background: #eef1f6; border-radius: 6px; overflow: hidden; }
+  .fun-fill {
+    height: 100%; border-radius: 6px; color: #fff; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: flex-end; padding-right: 10px;
+    min-width: 34px; transition: width 1s ease;
+  }
+  .fun-note { font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+
+  /* ===== 渠道表格 ===== */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+  th { color: var(--ink-3); font-weight: 600; font-size: 12px; background: #fafbfd; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .risk { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+  .risk.high { background: #fdecec; color: var(--red); }
+  .risk.mid  { background: #fef4e2; color: #b45309; }
+  .risk.low  { background: #e7f6ec; color: var(--green); }
+
+  /* ===== 结论 ===== */
+  .summary { border-left: 4px solid var(--blue); background: var(--blue-soft); }
+  .summary ul { padding-left: 20px; font-size: 14px; color: var(--ink-2); }
+  .summary li { margin-bottom: 6px; }
+  .summary li b { color: var(--ink); }
+  .footer { text-align: center; color: var(--ink-3); font-size: 12px; margin-top: 32px; }
+
+  @media print {
+    body { background: #fff; }
+    .card, .kpi { box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="header">
+    <div>
+      <h1>月度经营报告 <span class="badge up">环比 +12%</span></h1>
+      <div class="sub">2026 年 10 月 · 管理层专报 · 机密</div>
+    </div>
+    <div class="meta">
+      报告周期：2026-10-01 ~ 2026-10-31<br>
+      出品：经营分析部
+    </div>
+  </header>
+
+  <!-- KPI 概览 -->
+  <div class="kpis">
+    <div class="kpi hero">
+      <div class="label">本月营收</div>
+      <div class="value">480<small>万元</small></div>
+      <div class="delta up">▲ 环比 +12.0%</div>
+    </div>
+    <div class="kpi">
+      <div class="label">近12个月累计营收</div>
+      <div class="value">4,656<small>万元</small></div>
+      <div class="delta up">▲ 同比 +23.5%</div>
+    </div>
+    <div class="kpi">
+      <div class="label">整体付费转化率</div>
+      <div class="value">3.1<small>%</small></div>
+      <div class="delta up">▲ 环比 +0.4pt</div>
+    </div>
+    <div class="kpi">
+      <div class="label">渠道综合流失率</div>
+      <div class="value">96.9<small>%</small></div>
+      <div class="delta down">▼ 环比 -0.4pt（改善）</div>
+    </div>
+  </div>
+
+  <!-- 走势 + 占比 -->
+  <div class="grid-2">
+    <div class="card">
+      <h2 class="section-title">近 12 个月营收走势</h2>
+      <div class="desc">单位：万元 · 虚线为 12 期线性趋势</div>
+      <div id="trend"></div>
+    </div>
+    <div class="card">
+      <h2 class="section-title">各产品线营收占比</h2>
+      <div class="desc">本月合计 480 万元</div>
+      <div id="donut" style="display:flex;justify-content:center;"></div>
+      <div class="legend" id="donut-legend"></div>
+      <div class="pl-rows" id="pl-rows"></div>
+    </div>
+  </div>
+
+  <!-- 渠道转化流失 -->
+  <div class="card">
+    <h2 class="section-title">各渠道转化 / 流失数据</h2>
+    <div class="desc">本月全渠道漏斗（自访客至付费订单）</div>
+    <div class="funnel" id="funnel"></div>
+    <div class="fun-note">流失率 = 1 − 该环节转化率；流失主要发生在“注册 → 试用”环节，占全部流失的 58%。</div>
+    <div style="overflow-x:auto; margin-top:18px;">
+      <table>
+        <thead>
+          <tr>
+            <th>渠道</th>
+            <th class="num">访客（万）</th>
+            <th class="num">付费转化率</th>
+            <th class="num">流失率</th>
+            <th class="num">流失主环节</th>
+            <th>风险</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>付费投放</td><td class="num">52.0</td><td class="num">2.4%</td>
+            <td class="num">97.6%</td><td>注册 → 试用</td>
+            <td><span class="risk high">高</span></td>
+          </tr>
+          <tr>
+            <td>自然流量</td><td class="num">38.0</td><td class="num">3.6%</td>
+            <td class="num">96.4%</td><td>试用 → 付费</td>
+            <td><span class="risk mid">中</span></td>
+          </tr>
+          <tr>
+            <td>合作伙伴</td><td class="num">9.5</td><td class="num">6.8%</td>
+            <td class="num">93.2%</td><td>试用 → 付费</td>
+            <td><span class="risk low">低</span></td>
+          </tr>
+          <tr>
+            <td>私域运营</td><td class="num">6.5</td><td class="num">5.2%</td>
+            <td class="num">94.8%</td><td>注册 → 试用</td>
+            <td><span class="risk mid">中</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 管理层要点 -->
+  <div class="card summary">
+    <h2 class="section-title" style="margin-bottom:10px;">管理层要点</h2>
+    <ul>
+      <li><b>营收创新高：</b>本月营收 480 万元，环比 +12%，连续 3 个月保持双位数增长，年度目标完成率达 <b>89%</b>。</li>
+      <li><b>结构健康：</b>SaaS 订阅占比提升至 <b>27%</b>（上月 24%），收入质量持续改善。</li>
+      <li><b>核心风险：</b>“付费投放”渠道转化率仅 <b>2.4%</b>，注册→试用环节流失严重，建议 11 月重点优化落地页与试用引导。</li>
+      <li><b>机会点：</b>“合作伙伴”渠道转化率 <b>6.8%</b> 为全渠道最高，建议加大渠道返点投入、复制该模式。</li>
+    </ul>
+  </div>
+
+  <div class="footer">本报告数据截至 2026-10-31，由经营分析部自动生成 · 内部资料，请勿外传</div>
+</div>
+
+<script>
+/* ================= 数据 ================= */
+const MONTHS = ['去年11月','12月','1月','2月','3月','4月','5月','6月','7月','8月','9月','10月'];
+const REVENUE = [352, 361, 375, 368, 382, 396, 405, 391, 402, 415, 429, 480]; // 万元
+
+const PRODUCTS = [
+  { name: '智能硬件', value: 182, color: '#2f54eb' },
+  { name: 'SaaS 订阅', value: 130, color: '#f59e0b' },
+  { name: '企业服务', value: 101, color: '#10b981' },
+  { name: '增值服务', value: 67,  color: '#8b5cf6' }
+];
+
+const FUNNEL = [
+  { name: '访问',     value: 106.0, pct: 100  },
+  { name: '注册',     value: 44.5,  pct: 42.0 },
+  { name: '试用',     value: 19.1,  pct: 18.0 },
+  { name: '付费订单', value: 3.28,  pct: 3.1  }
+];
+
+/* ================= 工具 ================= */
+const fmt = n => n.toLocaleString('zh-CN');
+const svgEl = (tag, attrs) => {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+};
+
+/* ================= 1. 营收走势（SVG 折线 + 面积） ================= */
+function renderTrend() {
+  const W = 640, H = 280, PL = 48, PR = 16, PT = 18, PB = 40;
+  const minV = 330, maxV = 500;
+  const px = i => PL + i * (W - PL - PR) / (REVENUE.length - 1);
+  const py = v => PT + (1 - (v - minV) / (maxV - minV)) * (H - PT - PB);
+
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%' });
+  svg.style.display = 'block';
+
+  // 网格与 Y 轴刻度
+  for (let v = minV; v <= maxV; v += 40) {
+    const y = py(v);
+    svg.appendChild(svgEl('line', { x1: PL, x2: W - PR, y1: y, y2: y, stroke: '#eef1f6', 'stroke-width': 1 }));
+    const t = svgEl('text', { x: PL - 8, y: y + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#8b93a5' });
+    t.textContent = v;
+    svg.appendChild(t);
+  }
+
+  // 线性趋势线（虚线）
+  const n = REVENUE.length;
+  const mx = REVENUE.reduce((s, v) => s + v, 0) / n;
+  let sxy = 0, sxx = 0;
+  REVENUE.forEach((v, i) => { sxy += i * (v - mx); sxx += i * i; });
+  const slope = sxy / sxx, icept = mx - slope * (n - 1) / 2;
+  svg.appendChild(svgEl('line', {
+    x1: px(0), y1: py(icept), x2: px(n - 1), y2: py(icept + slope * (n - 1)),
+    stroke: '#b9c2d4', 'stroke-width': 1.5, 'stroke-dasharray': '5 4'
+  }));
+
+  // 面积
+  const pts = REVENUE.map((v, i) => [px(i), py(v)]);
+  const lineD = 'M' + pts.map(p => p.join(',')).join(' L');
+  const areaD = lineD + ` L${px(n - 1)},${H - PB} L${px(0)},${H - PB} Z`;
+  svg.appendChild(svgEl('path', { d: areaD, fill: 'rgba(47,84,235,.08)' }));
+
+  // 折线
+  svg.appendChild(svgEl('path', { d: lineD, fill: 'none', stroke: '#2f54eb', 'stroke-width': 2.5, 'stroke-linejoin': 'round', 'stroke-linecap': 'round' }));
+
+  // 数据点 + X 轴标签
+  pts.forEach(([x, y], i) => {
+    const last = i === n - 1;
+    svg.appendChild(svgEl('circle', { cx: x, cy: y, r: last ? 5 : 3, fill: '#fff', stroke: '#2f54eb', 'stroke-width': 2 }));
+    const t = svgEl('text', { x, y: H - PB + 18, 'text-anchor': 'middle', 'font-size': 11, fill: last ? '#2f54eb' : '#8b93a5', 'font-weight': last ? 700 : 400 });
+    t.textContent = MONTHS[i];
+    svg.appendChild(t);
+    const v = svgEl('text', { x, y: y - 10, 'text-anchor': 'middle', 'font-size': 11, fill: last ? '#1a2233' : '#5a6478', 'font-weight': last ? 700 : 400 });
+    v.textContent = REVENUE[i];
+    svg.appendChild(v);
+  });
+
+  document.getElementById('trend').appendChild(svg);
+}
+
+/* ================= 2. 产品线占比（SVG 环形图） ================= */
+function renderDonut() {
+  const total = PRODUCTS.reduce((s, p) => s + p.value, 0);
+  const size = 190, r = 70, cx = size / 2, cy = size / 2;
+  const C = 2 * Math.PI * r;
+  const svg = svgEl('svg', { viewBox: `0 0 ${size} ${size}`, width: size, height: size });
+
+  svg.appendChild(svgEl('circle', { cx, cy, r, fill: 'none', stroke: '#eef1f6', 'stroke-width': 22 }));
+
+  let offset = 0;
+  PRODUCTS.forEach(p => {
+    const frac = p.value / total, len = C * frac;
+    svg.appendChild(svgEl('circle', {
+      cx, cy, r, fill: 'none', stroke: p.color, 'stroke-width': 22,
+      'stroke-dasharray': `${len - 2.5} ${C - len + 2.5}`,
+      'stroke-dashoffset': -offset,
+      transform: `rotate(-90 ${cx} ${cy})`,
+      'stroke-linecap': 'butt'
+    }));
+    offset += len;
+  });
+
+  // 中心文字
+  const t1 = svgEl('text', { x: cx, y: cy - 4, 'text-anchor': 'middle', 'font-size': 22, 'font-weight': 700, fill: '#1a2233' });
+  t1.textContent = '480万';
+  const t2 = svgEl('text', { x: cx, y: cy + 18, 'text-anchor': 'middle', 'font-size': 11, fill: '#8b93a5' });
+  t2.textContent = '本月总营收';
+  svg.appendChild(t1); svg.appendChild(t2);
+
+  document.getElementById('donut').appendChild(svg);
+
+  // 图例 + 进度条
+  const legend = document.getElementById('donut-legend');
+  const rows = document.getElementById('pl-rows');
+  PRODUCTS.forEach(p => {
+    const pct = (p.value / total * 100);
+    legend.insertAdjacentHTML('beforeend',
+      `<div class="item"><span class="dot" style="background:${p.color}"></span>${p.name} ${pct.toFixed(1)}%</div>`);
+    rows.insertAdjacentHTML('beforeend',
+      `<div class="pl-row">
+        <div class="head"><b>${p.name}</b><span>${p.value} 万元 · ${pct.toFixed(1)}%</span></div>
+        <div class="pl-track"><div class="pl-fill" style="background:${p.color}" data-w="${pct}"></div></div>
+      </div>`);
+  });
+}
+
+/* ================= 3. 转化漏斗（CSS 条形） ================= */
+function renderFunnel() {
+  const wrap = document.getElementById('funnel');
+  const colors = ['#2f54eb', '#4c6ef5', '#748ffc', '#f59e0b'];
+  FUNNEL.forEach((s, i) => {
+    const prev = i === 0 ? null : FUNNEL[i - 1];
+    const conv = prev ? (s.value / prev.value * 100) : null;
+    wrap.insertAdjacentHTML('beforeend',
+      `<div class="fun-stage">
+        <div class="head">
+          <span class="name">${s.name}</span>
+          <span class="num">${s.value} 万${conv !== null ? `<span class="conv">环节转化 ${conv.toFixed(1)}%</span>` : ''}</span>
+        </div>
+        <div class="fun-track">
+          <div class="fun-fill" style="background:${colors[i]};width:${Math.max(s.pct, 3.1)}%" data-w="${s.pct}">${s.pct}%</div>
+        </div>
+      </div>`);
+  });
+}
+
+/* ================= 入场动画 ================= */
+function animate() {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.pl-fill, .fun-fill').forEach(el => {
+      el.style.width = el.dataset.w + '%';
+    });
+  });
+}
+
+renderTrend();
+renderDonut();
+renderFunnel();
+animate();
+</script>
+</body>
+</html>

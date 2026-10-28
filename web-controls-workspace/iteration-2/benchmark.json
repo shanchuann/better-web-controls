@@ -1,0 +1,22 @@
+{
+  "benchmark": "better-web-controls",
+  "date": "2026-10-28",
+  "scope": "全部 9 个场景（iteration-1: eval 0-2, iteration-2: eval 3-8），每场景 4 条断言",
+  "summary": {
+    "with_skill": { "passed": 36, "total": 36, "pass_rate": 1.0 },
+    "without_skill": { "passed": 31, "total": 36, "pass_rate": 0.861 },
+    "delta_pp": 13.9
+  },
+  "per_eval": [
+    { "id": 0, "name": "eval-navbar", "with_skill": "4/4", "without_skill": "3/4" },
+    { "id": 1, "name": "eval-fixpage", "with_skill": "4/4", "without_skill": "4/4" },
+    { "id": 2, "name": "eval-carousel", "with_skill": "4/4", "without_skill": "4/4" },
+    { "id": 3, "name": "eval-dropdown", "with_skill": "4/4", "without_skill": "3/4" },
+    { "id": 4, "name": "eval-confirm", "with_skill": "4/4", "without_skill": "4/4" },
+    { "id": 5, "name": "eval-toast", "with_skill": "4/4", "without_skill": "4/4" },
+    { "id": 6, "name": "eval-chart", "with_skill": "4/4", "without_skill": "3/4" },
+    { "id": 7, "name": "eval-empty", "with_skill": "4/4", "without_skill": "3/4" },
+    { "id": 8, "name": "eval-login", "with_skill": "4/4", "without_skill": "3/4" }
+  ],
+  "notes": "不带技能组的 5 个失败项中 4 个为 notes.md 选型笔记断言（无候选对比/理由），1 个为页面行为（空状态无结果场景添加了错误的大按钮）。"
+}

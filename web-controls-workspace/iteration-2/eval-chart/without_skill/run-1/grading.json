@@ -1,0 +1,27 @@
+{
+  "run": "without_skill",
+  "eval_id": 6,
+  "expectations": [
+    {
+      "text": "图表选型匹配场景：趋势→折线图、占比→饼图/环形图（类别≤5）、转化流失→漏斗图，而不是全用柱状图或全用饼图拼凑",
+      "passed": true,
+      "evidence": "折线（12 个月走势）、环形（4 条产品线）、CSS 漏斗（访问→注册→试用→付费）选型均正确"
+    },
+    {
+      "text": "页面有清晰的信息层级：顶部 KPI 结果、中部趋势、底部明细/原因（结果→趋势→原因），不是图表拼盘",
+      "passed": true,
+      "evidence": "KPI 区、折线、环形+漏斗+渠道明细表，层级清晰"
+    },
+    {
+      "text": "KPI 卡每张只亮一个指标，并标注同比/环比",
+      "passed": true,
+      "evidence": "4 张 KPI 卡各呈现一个指标，带涨跌箭头与环比徽章"
+    },
+    {
+      "text": "notes.md 给出每个数据对应的图表选型理由",
+      "passed": false,
+      "evidence": "notes.md 描述了结构与数据设定，但未给出各数据的图表选型理由与备选对比"
+    }
+  ],
+  "summary": { "passed": 3, "failed": 1, "total": 4, "pass_rate": 0.75 }
+}

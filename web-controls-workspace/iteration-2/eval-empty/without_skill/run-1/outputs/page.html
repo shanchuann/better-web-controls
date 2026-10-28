@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>客户管理 · 简舟 CRM</title>
+<style>
+  :root {
+    --bg: #f4f6f9;
+    --panel: #ffffff;
+    --border: #e4e8ef;
+    --text: #1f2329;
+    --text-2: #5f6672;
+    --text-3: #9aa1ad;
+    --primary: #3b5bfd;
+    --primary-hover: #2f4be0;
+    --primary-weak: #eef1ff;
+    --green: #16a34a;
+    --green-weak: #e8f7ee;
+    --amber: #b45309;
+    --amber-weak: #fdf3e3;
+    --gray-weak: #f1f3f6;
+    --radius: 12px;
+    --shadow: 0 1px 2px rgba(31, 35, 41, .04), 0 4px 16px rgba(31, 35, 41, .05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  button { font: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 6px; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* ---------- 侧边栏 ---------- */
+  .sidebar {
+    width: 208px; flex-shrink: 0;
+    background: #1c2333; color: #c6cddb;
+    padding: 20px 12px; display: flex; flex-direction: column; gap: 4px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; padding: 6px 10px 20px; color: #fff; font-weight: 600; font-size: 16px; }
+  .logo-mark { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(135deg, #5b78ff, #3b5bfd); display: grid; place-items: center; color: #fff; font-size: 13px; font-weight: 700; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; color: #aeb6c6; background: none; border: 0; width: 100%; text-align: left; }
+  .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+  .nav-item.active { background: var(--primary); color: #fff; }
+  .nav-item .ico { width: 16px; height: 16px; opacity: .9; }
+
+  /* ---------- 主区域 ---------- */
+  .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .topbar {
+    background: var(--panel); border-bottom: 1px solid var(--border);
+    padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .crumbs { color: var(--text-3); font-size: 13px; }
+  .crumbs b { color: var(--text); font-size: 16px; font-weight: 600; margin-left: 6px; }
+  .topbar-actions { display: flex; gap: 10px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); font-weight: 500;
+    transition: background .15s, border-color .15s, box-shadow .15s;
+  }
+  .btn:hover { background: var(--gray-weak); }
+  .btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .btn.primary:hover { background: var(--primary-hover); }
+  .btn.ghost { border-color: transparent; background: transparent; color: var(--primary); }
+  .btn.ghost:hover { background: var(--primary-weak); }
+  .btn svg { flex-shrink: 0; }
+
+  .content { padding: 20px 28px 40px; }
+
+  /* ---------- 演示开关 ---------- */
+  .demo-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 16px; font-size: 13px; color: var(--text-3);
+  }
+  .seg { display: inline-flex; background: #e9edf3; border-radius: 8px; padding: 3px; gap: 2px; }
+  .seg button {
+    border: 0; background: transparent; padding: 5px 14px; border-radius: 6px;
+    color: var(--text-2); font-size: 13px;
+  }
+  .seg button[aria-pressed="true"] { background: #fff; color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(31,35,41,.1); }
+
+  /* ---------- 工具栏 ---------- */
+  .toolbar {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 16px; box-shadow: var(--shadow);
+  }
+  .search { position: relative; flex: 1; min-width: 220px; max-width: 360px; }
+  .search svg { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-3); pointer-events: none; }
+  .search input {
+    width: 100%; padding: 8px 32px 8px 34px; border: 1px solid var(--border); border-radius: 8px;
+    font: inherit; color: var(--text); background: var(--bg);
+  }
+  .search input:focus { border-color: var(--primary); background: #fff; outline: none; box-shadow: 0 0 0 3px rgba(59,91,253,.12); }
+  .search .clear {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    border: 0; background: none; color: var(--text-3); padding: 4px; border-radius: 6px; display: none;
+  }
+  .search .clear:hover { color: var(--text); background: var(--gray-weak); }
+  .search.has-value .clear { display: block; }
+  select {
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    font: inherit; color: var(--text); background: var(--panel);
+  }
+  .toolbar .link-clear { border: 0; background: none; color: var(--text-3); padding: 6px 8px; border-radius: 6px; }
+  .toolbar .link-clear:hover { color: var(--primary); background: var(--primary-weak); }
+
+  /* ---------- 列表面板 ---------- */
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); overflow: hidden;
+  }
+  .panel-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px; border-bottom: 1px solid var(--border); color: var(--text-2); font-size: 13px;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 12px 20px; border-bottom: 1px solid var(--border); }
+  th { color: var(--text-3); font-weight: 500; font-size: 12px; background: #fafbfd; white-space: nowrap; }
+  tbody tr:hover { background: #fafbfd; }
+  tbody tr:last-child td { border-bottom: 0; }
+  .cell-name { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: grid; place-items: center; color: #fff; font-size: 13px;
+  }
+  .pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 10px; border-radius: 99px; font-size: 12px; }
+  .pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .pill.s1 { color: var(--amber); background: var(--amber-weak); }
+  .pill.s2 { color: var(--primary); background: var(--primary-weak); }
+  .pill.s3 { color: var(--green); background: var(--green-weak); }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 5px; font-size: 12px; background: var(--gray-weak); color: var(--text-2); margin-right: 4px; }
+  .muted { color: var(--text-3); }
+
+  /* ---------- 空状态（共用骨架） ---------- */
+  .empty {
+    display: none; flex-direction: column; align-items: center; text-align: center;
+    padding: 64px 24px 72px;
+  }
+  .empty.show { display: flex; }
+  .empty .art { margin-bottom: 20px; }
+  .empty h2 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .empty .desc { color: var(--text-2); max-width: 460px; }
+  .empty .desc .hl { color: var(--text); font-weight: 500; }
+  .empty .actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; justify-content: center; }
+  .empty .tips { margin-top: 26px; padding-top: 22px; border-top: 1px dashed var(--border); color: var(--text-3); font-size: 13px; }
+  .empty .tips ul { list-style: none; display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+  .empty .tips li { display: flex; align-items: center; gap: 6px; }
+
+  /* 首次进入：步骤引导 */
+  .steps { display: flex; gap: 12px; margin-top: 26px; flex-wrap: wrap; justify-content: center; }
+  .step {
+    width: 172px; padding: 14px 14px 16px; border: 1px solid var(--border); border-radius: 10px;
+    background: #fafbfd; text-align: left;
+  }
+  .step .num {
+    width: 22px; height: 22px; border-radius: 50%; background: var(--primary-weak); color: var(--primary);
+    display: grid; place-items: center; font-size: 12px; font-weight: 600; margin-bottom: 8px;
+  }
+  .step b { display: block; font-size: 13px; font-weight: 600; }
+  .step span { font-size: 12px; color: var(--text-3); }
+  .guide-link { margin-top: 18px; }
+
+  /* 筛选条件 chips */
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 6px 3px 12px; border-radius: 99px; background: var(--gray-weak);
+    color: var(--text-2); font-size: 12px;
+  }
+  .chip button { border: 0; background: none; color: var(--text-3); padding: 2px; border-radius: 50%; line-height: 1; }
+  .chip button:hover { color: var(--text); background: #e0e4ea; }
+
+  /* toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 32px; transform: translateX(-50%) translateY(12px);
+    background: #2a3040; color: #fff; padding: 9px 18px; border-radius: 8px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50;
+    box-shadow: 0 6px 20px rgba(0,0,0,.2);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 860px) {
+    .sidebar { display: none; }
+    .content { padding: 14px 14px 32px; }
+    .topbar { padding: 12px 14px; }
+    .search { max-width: none; }
+    th:nth-child(3), td:nth-child(3), th:nth-child(7), td:nth-child(7) { display: none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" aria-label="主导航">
+    <div class="logo"><span class="logo-mark">舟</span>简舟 CRM</div>
+    <button class="nav-item">工作台</button>
+    <button class="nav-item active" aria-current="page">客户管理</button>
+    <button class="nav-item">商机</button>
+    <button class="nav-item">合同</button>
+    <button class="nav-item">数据报表</button>
+    <button class="nav-item">设置</button>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="crumbs">客户管理 / <b>全部客户</b></div>
+      <div class="topbar-actions">
+        <button class="btn" id="btnImport">批量导入</button>
+        <button class="btn primary" data-new-customer>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          新建客户
+        </button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- 演示开关：仅用于预览三种场景 -->
+      <div class="demo-bar">
+        <span>预览场景（演示开关，实际产品中不存在）：</span>
+        <div class="seg" role="group" aria-label="切换空状态场景">
+          <button data-demo="first" aria-pressed="true">新用户首次进入</button>
+          <button data-demo="nores" aria-pressed="false">搜索/筛选无结果</button>
+          <button data-demo="live" aria-pressed="false">正常有数据</button>
+        </div>
+      </div>
+
+      <!-- 工具栏 -->
+      <div class="toolbar">
+        <div class="search" id="searchWrap">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input type="search" id="searchInput" placeholder="搜索客户名称、公司或电话" aria-label="搜索客户" />
+          <button class="clear" id="searchClear" aria-label="清空搜索词">✕</button>
+        </div>
+        <select id="ownerSel" aria-label="按归属人筛选">
+          <option value="all">全部归属人</option>
+          <option value="张伟">张伟</option>
+          <option value="李娜">李娜</option>
+          <option value="王强">王强</option>
+        </select>
+        <select id="statusSel" aria-label="按客户状态筛选">
+          <option value="all">全部状态</option>
+          <option value="潜在">潜在</option>
+          <option value="跟进中">跟进中</option>
+          <option value="已成交">已成交</option>
+        </select>
+        <select id="tagSel" aria-label="按标签筛选">
+          <option value="all">全部标签</option>
+          <option value="重点">重点</option>
+          <option value="新签">新签</option>
+          <option value="流失风险">流失风险</option>
+        </select>
+        <button class="link-clear" id="btnClearFilters" hidden>清空筛选</button>
+      </div>
+
+      <!-- 列表面板：三种视图互斥切换 -->
+      <section class="panel">
+
+        <!-- 视图 A：新用户首次进入 -->
+        <div class="empty show" id="viewFirst" role="status">
+          <div class="art" aria-hidden="true">
+            <svg width="132" height="112" viewBox="0 0 132 112" fill="none">
+              <ellipse cx="66" cy="94" rx="52" ry="8" fill="#e9edf3"/>
+              <path d="M22 34h30l8 10h42a6 6 0 0 1 6 6v34a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V40a6 6 0 0 1 6-6Z" fill="#dfe6ff"/>
+              <path d="M22 50h86a6 6 0 0 1 6 6v28a6 6 0 0 1-6 6H22a6 6 0 0 1-6-6V56a6 6 0 0 1 6-6Z" fill="#c4d0ff"/>
+              <circle cx="94" cy="64" r="17" fill="#3b5bfd"/>
+              <path d="M94 56v16M86 64h16" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/>
+              <path d="M30 22l2.2 5.4L37.6 29l-5.4 2.2L30 36.6l-2.2-5.4L22.4 29l5.4-1.6L30 22Z" fill="#ffd166"/>
+              <path d="M110 20l1.6 3.8 3.8 1.6-3.8 1.6-1.6 3.8-1.6-3.8-3.8-1.6 3.8-1.6L110 20Z" fill="#b9c6ff"/>
+              <circle cx="116" cy="46" r="3" fill="#dfe6ff"/>
+            </svg>
+          </div>
+          <h2>还没有客户</h2>
+          <p class="desc">你的客户库目前是空的。可以先创建第一位客户开始跟进，也可以从 Excel 或其他系统一次性导入历史客户数据。</p>
+          <div class="actions">
+            <button class="btn primary" data-new-customer>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              新建第一个客户
+            </button>
+            <button class="btn" id="btnImportEmpty">批量导入客户</button>
+          </div>
+          <div class="steps" aria-label="上手步骤">
+            <div class="step"><span class="num">1</span><b>新建或导入</b><span>录入客户的基本信息与联系方式</span></div>
+            <div class="step"><span class="num">2</span><b>分配归属人</b><span>指派给销售同事负责跟进</span></div>
+            <div class="step"><span class="num">3</span><b>记录跟进</b><span>沉淀沟通记录，推进商机转化</span></div>
+          </div>
+          <button class="btn ghost guide-link" id="btnGuide">不知道从哪开始？查看 3 分钟上手指南 →</button>
+        </div>
+
+        <!-- 视图 B：搜索/筛选无结果 -->
+        <div class="empty" id="viewNores" role="status" aria-live="polite">
+          <div class="art" aria-hidden="true">
+            <svg width="132" height="112" viewBox="0 0 132 112" fill="none">
+              <ellipse cx="66" cy="96" rx="46" ry="7" fill="#e9edf3"/>
+              <rect x="30" y="18" width="58" height="72" rx="6" fill="#f1f4f9" stroke="#d8dfe9" stroke-width="2"/>
+              <path d="M42 36h34M42 48h34M42 60h22" stroke="#c9d2de" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="86" cy="62" r="18" fill="#fff" stroke="#3b5bfd" stroke-width="3.4"/>
+              <path d="M99 76l11 11" stroke="#3b5bfd" stroke-width="4" stroke-linecap="round"/>
+              <path d="M80 62l5 5 8-9" stroke="#c9d2de" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M100 26l1.8 4.2 4.2 1.8-4.2 1.8-1.8 4.2-1.8-4.2-4.2-1.8 4.2-1.8L100 26Z" fill="#ffd166"/>
+            </svg>
+          </div>
+          <h2>没有找到匹配的客户</h2>
+          <p class="desc" id="noresText"></p>
+          <div class="chips" id="noresChips"></div>
+          <div class="actions">
+            <button class="btn primary" id="btnResetFromEmpty">清空搜索和筛选条件</button>
+            <button class="btn" data-new-customer>新建客户</button>
+          </div>
+          <div class="tips">
+            <ul>
+              <li>💡 检查关键词是否拼写正确</li>
+              <li>🔍 试试更短的关键词，如只输入姓氏</li>
+              <li>🎚️ 放宽归属人、状态或标签条件</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- 视图 C：正常有数据 -->
+        <div id="viewTable" hidden>
+          <div class="panel-head"><span id="countText"></span><span class="muted">按最近更新排序</span></div>
+          <table>
+            <thead>
+              <tr>
+                <th>客户</th><th>公司</th><th>电话</th><th>归属人</th><th>状态</th><th>标签</th><th>最近更新</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+
+      </section>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- 模拟数据 ---------------- */
+  var customers = [
+    { name: "陈晨", company: "星辰传媒", phone: "138****6210", owner: "张伟", status: "跟进中", tags: ["重点"],            updated: "今天 10:24", hue: "#3b5bfd" },
+    { name: "李慧", company: "慧联科技", phone: "139****3308", owner: "李娜", status: "已成交", tags: ["新签"],            updated: "昨天 17:02", hue: "#0ea5a4" },
+    { name: "王一鸣", company: "鸣盛物流", phone: "137****9021", owner: "张伟", status: "潜在",  tags: [],                  updated: "3 天前",     hue: "#f59e0b" },
+    { name: "赵雪", company: "雪松设计", phone: "135****5566", owner: "王强", status: "跟进中", tags: ["流失风险"],        updated: "上周五",     hue: "#8b5cf6" },
+    { name: "刘畅", company: "畅玩互娱", phone: "150****8899", owner: "李娜", status: "已成交", tags: ["新签", "重点"],   updated: "10 月 12 日", hue: "#ef5da8" },
+    { name: "孙磊", company: "磊拓教育", phone: "186****4032", owner: "王强", status: "潜在",  tags: [],                  updated: "9 月 30 日", hue: "#64748b" }
+  ];
+
+  var state = { demo: "first", q: "", owner: "all", status: "all", tag: "all" };
+
+  var $ = function (id) { return document.getElementById(id); };
+  var el = {
+    searchWrap: $("searchWrap"), searchInput: $("searchInput"), searchClear: $("searchClear"),
+    ownerSel: $("ownerSel"), statusSel: $("statusSel"), tagSel: $("tagSel"),
+    btnClearFilters: $("btnClearFilters"),
+    viewFirst: $("viewFirst"), viewNores: $("viewNores"), viewTable: $("viewTable"),
+    tbody: $("tbody"), countText: $("countText"),
+    noresText: $("noresText"), noresChips: $("noresChips"),
+    toast: $("toast")
+  };
+  var STATUS_CLASS = { "潜在": "s1", "跟进中": "s2", "已成交": "s3" };
+  var FILTER_LABEL = { owner: "归属人", status: "状态", tag: "标签" };
+
+  /* ---------------- 渲染 ---------------- */
+  function filtered() {
+    var q = state.q.trim().toLowerCase();
+    return customers.filter(function (c) {
+      if (q && (c.name + c.company + c.phone).toLowerCase().indexOf(q) === -1) return false;
+      if (state.owner !== "all" && c.owner !== state.owner) return false;
+      if (state.status !== "all" && c.status !== state.status) return false;
+      if (state.tag !== "all" && c.tags.indexOf(state.tag) === -1) return false;
+      return true;
+    });
+  }
+
+  function hasActiveFilters() {
+    return state.q.trim() !== "" || state.owner !== "all" || state.status !== "all" || state.tag !== "all";
+  }
+
+  function show(view) {
+    el.viewFirst.classList.toggle("show", view === "first");
+    el.viewNores.classList.toggle("show", view === "nores");
+    el.viewTable.hidden = view !== "table";
+  }
+
+  function activeChips() {
+    var chips = [];
+    if (state.q.trim()) chips.push({ key: "q", label: "关键词：" + state.q.trim() });
+    if (state.owner !== "all") chips.push({ key: "owner", label: "归属人：" + state.owner });
+    if (state.status !== "all") chips.push({ key: "status", label: "状态：" + state.status });
+    if (state.tag !== "all") chips.push({ key: "tag", label: "标签：" + state.tag });
+    return chips;
+  }
+
+  function renderChips(container, chips) {
+    container.innerHTML = "";
+    chips.forEach(function (chip) {
+      var span = document.createElement("span");
+      span.className = "chip";
+      var text = document.createElement("span");
+      text.textContent = chip.label;
+      var btn = document.createElement("button");
+      btn.setAttribute("aria-label", "移除筛选条件 " + chip.label);
+      btn.textContent = "✕";
+      btn.addEventListener("click", function () { removeFilter(chip.key); });
+      span.appendChild(text);
+      span.appendChild(btn);
+      container.appendChild(span);
+    });
+  }
+
+  function removeFilter(key) {
+    if (key === "q") { state.q = ""; el.searchInput.value = ""; }
+    else { state[key] = "all"; el[key + "Sel"].value = "all"; }
+    render();
+  }
+
+  function render() {
+    el.btnClearFilters.hidden = !hasActiveFilters();
+    el.searchWrap.classList.toggle("has-value", state.q !== "");
+
+    if (state.demo === "first") {
+      show("first");
+      return;
+    }
+
+    var rows = filtered();
+    if (rows.length === 0) {
+      // 无结果空状态：回显搜索词与筛选条件
+      var chips = activeChips();
+      var sentence;
+      if (chips.length === 0) {
+        sentence = "客户列表为空。";
+      } else if (chips.length === 1) {
+        sentence = "在当前条件下未找到客户：" + chips[0].label + "。";
+      } else {
+        sentence = "同时满足以下 " + chips.length + " 个条件的客户为 0 个，试试移除部分条件：";
+      }
+      el.noresText.innerHTML = "";
+      var p1 = document.createElement("span");
+      p1.textContent = sentence + " ";
+      el.noresText.appendChild(p1);
+      show("nores");
+      renderChips(el.noresChips, chips);
+      return;
+    }
+
+    el.tbody.innerHTML = "";
+    rows.forEach(function (c) {
+      var tr = document.createElement("tr");
+
+      var tdName = document.createElement("td");
+      var wrap = document.createElement("div");
+      wrap.className = "cell-name";
+      var av = document.createElement("span");
+      av.className = "avatar";
+      av.style.background = c.hue;
+      av.textContent = c.name.charAt(0);
+      var nm = document.createElement("span");
+      nm.textContent = c.name;
+      wrap.appendChild(av); wrap.appendChild(nm); tdName.appendChild(wrap);
+
+      var tdCompany = document.createElement("td"); tdCompany.textContent = c.company;
+      var tdPhone = document.createElement("td"); tdPhone.className = "muted"; tdPhone.textContent = c.phone;
+      var tdOwner = document.createElement("td"); tdOwner.textContent = c.owner;
+
+      var tdStatus = document.createElement("td");
+      var pill = document.createElement("span");
+      pill.className = "pill " + (STATUS_CLASS[c.status] || "s1");
+      pill.textContent = c.status;
+      tdStatus.appendChild(pill);
+
+      var tdTags = document.createElement("td");
+      if (c.tags.length === 0) { tdTags.className = "muted"; tdTags.textContent = "—"; }
+      else c.tags.forEach(function (t) {
+        var s = document.createElement("span"); s.className = "tag"; s.textContent = t; tdTags.appendChild(s);
+      });
+
+      var tdUpdated = document.createElement("td"); tdUpdated.className = "muted"; tdUpdated.textContent = c.updated;
+
+      tr.appendChild(tdName); tr.appendChild(tdCompany); tr.appendChild(tdPhone);
+      tr.appendChild(tdOwner); tr.appendChild(tdStatus); tr.appendChild(tdTags); tr.appendChild(tdUpdated);
+      el.tbody.appendChild(tr);
+    });
+
+    el.countText.textContent = "共 " + rows.length + " 位客户" + (hasActiveFilters() ? "（已筛选）" : "");
+    show("table");
+  }
+
+  /* ---------------- 交互 ---------------- */
+  function toLive() { if (state.demo === "first") setDemo("live"); }
+
+  el.searchInput.addEventListener("input", function () {
+    state.q = el.searchInput.value;
+    toLive();
+    render();
+  });
+  el.searchClear.addEventListener("click", function () {
+    el.searchInput.value = ""; state.q = ""; el.searchInput.focus(); render();
+  });
+  [el.ownerSel, el.statusSel, el.tagSel].forEach(function (sel) {
+    sel.addEventListener("change", function () {
+      var key = sel.id.replace("Sel", "");
+      state[key] = sel.value;
+      toLive();
+      render();
+    });
+  });
+
+  function clearAllFilters() {
+    state.q = ""; el.searchInput.value = "";
+    state.owner = state.status = state.tag = "all";
+    el.ownerSel.value = el.statusSel.value = el.tagSel.value = "all";
+    render();
+  }
+  el.btnClearFilters.addEventListener("click", clearAllFilters);
+  $("btnResetFromEmpty").addEventListener("click", clearAllFilters);
+
+  /* 演示开关 */
+  function setDemo(mode) {
+    state.demo = mode;
+    document.querySelectorAll("[data-demo]").forEach(function (b) {
+      b.setAttribute("aria-pressed", String(b.dataset.demo === mode));
+    });
+    if (mode === "nores") { clearAllFilters(); state.q = "某某公司"; el.searchInput.value = "某某公司"; }
+    if (mode === "live") clearAllFilters();
+    render();
+  }
+  document.querySelectorAll("[data-demo]").forEach(function (b) {
+    b.addEventListener("click", function () { setDemo(b.dataset.demo); });
+  });
+
+  /* toast + 通用动作 */
+  var toastTimer = null;
+  function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { el.toast.classList.remove("show"); }, 2200);
+  }
+  document.querySelectorAll("[data-new-customer]").forEach(function (b) {
+    b.addEventListener("click", function () { toast("已打开“新建客户”表单（演示）"); });
+  });
+  $("btnImport").addEventListener("click", function () { toast("已打开批量导入向导（演示）"); });
+  $("btnImportEmpty").addEventListener("click", function () { toast("已打开批量导入向导（演示）"); });
+  $("btnGuide").addEventListener("click", function () { toast("已打开 3 分钟上手指南（演示）"); });
+
+  render();
+})();
+</script>
+</body>
+</html>

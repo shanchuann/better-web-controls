@@ -1,0 +1,27 @@
+{
+  "run": "with_skill",
+  "eval_id": 4,
+  "expectations": [
+    {
+      "text": "确认强度匹配后果严重程度：使用了强确认（弹窗 Modal 强制选择，或输入文字确认 Type to Confirm），而不是普通轻提示或直接执行",
+      "passed": true,
+      "evidence": "Type to Confirm 承载于居中 Modal：输入与项目名完全一致才启用永久删除按钮，命中 rules.md 决策线（不可逆且影响大用输入确认）"
+    },
+    {
+      "text": "确认内容说明了后果（告知删除不可恢复/影响范围）",
+      "passed": true,
+      "evidence": "弹窗逐条列出后果：128 个任务、342 个文件，标注不可恢复"
+    },
+    {
+      "text": "弹窗类确认有明确的取消/确认两个出口，且不会误触关闭（如不点蒙层直接关闭或做了防误触）",
+      "passed": true,
+      "evidence": "取消/永久删除双出口；Esc 与蒙版关闭时清空输入并禁用按钮；焦点锁与焦点归还完整"
+    },
+    {
+      "text": "notes.md 说明选了哪种确认强度、为什么（决策线：不可逆且影响大→输入确认或弹窗）",
+      "passed": true,
+      "evidence": "notes.md 对比 4 候选，并说明排除单纯 Modal 的原因（一次点击确认对不可逆操作防误触不足）"
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}

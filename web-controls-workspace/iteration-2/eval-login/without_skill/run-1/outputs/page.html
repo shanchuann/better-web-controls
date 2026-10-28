@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>赤陶云 · 登录</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --clay: #d96a33;          /* 陶橙 · 主色 */
+    --clay-deep: #b94f1f;     /* 深陶 */
+    --clay-soft: #f3c9ae;     /* 浅陶 */
+    --ink: #2b211b;           /* 近黑 · 暖调 */
+    --ink-2: #6f6259;         /* 次级文字 */
+    --paper: #faf5ef;         /* 米纸底色 */
+    --card: #ffffff;
+    --line: #e8ddcf;
+    --ok: #2e7d4f;
+    --err: #c0392b;
+    --radius: 14px;
+    --font-display: "Noto Serif SC", "Songti SC", "SimSun", serif;
+    --font-body: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    font-family: var(--font-body);
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    display: grid;
+    grid-template-columns: minmax(420px, 46%) 1fr;
+    min-height: 100vh;
+  }
+
+  /* ============ 左侧品牌画布 ============ */
+  .brand {
+    position: relative;
+    background: linear-gradient(160deg, #31201a 0%, #221410 60%, #1c0f0c 100%);
+    color: #f6ece2;
+    padding: 56px 60px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* 陶土质感的抽象形体 */
+  .brand::before {
+    content: "";
+    position: absolute;
+    right: -180px; top: -140px;
+    width: 560px; height: 560px;
+    border-radius: 42% 58% 55% 45% / 48% 42% 58% 52%;
+    background: radial-gradient(circle at 30% 30%, rgba(217,106,51,.85), rgba(185,79,31,.45) 55%, transparent 75%);
+    filter: blur(2px);
+    animation: drift 18s ease-in-out infinite alternate;
+  }
+  .brand::after {
+    content: "";
+    position: absolute;
+    left: -120px; bottom: -160px;
+    width: 460px; height: 460px;
+    border-radius: 58% 42% 45% 55% / 52% 55% 45% 48%;
+    background: radial-gradient(circle at 60% 40%, rgba(243,201,174,.28), rgba(217,106,51,.18) 55%, transparent 78%);
+    filter: blur(6px);
+    animation: drift 24s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes drift {
+    from { transform: translate(0,0) rotate(0deg) scale(1); }
+    to   { transform: translate(-34px, 42px) rotate(8deg) scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .brand::before, .brand::after { animation: none; }
+  }
+
+  .brand-logo {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-mark {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, var(--clay), var(--clay-deep));
+    display: grid; place-items: center;
+    box-shadow: 0 6px 18px rgba(217,106,51,.35);
+  }
+  .logo-mark svg { width: 20px; height: 20px; }
+  .logo-name {
+    font-family: var(--font-display);
+    font-size: 19px; letter-spacing: 2px; font-weight: 700;
+  }
+
+  .brand-body {
+    position: relative; z-index: 1;
+    margin-top: auto;
+    padding-bottom: 64px;
+    max-width: 480px;
+  }
+  .brand-kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; letter-spacing: 3px;
+    color: var(--clay-soft);
+    border: 1px solid rgba(243,201,174,.35);
+    border-radius: 999px;
+    padding: 7px 16px;
+    margin-bottom: 28px;
+  }
+  .brand-kicker::before {
+    content: ""; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--clay);
+  }
+  .brand h1 {
+    font-family: var(--font-display);
+    font-size: clamp(30px, 3.4vw, 44px);
+    line-height: 1.35;
+    font-weight: 700;
+    margin-bottom: 22px;
+  }
+  .brand h1 em {
+    font-style: normal;
+    color: var(--clay);
+  }
+  .brand-sub {
+    font-size: 15px; line-height: 1.9;
+    color: rgba(246,236,226,.72);
+    margin-bottom: 44px;
+  }
+
+  .brand-metrics {
+    display: flex; gap: 44px;
+    border-top: 1px solid rgba(246,236,226,.14);
+    padding-top: 26px;
+  }
+  .metric b {
+    display: block;
+    font-family: var(--font-display);
+    font-size: 24px; color: var(--clay-soft);
+    margin-bottom: 4px;
+  }
+  .metric span { font-size: 12.5px; color: rgba(246,236,226,.55); letter-spacing: 1px; }
+
+  .brand-quote {
+    position: relative; z-index: 1;
+    font-size: 13px; line-height: 1.8;
+    color: rgba(246,236,226,.5);
+    border-left: 2px solid var(--clay);
+    padding-left: 14px;
+    max-width: 380px;
+  }
+
+  /* ============ 右侧表单区 ============ */
+  .panel {
+    display: flex; flex-direction: column;
+    padding: 40px clamp(28px, 6vw, 96px);
+  }
+  .panel-top {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13.5px; color: var(--ink-2);
+    margin-bottom: auto;
+  }
+  .panel-top a { color: var(--clay-deep); text-decoration: none; font-weight: 600; }
+  .panel-top a:hover { text-decoration: underline; }
+
+  .form-wrap {
+    width: 100%;
+    max-width: 400px;
+    margin: 48px auto 40px;
+  }
+  .form-head h2 {
+    font-family: var(--font-display);
+    font-size: 28px; font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .form-head p { font-size: 14px; color: var(--ink-2); }
+  .form-head p a { color: var(--clay-deep); text-decoration: none; font-weight: 600; }
+  .form-head p a:hover { text-decoration: underline; }
+
+  .sso-row {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 26px 0 8px;
+  }
+  .sso-btn {
+    height: 46px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: border-color .18s, box-shadow .18s, transform .18s;
+  }
+  .sso-btn:hover {
+    border-color: var(--clay);
+    box-shadow: 0 4px 12px rgba(217,106,51,.14);
+    transform: translateY(-1px);
+  }
+  .sso-btn:focus-visible {
+    outline: 2px solid var(--clay); outline-offset: 2px;
+  }
+  .sso-btn svg { width: 20px; height: 20px; }
+
+  .divider {
+    display: flex; align-items: center; gap: 14px;
+    color: var(--ink-2); font-size: 12.5px;
+    margin: 20px 0;
+  }
+  .divider::before, .divider::after {
+    content: ""; flex: 1; height: 1px; background: var(--line);
+  }
+
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block; font-size: 13.5px; font-weight: 600;
+    margin-bottom: 7px;
+  }
+  .field label .optional { font-weight: 400; color: var(--ink-2); font-size: 12px; margin-left: 4px; }
+  .control { position: relative; }
+  .control .lead-icon {
+    position: absolute; left: 14px; top: 50%;
+    transform: translateY(-50%);
+    width: 18px; height: 18px;
+    color: #b9a99a;
+    pointer-events: none;
+  }
+  .control input {
+    width: 100%;
+    height: 50px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    background: #fff;
+    padding: 0 46px 0 42px;
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--ink);
+    transition: border-color .18s, box-shadow .18s;
+  }
+  .control input::placeholder { color: #bcae9f; }
+  .control input:hover { border-color: #d5c6b4; }
+  .control input:focus {
+    outline: none;
+    border-color: var(--clay);
+    box-shadow: 0 0 0 3.5px rgba(217,106,51,.16);
+  }
+  .field.invalid input { border-color: var(--err); }
+  .field.invalid .msg { color: var(--err); }
+  .field.valid input { border-color: var(--ok); }
+
+  .msg {
+    display: none;
+    font-size: 12.5px; margin-top: 6px;
+    align-items: center; gap: 5px;
+  }
+  .field.invalid .msg, .field.valid .msg { display: flex; }
+  .field.valid .msg { color: var(--ok); }
+
+  .pwd-toggle {
+    position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%);
+    width: 34px; height: 34px;
+    border: none; background: transparent;
+    border-radius: 8px; cursor: pointer;
+    display: grid; place-items: center;
+    color: #b9a99a;
+    transition: color .15s, background .15s;
+  }
+  .pwd-toggle:hover { color: var(--ink); background: #f4ede4; }
+  .pwd-toggle:focus-visible { outline: 2px solid var(--clay); outline-offset: -2px; }
+  .pwd-toggle svg { width: 18px; height: 18px; }
+
+  .row-between {
+    display: flex; justify-content: space-between; align-items: center;
+    margin: 4px 0 22px;
+    font-size: 13.5px;
+  }
+  .remember {
+    display: inline-flex; align-items: center; gap: 8px;
+    cursor: pointer; color: var(--ink-2); user-select: none;
+  }
+  .remember input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .checkbox {
+    width: 17px; height: 17px;
+    border: 1.5px solid #cfc0af; border-radius: 5px;
+    background: #fff;
+    display: grid; place-items: center;
+    transition: background .15s, border-color .15s;
+  }
+  .checkbox svg { width: 11px; height: 11px; opacity: 0; transform: scale(.5); transition: .15s; }
+  .remember input:checked + .checkbox { background: var(--clay); border-color: var(--clay); }
+  .remember input:checked + .checkbox svg { opacity: 1; transform: scale(1); }
+  .remember input:focus-visible + .checkbox { outline: 2px solid var(--clay); outline-offset: 2px; }
+  .row-between a { color: var(--clay-deep); text-decoration: none; font-weight: 600; }
+  .row-between a:hover { text-decoration: underline; }
+
+  .submit {
+    width: 100%; height: 52px;
+    border: none; border-radius: 12px;
+    background: linear-gradient(180deg, var(--clay), var(--clay-deep));
+    color: #fff; font-size: 16px; font-weight: 600;
+    font-family: inherit; letter-spacing: 4px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 10px 24px rgba(185,79,31,.28), inset 0 1px 0 rgba(255,255,255,.25);
+    transition: transform .18s, box-shadow .18s, filter .18s;
+  }
+  .submit:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(185,79,31,.36), inset 0 1px 0 rgba(255,255,255,.25); }
+  .submit:active { transform: translateY(0); }
+  .submit:focus-visible { outline: 2px solid var(--clay-deep); outline-offset: 3px; }
+  .submit[disabled] { cursor: default; filter: saturate(.7) brightness(.96); transform: none; }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2.5px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+    display: none;
+  }
+  .submit.loading .spinner { display: block; }
+  .submit.loading .submit-arrow { display: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .form-foot {
+    text-align: center; font-size: 13px; color: var(--ink-2);
+    margin-top: 26px;
+  }
+  .form-foot a { color: var(--clay-deep); text-decoration: none; font-weight: 600; }
+  .form-foot a:hover { text-decoration: underline; }
+
+  .panel-bottom {
+    text-align: center;
+    font-size: 12px; color: #b3a493;
+  }
+  .panel-bottom a { color: inherit; text-decoration: none; }
+  .panel-bottom a:hover { color: var(--ink-2); text-decoration: underline; }
+
+  /* toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 34px;
+    transform: translate(-50%, 24px);
+    background: var(--ink); color: #fdf8f2;
+    padding: 13px 22px; border-radius: 12px;
+    font-size: 14px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 12px 32px rgba(43,33,27,.3);
+    opacity: 0; pointer-events: none;
+    transition: opacity .3s, transform .3s;
+    z-index: 99;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast .dot { width: 8px; height: 8px; border-radius: 50%; background: #6fd39a; }
+
+  /* 入场动画 */
+  .rise {
+    opacity: 0; transform: translateY(14px);
+    animation: rise .7s cubic-bezier(.22,.8,.35,1) forwards;
+  }
+  @keyframes rise { to { opacity: 1; transform: translateY(0); } }
+  .d1 { animation-delay: .05s; } .d2 { animation-delay: .12s; }
+  .d3 { animation-delay: .19s; } .d4 { animation-delay: .26s; }
+  .d5 { animation-delay: .33s; }
+  @media (prefers-reduced-motion: reduce) {
+    .rise { animation: none; opacity: 1; transform: none; }
+  }
+
+  /* ============ 响应式 ============ */
+  @media (max-width: 960px) {
+    .page { grid-template-columns: 1fr; }
+    .brand { display: none; }
+    .panel { min-height: 100vh; padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- 左：品牌画布 -->
+  <aside class="brand" aria-hidden="true">
+    <div class="brand-logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>
+        </svg>
+      </div>
+      <span class="logo-name">赤陶云</span>
+    </div>
+
+    <div class="brand-body">
+      <span class="brand-kicker">新一代团队协作平台</span>
+      <h1>让每一次协作，<br />都像<em>陶土</em>一样<br />被耐心塑造成形。</h1>
+      <p class="brand-sub">赤陶云为 3,200+ 团队提供项目、文档与数据的一体化工作台，从灵感到交付，一站完成。</p>
+      <div class="brand-metrics">
+        <div class="metric"><b>3,200+</b><span>付费团队</span></div>
+        <div class="metric"><b>99.98%</b><span>年度可用性</span></div>
+        <div class="metric"><b>8 分钟</b><span>平均上手时间</span></div>
+      </div>
+    </div>
+
+    <p class="brand-quote">"迁移到赤陶云之后，我们的跨部门评审周期缩短了一半，交付节奏明显稳定了下来。"<br />—— 某智能制造企业 · 项目总监</p>
+  </aside>
+
+  <!-- 右：登录表单 -->
+  <main class="panel">
+    <div class="panel-top rise d1">
+      <span>还没有账号？<a href="#" onclick="return false;">立即注册</a></span>
+    </div>
+
+    <div class="form-wrap">
+      <div class="form-head rise d2">
+        <h2>欢迎回来</h2>
+        <p>登录你的赤陶云账号，继续今天的工作。</p>
+      </div>
+
+      <div class="sso-row rise d3">
+        <button class="sso-btn" type="button" aria-label="使用微信登录" title="微信登录">
+          <svg viewBox="0 0 24 24" fill="#2dc100"><path d="M8.8 4C4.9 4 1.8 6.6 1.8 9.9c0 1.9 1 3.5 2.7 4.6l-.7 2.1 2.4-1.3c.7.2 1.4.4 2.2.4.2 0 .5 0 .7-.1-.2-.6-.3-1.2-.3-1.8 0-3.2 3-5.8 6.7-5.8h.6C15.4 5.9 12.4 4 8.8 4zM6.6 7.4c.5 0 .8.3.8.8s-.4.8-.8.8-.9-.3-.9-.8.4-.8.9-.8zm4.5 0c.5 0 .8.3.8.8s-.4.8-.8.8-.9-.3-.9-.8.4-.8.9-.8zM22.2 13.8c0-2.8-2.8-5.1-6-5.1s-6 2.3-6 5.1 2.7 5.1 6 5.1c.7 0 1.4-.1 2-.3l2 1.1-.6-1.8c1.6-.9 2.6-2.4 2.6-4.1zm-8-1c-.4 0-.8-.3-.8-.7s.4-.7.8-.7.8.3.8.7-.3.7-.8.7zm4 0c-.4 0-.8-.3-.8-.7s.4-.7.8-.7.8.3.8.7-.4.7-.8.7z"/></svg>
+        </button>
+        <button class="sso-btn" type="button" aria-label="使用飞书登录" title="飞书登录">
+          <svg viewBox="0 0 24 24" fill="#3370ff"><path d="M6.2 4h4.3L7.9 9.4c2.6 0 4.4-.9 5.7-2.7l.9-1.2c.5-.7 1.4-1.5 3-1.5h3.7l-3.5 5.4c1.9.1 4 .8 5.1 2.3-1.5 2.2-4.5 2.7-6.6 2.4-1.4 1.8-4.2 3.3-6.4 3.3L8.3 22H4.6l2.3-5.6C4.9 15.3 2 13.4 2 10.2 2 6.6 4 4 6.2 4z"/></svg>
+        </button>
+        <button class="sso-btn" type="button" aria-label="使用企业 SSO 登录" title="企业 SSO">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#6f6259" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a7 7 0 0 0-7 7v3a3 3 0 0 0 3 3h1v-6H6.5M17.5 10H15v6h1a3 3 0 0 0 3-3v-3a7 7 0 0 0-7-7z"/><path d="M17 16v1a3 3 0 0 1-3 3h-2"/></svg>
+        </button>
+      </div>
+
+      <div class="divider rise d3">或使用邮箱登录</div>
+
+      <form id="loginForm" novalidate>
+        <div class="field rise d3" id="fieldEmail">
+          <label for="email">工作邮箱</label>
+          <div class="control">
+            <svg class="lead-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7.5l9 6 9-6"/></svg>
+            <input id="email" name="email" type="email" placeholder="name@company.com" autocomplete="email" />
+          </div>
+          <span class="msg" id="emailMsg"></span>
+        </div>
+
+        <div class="field rise d4" id="fieldPwd">
+          <label for="password">密码</label>
+          <div class="control">
+            <svg class="lead-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <input id="password" name="password" type="password" placeholder="请输入密码" autocomplete="current-password" />
+            <button class="pwd-toggle" type="button" id="pwdToggle" aria-label="显示密码" aria-pressed="false">
+              <svg id="eyeOpen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="2.8"/></svg>
+              <svg id="eyeOff" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M2 12s3.5-6.5 10-6.5c1.7 0 3.2.4 4.5 1M22 12s-3.5 6.5-10 6.5c-1.7 0-3.2-.4-4.5-1M4 4l16 16"/></svg>
+            </button>
+          </div>
+          <span class="msg" id="pwdMsg"></span>
+        </div>
+
+        <div class="row-between rise d4">
+          <label class="remember">
+            <input type="checkbox" id="remember" checked />
+            <span class="checkbox">
+              <svg viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6.2l2.6 2.6L10 3.5"/></svg>
+            </span>
+            记住我
+          </label>
+          <a href="#" onclick="return false;">忘记密码？</a>
+        </div>
+
+        <button class="submit rise d5" type="submit" id="submitBtn">
+          <span class="spinner" aria-hidden="true"></span>
+          <span class="submit-label">登 录</span>
+          <svg class="submit-arrow" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </form>
+
+      <p class="form-foot">登录即代表你同意 <a href="#" onclick="return false;">服务条款</a> 与 <a href="#" onclick="return false;">隐私政策</a></p>
+    </div>
+
+    <div class="panel-bottom">
+      © 2026 赤陶云 Chitao Cloud · <a href="#" onclick="return false;">帮助中心</a> · <a href="#" onclick="return false;">联系我们</a>
+    </div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <span class="dot"></span><span id="toastText">登录成功，正在进入工作台…</span>
+</div>
+
+<script>
+(function () {
+  var form = document.getElementById('loginForm');
+  var email = document.getElementById('email');
+  var pwd = document.getElementById('password');
+  var fieldEmail = document.getElementById('fieldEmail');
+  var fieldPwd = document.getElementById('fieldPwd');
+  var emailMsg = document.getElementById('emailMsg');
+  var pwdMsg = document.getElementById('pwdMsg');
+  var submitBtn = document.getElementById('submitBtn');
+  var toast = document.getElementById('toast');
+  var toastText = document.getElementById('toastText');
+  var ICON_OK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5.5 5.5L20 6.5"/></svg>';
+  var ICON_ERR = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="12" cy="12" r="9" stroke-width="2"/><path d="M12 7.5v5.5M12 16.2v.3"/></svg>';
+
+  function setState(field, msgEl, type, text) {
+    field.classList.remove('invalid', 'valid');
+    if (type === 'invalid') { field.classList.add('invalid'); msgEl.innerHTML = ICON_ERR + text; }
+    else if (type === 'valid') { field.classList.add('valid'); msgEl.innerHTML = ICON_OK + text; }
+  }
+
+  function validateEmail(showValid) {
+    var v = email.value.trim();
+    if (!v) { setState(fieldEmail, emailMsg, 'invalid', '请输入工作邮箱'); return false; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { setState(fieldEmail, emailMsg, 'invalid', '邮箱格式不正确，请检查后重试'); return false; }
+    if (showValid) setState(fieldEmail, emailMsg, 'valid', '格式正确');
+    else { fieldEmail.classList.remove('invalid', 'valid'); emailMsg.textContent = ''; }
+    return true;
+  }
+
+  function validatePwd(showValid) {
+    var v = pwd.value;
+    if (!v) { setState(fieldPwd, pwdMsg, 'invalid', '请输入密码'); return false; }
+    if (v.length < 6) { setState(fieldPwd, pwdMsg, 'invalid', '密码长度至少 6 位'); return false; }
+    if (showValid) setState(fieldPwd, pwdMsg, 'valid', '');
+    else { fieldPwd.classList.remove('invalid', 'valid'); pwdMsg.textContent = ''; }
+    return true;
+  }
+
+  // 失焦时校验；输入中若已标记错误则实时清除
+  email.addEventListener('blur', function () { if (email.value.trim()) validateEmail(true); });
+  email.addEventListener('input', function () {
+    if (fieldEmail.classList.contains('invalid')) validateEmail(true);
+  });
+  pwd.addEventListener('blur', function () { if (pwd.value) validatePwd(true); });
+  pwd.addEventListener('input', function () {
+    if (fieldPwd.classList.contains('invalid')) validatePwd(true);
+  });
+
+  // 密码可见性切换
+  var pwdToggle = document.getElementById('pwdToggle');
+  var eyeOpen = document.getElementById('eyeOpen');
+  var eyeOff = document.getElementById('eyeOff');
+  pwdToggle.addEventListener('click', function () {
+    var show = pwd.type === 'password';
+    pwd.type = show ? 'text' : 'password';
+    eyeOpen.style.display = show ? 'none' : '';
+    eyeOff.style.display = show ? '' : 'none';
+    pwdToggle.setAttribute('aria-pressed', show);
+    pwdToggle.setAttribute('aria-label', show ? '隐藏密码' : '显示密码');
+    pwd.focus();
+  });
+
+  // 提交（演示：模拟请求）
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var okE = validateEmail(true);
+    var okP = validatePwd(true);
+    if (!okE) { email.focus(); return; }
+    if (!okP) { pwd.focus(); return; }
+
+    submitBtn.disabled = true;
+    submitBtn.classList.add('loading');
+    submitBtn.querySelector('.submit-label').textContent = '正在登录…';
+
+    setTimeout(function () {
+      submitBtn.disabled = false;
+      submitBtn.classList.remove('loading');
+      submitBtn.querySelector('.submit-label').textContent = '登 录';
+      toastText.textContent = '登录成功，正在进入工作台…';
+      toast.classList.add('show');
+      setTimeout(function () { toast.classList.remove('show'); }, 2800);
+    }, 1200);
+  });
+
+  // SSO 按钮（演示占位）
+  document.querySelectorAll('.sso-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      toastText.textContent = '正在跳转到“' + btn.title + '”…';
+      toast.classList.add('show');
+      setTimeout(function () { toast.classList.remove('show'); }, 2200);
+    });
+  });
+})();
+</script>
+</body>
+</html>

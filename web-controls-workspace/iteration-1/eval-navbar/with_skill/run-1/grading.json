@@ -10,7 +10,7 @@
     {
       "text": "导航栏采用具体成形的形式（悬浮吸顶 Floating+Sticky / 抽屉 / 侧边栏等），而非普通的静态水平菜单拼装饰",
       "passed": true,
-      "evidence": "选型为"悬浮吸顶 Floating · Sticky"（离顶 18px 圆角玻璃浮岛）+ 移动端"全屏遮罩 Full-screen Overlay"+ "Scrollspy 锚点导航"+ 下滚"Shrink on Scroll"，全部为 layouts.md 导航 9 种中的成形形式并在代码注释标名"
+      "evidence": "选型为“悬浮吸顶 Floating · Sticky”（离顶 18px 圆角玻璃浮岛）+ 移动端“全屏遮罩 Full-screen Overlay”+ “Scrollspy 锚点导航”+ 下滚“Shrink on Scroll”，全部为 layouts.md 导航 9 种中的成形形式并在代码注释标名"
     },
     {
       "text": "导航在页面滚动时保持条理（吸顶/悬浮有阴影、留白、圆角等悬浮感处理，或做了移动端适配）",
@@ -20,7 +20,7 @@
     {
       "text": "notes.md 给出了 2 种以上候选方案对比并写明最终选型理由",
       "passed": true,
-      "evidence": "notes.md 章节二"导航栏选型：9 种里挑了哪种"逐条列出 9 种候选并给出出局理由（如'侧边栏——偏后台工具站气质'）"
+      "evidence": "notes.md 章节二“导航栏选型：9 种里挑了哪种”逐条列出 9 种候选并给出出局理由（如'侧边栏——偏后台工具站气质'）"
     }
   ],
   "summary": {

@@ -1,0 +1,11 @@
+{
+  "eval_id": 8,
+  "eval_name": "eval-login",
+  "prompt": "帮我们 SaaS 产品做个登录页，要高级一点，品牌色是陶橙色。输出一个可以直接打开的完整 HTML 文件（单文件）。",
+  "assertions": [
+    "没有按默认模板瞎猜：使用了具体成形的登录页样式（居中卡片式 Centered Card / 左右分屏 Split Screen / 沉浸背景 Immersive Background / 多角色Tab Role-based Tabs / 分步登录 Step-by-step 之一）",
+    "说清了布局要素：布局类型 + 背景 + 卡片（或无卡片）+ 品牌气质",
+    "陶橙色品牌色落实到了具体设计（背景渐变/按钮/主色而非仅文字提及）",
+    "notes.md 给出候选样式对比与选型理由"
+  ]
+}

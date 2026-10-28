@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>账户设置</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1f2329;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --primary: #3b6cf6;
+    --primary-hover: #2f5ae0;
+    --success: #16a34a;
+    --success-bg: #f0fdf4;
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 48px 16px;
+  }
+  .page {
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .page h1 {
+    font-size: 22px;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .page .subtitle {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 28px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+  }
+  .field { margin-bottom: 22px; }
+  .field:last-of-type { margin-bottom: 0; }
+  .field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .field label .required { color: #dc2626; margin-left: 2px; }
+  .field .helper {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field textarea,
+  .field select {
+    width: 100%;
+    padding: 9px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .field textarea { resize: vertical; min-height: 72px; }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 108, 246, .12);
+  }
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+  }
+  .switch-row .switch-label { font-size: 14px; font-weight: 500; }
+  .switch-row .switch-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .toggle {
+    position: relative;
+    width: 44px; height: 24px;
+    flex-shrink: 0;
+    background: #d1d5db;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .toggle::after {
+    content: "";
+    position: absolute;
+    top: 3px; left: 3px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,.15);
+    transition: transform .2s;
+  }
+  .toggle[aria-checked="true"] { background: var(--primary); }
+  .toggle[aria-checked="true"]::after { transform: translateX(20px); }
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    font-size: 14px;
+    font-family: inherit;
+    padding: 9px 22px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+  }
+  .btn-ghost:hover { border-color: #c8ccd4; color: var(--text); }
+  .btn-primary {
+    background: var(--primary);
+    border: none;
+    color: #fff;
+    font-weight: 500;
+    min-width: 96px;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
+  .btn-primary:disabled { opacity: .65; cursor: default; }
+
+  /* ===== 轻提示 Toast ===== */
+  .toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 220px;
+    max-width: 340px;
+    padding: 12px 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.1);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(-12px);
+    pointer-events: none;
+    transition: opacity .25s ease, transform .25s ease;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+  .toast .toast-icon {
+    width: 20px; height: 20px;
+    flex-shrink: 0;
+    color: var(--success);
+  }
+  .toast .toast-text {
+    flex: 1;
+    font-size: 14px;
+    color: var(--text);
+  }
+  .toast .toast-close {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: #9ca3af;
+    display: flex;
+    border-radius: 4px;
+  }
+  .toast .toast-close:hover { color: var(--text); background: #f3f4f6; }
+  .toast .toast-progress {
+    position: absolute;
+    left: 0; bottom: 0;
+    height: 3px;
+    width: 100%;
+    background: var(--success);
+    transform-origin: left;
+    transform: scaleX(1);
+  }
+  .toast.show .toast-progress { animation: toast-progress var(--toast-duration, 3s) linear forwards; }
+  .toast:hover .toast-progress { animation-play-state: paused; }
+  @keyframes toast-progress {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <h1>账户设置</h1>
+    <p class="subtitle">管理你的个人信息与通知偏好，更改后点击"保存设置"生效。</p>
+
+    <section class="card">
+      <div class="field">
+        <label for="nickname">昵称<span class="required">*</span></label>
+        <input type="text" id="nickname" value="林小满">
+        <p class="helper">其他成员将看到此昵称，最多 20 个字符。</p>
+      </div>
+
+      <div class="field">
+        <label for="email">邮箱<span class="required">*</span></label>
+        <input type="email" id="email" value="xiaoman@example.com">
+        <p class="helper">用于登录与接收重要通知。</p>
+      </div>
+
+      <div class="field">
+        <label for="role">职位</label>
+        <select id="role">
+          <option selected>产品经理</option>
+          <option>设计师</option>
+          <option>研发工程师</option>
+          <option>运营</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <div class="switch-row">
+          <div>
+            <div class="switch-label">接收邮件通知</div>
+            <div class="switch-desc">有人提及你或任务状态变更时发送邮件。</div>
+          </div>
+          <button class="toggle" id="notifyToggle" role="switch" aria-checked="true" aria-label="接收邮件通知"></button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="bio">个人简介</label>
+        <textarea id="bio" placeholder="简单介绍一下自己（选填）"></textarea>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn btn-ghost" id="resetBtn">重置</button>
+        <button type="button" class="btn btn-primary" id="saveBtn">保存设置</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- 轻提示 Toast：右上角出现，约 3 秒自动消失，不打断操作 -->
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="10"></circle>
+      <polyline points="8 12.5 11 15.5 16 9.5"></polyline>
+    </svg>
+    <span class="toast-text" id="toastText">设置已保存</span>
+    <button class="toast-close" id="toastClose" aria-label="关闭提示">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+      </svg>
+    </button>
+    <span class="toast-progress"></span>
+  </div>
+
+<script>
+(function () {
+  var saveBtn = document.getElementById('saveBtn');
+  var toast = document.getElementById('toast');
+  var toastClose = document.getElementById('toastClose');
+  var TOAST_DURATION = 3000;
+  var hideTimer = null;
+  var hideAt = 0;
+  var pausedRemain = null;
+
+  /* 显示 Toast：连续保存时复用同一条，重置消失计时，不堆叠 */
+  function showToast(message) {
+    document.getElementById('toastText').textContent = message;
+
+    /* 重置进度条动画：移除再恢复，保证每次保存都从头播放 */
+    var progress = toast.querySelector('.toast-progress');
+    progress.style.animation = 'none';
+    void progress.offsetWidth;
+    progress.style.animation = '';
+
+    toast.style.setProperty('--toast-duration', TOAST_DURATION + 'ms');
+    toast.classList.remove('show');
+    void toast.offsetWidth; /* 强制重绘，使入场动画可重复触发 */
+    toast.classList.add('show');
+
+    clearTimeout(hideTimer);
+    hideAt = Date.now() + TOAST_DURATION;
+    hideTimer = setTimeout(hideToast, TOAST_DURATION);
+  }
+
+  function hideToast() {
+    clearTimeout(hideTimer);
+    hideTimer = null;
+    toast.classList.remove('show');
+  }
+
+  toastClose.addEventListener('click', hideToast);
+
+  /* 悬停暂停自动消失：记录剩余时间，移出后继续 */
+  toast.addEventListener('mouseenter', function () {
+    if (!hideTimer) return;
+    clearTimeout(hideTimer);
+    pausedRemain = hideAt - Date.now();
+    toast.querySelector('.toast-progress').style.animationPlayState = 'paused';
+  });
+  toast.addEventListener('mouseleave', function () {
+    if (pausedRemain === null) return;
+    toast.querySelector('.toast-progress').style.animationPlayState = '';
+    hideAt = Date.now() + pausedRemain;
+    hideTimer = setTimeout(hideToast, pausedRemain);
+    pausedRemain = null;
+  });
+
+  /* 保存：短暂"保存中"状态（模拟请求），成功后弹出 Toast */
+  saveBtn.addEventListener('click', function () {
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+    saveBtn.textContent = '保存中…';
+
+    setTimeout(function () {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '保存设置';
+      showToast('设置已保存');
+    }, 600);
+  });
+
+  /* 页面内的开关控件 */
+  var toggle = document.getElementById('notifyToggle');
+  toggle.addEventListener('click', function () {
+    toggle.setAttribute('aria-checked', toggle.getAttribute('aria-checked') !== 'true');
+  });
+
+  /* 重置：恢复默认值并给出轻提示 */
+  document.getElementById('resetBtn').addEventListener('click', function () {
+    document.getElementById('nickname').value = '林小满';
+    document.getElementById('email').value = 'xiaoman@example.com';
+    document.getElementById('role').selectedIndex = 0;
+    document.getElementById('bio').value = '';
+    toggle.setAttribute('aria-checked', 'true');
+    showToast('已恢复默认设置');
+  });
+})();
+</script>
+</body>
+</html>

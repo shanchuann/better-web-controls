@@ -1,0 +1,27 @@
+{
+  "run": "with_skill",
+  "eval_id": 3,
+  "expectations": [
+    {
+      "text": "没有使用浏览器原生 <select> 默认样式直接糊弄（自绘了下拉组件或对 select 做了成形样式）",
+      "passed": true,
+      "evidence": "page.html 无 select 标签，自绘 button+弹层下拉，选项带头像与 N 单计数"
+    },
+    {
+      "text": "负责人筛选场景用了合适的下拉形态：单选用 Select；若体现多选则用 Multi-select 且选中项显示为可单独移除的标签",
+      "passed": true,
+      "evidence": "选型 Select 单选下拉（notes.md 候选表）：负责人平级少量、单选筛选，命中 controls.md 判断规则；条件标签可单独移除"
+    },
+    {
+      "text": "下拉说清了操作规则：选项来源、单选/多选、清空或重选方式",
+      "passed": true,
+      "evidence": "操作规则完整：全部负责人+6 名固定选项、只能选一个、点 × 清空重选、Esc/点外部关闭"
+    },
+    {
+      "text": "notes.md 给出候选方案（Select / Multi-select / Combobox 等）对比与选型理由",
+      "passed": true,
+      "evidence": "notes.md 列 Select/Combobox/Multi-select/Cascader 四候选，给排除理由与升级判断线（人数>20 改用 Combobox）"
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}

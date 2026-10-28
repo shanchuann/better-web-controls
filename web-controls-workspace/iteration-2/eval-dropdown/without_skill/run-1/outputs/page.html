@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>订单管理</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --border: #e4e7ec;
+    --text: #1f2329;
+    --text-2: #646a73;
+    --text-3: #8f959e;
+    --primary: #3370ff;
+    --primary-hover: #2860e1;
+    --danger: #f54a45;
+    --warning-bg: #fff8e6;
+    --warning-text: #b25e09;
+    --success-bg: #e8ffea;
+    --success-text: #0c8050;
+    --radius: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ===== 顶栏 ===== */
+  .topbar {
+    height: 56px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 24px;
+    gap: 12px;
+  }
+  .topbar .logo {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: linear-gradient(135deg, #3370ff, #7c5cff);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 14px;
+  }
+  .topbar h1 { font-size: 16px; font-weight: 600; }
+  .topbar .crumb { color: var(--text-3); font-size: 13px; margin-left: 8px; }
+
+  /* ===== 页面容器 ===== */
+  .page { max-width: 1100px; margin: 24px auto; padding: 0 24px 48px; }
+
+  .toolbar {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .toolbar .label { color: var(--text-2); flex-shrink: 0; }
+  .toolbar .spacer { flex: 1; }
+
+  /* ===== 下拉选择（自定义 Dropdown） ===== */
+  .dropdown { position: relative; width: 220px; }
+  .dropdown-trigger {
+    width: 100%;
+    height: 36px;
+    padding: 0 32px 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    font-size: 14px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color .15s, box-shadow .15s;
+    position: relative;
+    user-select: none;
+  }
+  .dropdown-trigger:hover { border-color: #c2c7d0; }
+  .dropdown.open .dropdown-trigger,
+  .dropdown-trigger:focus-visible {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(51,112,255,.15);
+    outline: none;
+  }
+  .dropdown-trigger .avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    color: #fff; font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .dropdown-trigger .value-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .dropdown-trigger .value-text.placeholder { color: var(--text-3); }
+  .dropdown-trigger .arrow {
+    position: absolute; right: 10px; top: 50%;
+    transform: translateY(-50%) rotate(0deg);
+    transition: transform .2s;
+    color: var(--text-3);
+    font-size: 12px;
+    pointer-events: none;
+  }
+  .dropdown.open .arrow { transform: translateY(-50%) rotate(180deg); }
+
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    min-width: 220px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.1);
+    padding: 4px;
+    z-index: 100;
+    opacity: 0;
+    transform: translateY(-6px) scale(.98);
+    pointer-events: none;
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .dropdown.open .dropdown-menu {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+  }
+  .dropdown-search {
+    width: 100%;
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 10px;
+    font-size: 13px;
+    margin: 4px 4px 6px;
+    width: calc(100% - 8px);
+  }
+  .dropdown-search:focus { border-color: var(--primary); outline: none; }
+  .dropdown-list { max-height: 264px; overflow-y: auto; }
+  .dropdown-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background .1s;
+  }
+  .dropdown-option:hover,
+  .dropdown-option.highlighted { background: #f2f3f5; }
+  .dropdown-option.selected { background: #eef4ff; color: var(--primary); }
+  .dropdown-option .avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    color: #fff; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .dropdown-option .opt-name { flex: 1; }
+  .dropdown-option .opt-count { color: var(--text-3); font-size: 12px; }
+  .dropdown-option .check { color: var(--primary); font-size: 13px; }
+  .dropdown-empty {
+    padding: 24px 0;
+    text-align: center;
+    color: var(--text-3);
+    font-size: 13px;
+  }
+
+  /* ===== 搜索框 ===== */
+  .search-input {
+    width: 220px; height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0 12px 0 32px;
+    font-size: 14px;
+    background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%238f959e' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m21 21-4.3-4.3'/%3E%3C/svg%3E") 10px center no-repeat;
+  }
+  .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(51,112,255,.15); outline: none; }
+
+  /* ===== 按钮 ===== */
+  .btn-reset {
+    height: 36px; padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card);
+    color: var(--text-2);
+    cursor: pointer;
+    font-size: 14px;
+    transition: color .15s, border-color .15s;
+  }
+  .btn-reset:hover { color: var(--text); border-color: #c2c7d0; }
+  .btn-primary {
+    height: 36px; padding: 0 16px;
+    border: none; border-radius: 6px;
+    background: var(--primary); color: #fff;
+    cursor: pointer; font-size: 14px;
+    transition: background .15s;
+  }
+  .btn-primary:hover { background: var(--primary-hover); }
+
+  /* ===== 筛选摘要条 ===== */
+  .filter-summary {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--text-2);
+  }
+  .filter-summary.show { display: flex; }
+  .tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #eef4ff; color: var(--primary);
+    border-radius: 4px; padding: 3px 8px; font-size: 13px;
+  }
+  .tag .close {
+    cursor: pointer; width: 14px; height: 14px; line-height: 14px;
+    text-align: center; border-radius: 50%; font-size: 12px;
+  }
+  .tag .close:hover { background: rgba(51,112,255,.2); }
+  .clear-all { color: var(--primary); cursor: pointer; background: none; border: none; font-size: 13px; }
+  .clear-all:hover { text-decoration: underline; }
+
+  /* ===== 表格 ===== */
+  .table-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .table-head {
+    display: flex; align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-head h2 { font-size: 15px; font-weight: 600; flex: 1; }
+  .table-head .count { color: var(--text-3); font-size: 13px; font-weight: 400; margin-left: 6px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 16px; text-align: left; white-space: nowrap; }
+  th {
+    background: #fafbfc;
+    color: var(--text-2);
+    font-weight: 500;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+  }
+  tbody tr { border-bottom: 1px solid #f0f1f3; transition: background .1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+  td .order-id { color: var(--primary); font-weight: 500; cursor: pointer; }
+  td .order-id:hover { text-decoration: underline; }
+  .owner-cell { display: flex; align-items: center; gap: 8px; }
+  .owner-cell .avatar {
+    width: 26px; height: 26px; border-radius: 50%;
+    color: #fff; font-size: 12px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .badge {
+    display: inline-block; padding: 2px 8px;
+    border-radius: 4px; font-size: 12px;
+  }
+  .badge.pending { background: var(--warning-bg); color: var(--warning-text); }
+  .badge.done { background: var(--success-bg); color: var(--success-text); }
+  .badge.refund { background: #ffeceb; color: var(--danger); }
+  .amount { font-weight: 600; }
+
+  .empty {
+    display: none;
+    padding: 64px 0;
+    text-align: center;
+    color: var(--text-3);
+  }
+  .empty .icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* ===== Toast ===== */
+  .toast {
+    position: fixed;
+    left: 50%; top: 24px;
+    transform: translate(-50%, -16px);
+    background: rgba(31,35,41,.92);
+    color: #fff;
+    padding: 9px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, transform .2s;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">订</div>
+  <h1>订单管理</h1>
+  <span class="crumb">业务中心 / 订单管理</span>
+</header>
+
+<div class="page">
+
+  <!-- 筛选工具栏 -->
+  <div class="toolbar">
+    <span class="label">负责人</span>
+
+    <!-- 自定义下拉：单选负责人 -->
+    <div class="dropdown" id="ownerDropdown">
+      <button class="dropdown-trigger" id="ownerTrigger"
+              aria-haspopup="listbox" aria-expanded="false">
+        <span class="value-text placeholder" id="ownerValue">全部负责人</span>
+        <span class="arrow">▾</span>
+      </button>
+      <div class="dropdown-menu" id="ownerMenu" role="listbox" aria-label="选择负责人">
+        <input class="dropdown-search" id="ownerSearch" type="text"
+               placeholder="搜索负责人" autocomplete="off" />
+        <div class="dropdown-list" id="ownerList"></div>
+      </div>
+    </div>
+
+    <span class="label" style="margin-left:8px">订单关键词</span>
+    <input class="search-input" id="searchInput" type="text"
+           placeholder="搜索订单号 / 商品" />
+
+    <div class="spacer"></div>
+    <button class="btn-reset" id="resetBtn">重置筛选</button>
+    <button class="btn-primary" id="exportBtn">导出订单</button>
+  </div>
+
+  <!-- 筛选摘要 -->
+  <div class="filter-summary" id="filterSummary">
+    <span>筛选条件：</span>
+    <span class="tag" id="tagOwner" style="display:none">
+      <span id="tagOwnerText"></span><span class="close" id="tagOwnerClose">×</span>
+    </span>
+    <span class="tag" id="tagKeyword" style="display:none">
+      <span id="tagKeywordText"></span><span class="close" id="tagKeywordClose">×</span>
+    </span>
+    <button class="clear-all" id="clearAllBtn">清空全部</button>
+  </div>
+
+  <!-- 订单表格 -->
+  <div class="table-card">
+    <div class="table-head">
+      <h2>订单列表<span class="count" id="orderCount"></span></h2>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th style="width:16%">订单号</th>
+          <th style="width:30%">商品</th>
+          <th style="width:12%">金额</th>
+          <th style="width:12%">负责人</th>
+          <th style="width:14%">下单时间</th>
+          <th style="width:10%">状态</th>
+        </tr>
+      </thead>
+      <tbody id="orderTableBody"></tbody>
+    </table>
+    <div class="empty" id="emptyState">
+      <div class="icon">🗂️</div>
+      <div>没有符合条件的订单</div>
+      <div style="margin-top:4px">试试调整负责人或关键词</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 模拟数据 ================= */
+const owners = [
+  { id: 'all', name: '全部负责人', color: '#8f959e' },
+  { id: 'u1', name: '张伟', color: '#3370ff' },
+  { id: 'u2', name: '李娜', color: '#f59a23' },
+  { id: 'u3', name: '王强', color: '#0c8050' },
+  { id: 'u4', name: '刘敏', color: '#7c5cff' },
+  { id: 'u5', name: '陈晓', color: '#f54a45' },
+  { id: 'u6', name: '赵磊', color: '#14b8c4' },
+];
+
+const orders = [
+  { id: 'SO20261028001', product: '无线降噪耳机 Pro', amount: 1299, owner: 'u1', time: '2026-10-28 09:12', status: 'pending' },
+  { id: 'SO20261028002', product: '机械键盘 87键 红轴', amount: 399,  owner: 'u2', time: '2026-10-28 09:47', status: 'done' },
+  { id: 'SO20261027003', product: '27寸 4K 显示器', amount: 2199, owner: 'u1', time: '2026-10-27 14:03', status: 'pending' },
+  { id: 'SO20261027004', product: '人体工学椅 经典款', amount: 1599, owner: 'u3', time: '2026-10-27 11:20', status: 'done' },
+  { id: 'SO20261026005', product: 'USB-C 扩展坞 8合1', amount: 269,  owner: 'u2', time: '2026-10-26 16:45', status: 'refund' },
+  { id: 'SO20261026006', product: '桌面升降支架', amount: 649,  owner: 'u4', time: '2026-10-26 10:31', status: 'pending' },
+  { id: 'SO20261025007', product: '降噪蓝牙音箱', amount: 499,  owner: 'u5', time: '2026-10-25 18:22', status: 'done' },
+  { id: 'SO20261025008', product: '智能手环 5代', amount: 299,  owner: 'u3', time: '2026-10-25 08:15', status: 'done' },
+  { id: 'SO20261024009', product: '电动螺丝刀套装', amount: 199,  owner: 'u4', time: '2026-10-24 15:58', status: 'refund' },
+  { id: 'SO20261024010', product: '显示器挂灯', amount: 149,  owner: 'u6', time: '2026-10-24 09:05', status: 'pending' },
+  { id: 'SO20261023011', product: '碳纤维鼠标垫', amount: 89,   owner: 'u5', time: '2026-10-23 20:40', status: 'done' },
+  { id: 'SO20261023012', product: '便携咖啡机', amount: 899,  owner: 'u6', time: '2026-10-23 13:27', status: 'pending' },
+];
+
+const statusMap = {
+  pending: { text: '待处理', cls: 'pending' },
+  done:    { text: '已完成', cls: 'done' },
+  refund:  { text: '退款中', cls: 'refund' },
+};
+
+/* ================= 状态 ================= */
+const state = { owner: 'all', keyword: '' };
+
+const $ = (id) => document.getElementById(id);
+const ownerMap = Object.fromEntries(owners.map(o => [o.id, o]));
+
+function avatar(name, color, size) {
+  return `<span class="avatar" style="background:${color}">${name.slice(0,1)}</span>`;
+}
+
+/* ================= 下拉框 ================= */
+const dropdown = $('ownerDropdown');
+const trigger = $('ownerTrigger');
+const menu = $('ownerMenu');
+const listEl = $('ownerList');
+const searchEl = $('ownerSearch');
+let highlighted = -1;
+let visibleOwners = owners;
+
+function renderOwnerList(keyword = '') {
+  const kw = keyword.trim().toLowerCase();
+  visibleOwners = owners.filter(o => o.name.toLowerCase().includes(kw));
+  if (!visibleOwners.length) {
+    listEl.innerHTML = `<div class="dropdown-empty">未找到匹配的负责人</div>`;
+    return;
+  }
+  listEl.innerHTML = visibleOwners.map((o, i) => {
+    const selected = state.owner === o.id;
+    const count = o.id === 'all'
+      ? orders.length
+      : orders.filter(x => x.owner === o.id).length;
+    return `
+      <div class="dropdown-option ${selected ? 'selected' : ''}"
+           role="option" data-id="${o.id}" aria-selected="${selected}">
+        ${avatar(o.name, o.color)}
+        <span class="opt-name">${o.name}</span>
+        <span class="opt-count">${count} 单</span>
+        ${selected ? '<span class="check">✓</span>' : ''}
+      </div>`;
+  }).join('');
+  highlighted = selected ? visibleOwners.findIndex(o => o.id === state.owner) : -1;
+}
+
+function openDropdown() {
+  dropdown.classList.add('open');
+  trigger.setAttribute('aria-expanded', 'true');
+  searchEl.value = '';
+  renderOwnerList();
+  setTimeout(() => searchEl.focus(), 50);
+}
+
+function closeDropdown() {
+  dropdown.classList.remove('open');
+  trigger.setAttribute('aria-expanded', 'false');
+  highlighted = -1;
+}
+
+function setOwner(id) {
+  state.owner = id;
+  const o = ownerMap[id];
+  $('ownerValue').className = 'value-text' + (id === 'all' ? ' placeholder' : '');
+  $('ownerValue').innerHTML = id === 'all'
+    ? '全部负责人'
+    : avatar(o.name, o.color) + `<span style="margin-left:6px">${o.name}</span>`;
+  closeDropdown();
+  render();
+}
+
+trigger.addEventListener('click', () => {
+  dropdown.classList.contains('open') ? closeDropdown() : openDropdown();
+});
+
+listEl.addEventListener('click', (e) => {
+  const opt = e.target.closest('.dropdown-option');
+  if (opt) setOwner(opt.dataset.id);
+});
+
+searchEl.addEventListener('input', () => {
+  renderOwnerList(searchEl.value);
+  highlighted = -1;
+});
+
+document.addEventListener('click', (e) => {
+  if (!dropdown.contains(e.target)) closeDropdown();
+});
+
+/* 键盘导航：↑↓ 移动高亮，Enter 选中，Esc 关闭 */
+document.addEventListener('keydown', (e) => {
+  if (!dropdown.classList.contains('open')) return;
+  const n = visibleOwners.length;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    highlighted = (highlighted + 1) % n;
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    highlighted = (highlighted - 1 + n) % n;
+  } else if (e.key === 'Enter') {
+    if (highlighted >= 0 && visibleOwners[highlighted]) {
+      e.preventDefault();
+      setOwner(visibleOwners[highlighted].id);
+    }
+    return;
+  } else if (e.key === 'Escape') {
+    closeDropdown();
+    return;
+  } else {
+    return;
+  }
+  [...listEl.querySelectorAll('.dropdown-option')].forEach((el, i) => {
+    el.classList.toggle('highlighted', i === highlighted);
+  });
+});
+
+/* ================= 表格渲染 ================= */
+function render() {
+  const kw = state.keyword.trim().toLowerCase();
+  const rows = orders.filter(o => {
+    const matchOwner = state.owner === 'all' || o.owner === state.owner;
+    const matchKw = !kw ||
+      o.id.toLowerCase().includes(kw) ||
+      o.product.toLowerCase().includes(kw);
+    return matchOwner && matchKw;
+  });
+
+  $('orderTableBody').innerHTML = rows.map(o => {
+    const own = ownerMap[o.owner];
+    const st = statusMap[o.status];
+    return `
+      <tr>
+        <td><span class="order-id">${o.id}</span></td>
+        <td>${o.product}</td>
+        <td class="amount">¥${o.amount.toLocaleString()}</td>
+        <td>
+          <div class="owner-cell">
+            ${avatar(own.name, own.color)}
+            <span>${own.name}</span>
+          </div>
+        </td>
+        <td style="color:var(--text-2)">${o.time}</td>
+        <td><span class="badge ${st.cls}">${st.text}</span></td>
+      </tr>`;
+  }).join('');
+
+  $('emptyState').style.display = rows.length ? 'none' : 'block';
+  $('orderCount').textContent = `（共 ${rows.length} 条）`;
+
+  /* 筛选摘要 */
+  const hasFilter = state.owner !== 'all' || kw;
+  $('filterSummary').classList.toggle('show', hasFilter);
+  if (state.owner !== 'all') {
+    const o = ownerMap[state.owner];
+    $('tagOwner').style.display = '';
+    $('tagOwnerText').textContent = '负责人：' + o.name;
+  } else {
+    $('tagOwner').style.display = 'none';
+  }
+  if (kw) {
+    $('tagKeyword').style.display = '';
+    $('tagKeywordText').textContent = '关键词：' + state.keyword.trim();
+  } else {
+    $('tagKeyword').style.display = 'none';
+  }
+}
+
+/* ================= 其余交互 ================= */
+$('searchInput').addEventListener('input', (e) => {
+  state.keyword = e.target.value;
+  render();
+});
+
+function resetOwner() {
+  setOwner('all');
+  showToast('已清除负责人筛选');
+}
+$('tagOwnerClose').addEventListener('click', resetOwner);
+$('tagKeywordClose').addEventListener('click', () => {
+  state.keyword = '';
+  $('searchInput').value = '';
+  render();
+});
+$('clearAllBtn').addEventListener('click', () => {
+  state.keyword = '';
+  $('searchInput').value = '';
+  setOwner('all');
+  showToast('已清空全部筛选条件');
+});
+$('resetBtn').addEventListener('click', () => {
+  state.keyword = '';
+  $('searchInput').value = '';
+  setOwner('all');
+  showToast('筛选已重置');
+});
+$('exportBtn').addEventListener('click', () => showToast('订单已开始导出（演示）'));
+
+let toastTimer;
+function showToast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+render();
+</script>
+</body>
+</html>

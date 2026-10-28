@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 · 项目列表 — 删除确认交互示例</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --border: #e4e7ec;
+    --text: #1f2430;
+    --text-secondary: #5f6673;
+    --text-tertiary: #98a0ad;
+    --primary: #3b5bfd;
+    --primary-hover: #2e4ae0;
+    --danger: #d92d20;
+    --danger-hover: #b42318;
+    --danger-bg: #fef3f2;
+    --danger-border: #fecdca;
+    --radius: 10px;
+    --shadow-card: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .1);
+    --shadow-modal: 0 8px 24px rgba(16, 24, 40, .18), 0 20px 48px rgba(16, 24, 40, .12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ---------- 页面布局 ---------- */
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  .app-header .logo { font-weight: 700; font-size: 16px; letter-spacing: .5px; }
+  .app-header nav { display: flex; gap: 20px; color: var(--text-secondary); }
+  .app-header nav span { cursor: pointer; padding: 4px 2px; }
+  .app-header nav span.active { color: var(--primary); font-weight: 600; border-bottom: 2px solid var(--primary); }
+
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px 64px;
+  }
+  .page-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .page-head h1 { font-size: 20px; font-weight: 700; }
+  .page-head p { color: var(--text-secondary); margin-top: 4px; }
+
+  /* ---------- 项目卡片 ---------- */
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-card);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    transition: opacity .25s ease, transform .25s ease;
+  }
+  .project-card.removing {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  .project-avatar {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #6f8bff, #3b5bfd);
+    color: #fff;
+    font-weight: 700;
+    font-size: 17px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .project-info { flex: 1; min-width: 0; }
+  .project-info h2 { font-size: 15px; font-weight: 600; }
+  .project-meta { color: var(--text-secondary); font-size: 13px; margin-top: 2px; display: flex; gap: 14px; flex-wrap: wrap; }
+  .project-meta .num { color: var(--text); font-weight: 600; }
+
+  /* ---------- 按钮 ---------- */
+  .btn {
+    font: inherit;
+    font-weight: 600;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    padding: 7px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .15s ease, border-color .15s ease, color .15s ease, box-shadow .15s ease;
+  }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .btn-ghost {
+    background: transparent;
+    color: var(--danger);
+    border-color: var(--border);
+  }
+  .btn-ghost:hover { background: var(--danger-bg); border-color: var(--danger-border); }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:disabled { background: #b9c2f5; cursor: not-allowed; }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+  .btn-danger:disabled { background: #f0a8a2; cursor: not-allowed; }
+  .btn-default { background: var(--surface); color: var(--text-secondary); border-color: var(--border); }
+  .btn-default:hover { background: #f2f4f7; color: var(--text); }
+  .btn svg { width: 16px; height: 16px; }
+
+  /* ---------- 遮罩与弹窗 ---------- */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(16, 24, 40, .55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .18s ease;
+  }
+  .overlay.open { opacity: 1; pointer-events: auto; }
+
+  .modal {
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: var(--shadow-modal);
+    width: 100%;
+    max-width: 460px;
+    padding: 24px;
+    transform: translateY(10px) scale(.97);
+    transition: transform .18s ease;
+  }
+  .overlay.open .modal { transform: translateY(0) scale(1); }
+
+  .modal-header { display: flex; align-items: flex-start; gap: 14px; }
+  .modal-icon {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: var(--danger-bg);
+    color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .modal-icon svg { width: 22px; height: 22px; }
+  .modal-header h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .modal-header p { color: var(--text-secondary); font-size: 13px; }
+
+  .modal-body { margin-top: 16px; font-size: 13px; color: var(--text-secondary); }
+  .modal-body strong { color: var(--text); font-weight: 600; }
+
+  .consequences {
+    margin-top: 12px;
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .consequences li {
+    list-style: none;
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    color: #91231a;
+    font-size: 13px;
+    padding: 2px 0;
+  }
+  .consequences li::before {
+    content: "";
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--danger);
+    margin-top: 8px;
+    flex-shrink: 0;
+  }
+
+  .type-field { margin-top: 16px; }
+  .type-field label { font-size: 13px; font-weight: 600; color: var(--text); display: block; margin-bottom: 6px; }
+  .type-field input {
+    width: 100%;
+    font: inherit;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .type-field input:focus {
+    outline: none;
+    border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(217, 45, 32, .12);
+  }
+  .type-field .hint { font-size: 12px; color: var(--text-tertiary); margin-top: 6px; }
+  .type-field .hint code {
+    background: #f2f4f7;
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: Consolas, monospace;
+    color: var(--text);
+  }
+
+  .modal-footer {
+    margin-top: 22px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translate(-50%, 16px);
+    background: #1f2430;
+    color: #fff;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    box-shadow: var(--shadow-modal);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  .toast svg { width: 16px; height: 16px; color: #7ce2a0; }
+
+  .empty-tip {
+    text-align: center;
+    color: var(--text-tertiary);
+    padding: 48px 0;
+  }
+</style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="logo">⬡ 管理控制台</div>
+  <nav>
+    <span>概览</span>
+    <span class="active">项目</span>
+    <span>成员</span>
+    <span>设置</span>
+  </nav>
+</header>
+
+<main class="page">
+  <div class="page-head">
+    <div>
+      <h1>项目列表</h1>
+      <p>共 1 个进行中的项目。删除项目属于高危操作，删除后数据不可恢复。</p>
+    </div>
+  </div>
+
+  <div class="project-card" id="card-website-2024">
+    <div class="project-avatar">官</div>
+    <div class="project-info">
+      <h2>官网改版 2024</h2>
+      <div class="project-meta">
+        <span>状态：<strong>进行中</strong></span>
+        <span>关联任务 <strong class="num">128</strong> 个</span>
+        <span>存储文件 <strong class="num">2.4 GB</strong></span>
+        <span>创建于 2024-03-12</span>
+      </div>
+    </div>
+    <button class="btn btn-ghost" id="delete-btn" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M4 7h16M10 11v6M14 11v6M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/>
+      </svg>
+      删除项目
+    </button>
+  </div>
+  <div class="empty-tip" id="empty-tip" hidden>当前没有其他项目</div>
+</main>
+
+<!-- 删除确认弹窗 -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-desc">
+    <div class="modal-header">
+      <div class="modal-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        </svg>
+      </div>
+      <div>
+        <h2 id="modal-title">确认删除“官网改版 2024”？</h2>
+        <p id="modal-desc">此操作不可恢复，请谨慎确认。</p>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      删除后，该项目下的所有数据将被<strong>永久清除，无法找回</strong>：
+      <ul class="consequences">
+        <li>128 个关联任务将被一并删除</li>
+        <li>2.4 GB 项目文件与附件将被清除</li>
+        <li>项目历史记录与成员协作数据将同时丢失</li>
+      </ul>
+
+      <div class="type-field">
+        <label for="confirm-input">请输入项目名称 <strong>官网改版 2024</strong> 以确认：</label>
+        <input type="text" id="confirm-input" placeholder="输入项目名称" autocomplete="off" spellcheck="false">
+        <div class="hint">输入正确后才能点击“永久删除”，用于防止误操作。</div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-default" id="cancel-btn">取消</button>
+      <button class="btn btn-danger" id="confirm-btn" disabled>永久删除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+  <span id="toast-text">项目已删除</span>
+</div>
+
+<script>
+(function () {
+  var PROJECT_NAME = '官网改版 2024';
+  var CARD_ID = 'card-website-2024';
+
+  var overlay = document.getElementById('overlay');
+  var trigger = document.getElementById('delete-btn');
+  var cancelBtn = document.getElementById('cancel-btn');
+  var confirmBtn = document.getElementById('confirm-btn');
+  var confirmInput = document.getElementById('confirm-input');
+  var toast = document.getElementById('toast');
+  var toastText = document.getElementById('toast-text');
+  var card = document.getElementById(CARD_ID);
+  var emptyTip = document.getElementById('empty-tip');
+
+  var lastFocused = null;   // 记录触发按钮，关闭后归还焦点
+  var toastTimer = null;
+
+  function openModal() {
+    lastFocused = document.activeElement;
+    confirmInput.value = '';
+    confirmBtn.disabled = true;
+    overlay.classList.add('open');
+    // 等过渡开始后再聚焦输入框
+    setTimeout(function () { confirmInput.focus(); }, 60);
+    document.addEventListener('keydown', onKeydown);
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.removeEventListener('keydown', onKeydown);
+    if (lastFocused && typeof lastFocused.focus === 'function') {
+      lastFocused.focus();
+    }
+  }
+
+  function onKeydown(e) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      closeModal();
+      return;
+    }
+    // 简单焦点圈定（Tab 循环）
+    if (e.key === 'Tab') {
+      var focusables = overlay.querySelectorAll('input, button:not(:disabled)');
+      if (!focusables.length) return;
+      var first = focusables[0];
+      var last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  function showToast(text) {
+    toastText.textContent = text;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toast.classList.remove('show');
+    }, 2600);
+  }
+
+  trigger.addEventListener('click', openModal);
+  cancelBtn.addEventListener('click', closeModal);
+
+  // 点击遮罩空白区域 = 取消
+  overlay.addEventListener('mousedown', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+
+  // 输入匹配项目名后才允许确认
+  confirmInput.addEventListener('input', function () {
+    confirmBtn.disabled = confirmInput.value.trim() !== PROJECT_NAME;
+  });
+  // 输入正确时按回车可直接确认
+  confirmInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !confirmBtn.disabled) confirmBtn.click();
+  });
+
+  confirmBtn.addEventListener('click', function () {
+    closeModal();
+    // 执行“删除”：卡片淡出移除
+    card.classList.add('removing');
+    setTimeout(function () {
+      card.remove();
+      emptyTip.hidden = false;
+    }, 260);
+    showToast('项目“' + PROJECT_NAME + '”及其所有数据已删除');
+  });
+})();
+</script>
+</body>
+</html>

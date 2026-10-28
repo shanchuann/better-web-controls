@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订单管理 · 负责人筛选</title>
+<style>
+  :root{
+    --bg:#f4f6f8;
+    --card:#ffffff;
+    --line:#e6e9ee;
+    --text:#1f2733;
+    --text-2:#5b6675;
+    --text-3:#8a94a3;
+    --primary:#2f6bff;
+    --primary-soft:#eaf0ff;
+    --danger:#e5484d;
+    --radius:12px;
+    --shadow:0 1px 2px rgba(31,39,51,.05),0 4px 16px rgba(31,39,51,.06);
+    font-variant-numeric: tabular-nums;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;
+    font-size:14px;
+    line-height:1.6;
+    padding:32px 24px 64px;
+  }
+  .wrap{max-width:1040px;margin:0 auto}
+
+  /* 页头 */
+  .page-head{margin-bottom:20px}
+  .page-head h1{font-size:20px;font-weight:600;letter-spacing:.5px}
+  .page-head p{color:var(--text-3);margin-top:2px}
+
+  /* 筛选栏 */
+  .filter-bar{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .filter-label{color:var(--text-2);display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .filter-label svg{flex:none}
+
+  /* ===== 负责人 Select 单选下拉 ===== */
+  .select{position:relative;width:220px}
+  .select-trigger{
+    width:100%;
+    display:flex;align-items:center;gap:8px;
+    background:#fff;
+    border:1px solid #d5dbe4;
+    border-radius:8px;
+    padding:8px 10px;
+    cursor:pointer;
+    color:var(--text);
+    font-size:14px;
+    transition:border-color .15s, box-shadow .15s;
+    user-select:none;
+  }
+  .select-trigger:hover{border-color:#b8c2d0}
+  .select.open .select-trigger,
+  .select-trigger:focus-visible{border-color:var(--primary);box-shadow:0 0 0 3px rgba(47,107,255,.14);outline:none}
+  .select-placeholder{color:var(--text-3)}
+  .select-value{display:flex;align-items:center;gap:8px;min-width:0;flex:1}
+  .avatar{
+    width:20px;height:20px;border-radius:50%;
+    color:#fff;font-size:11px;font-weight:600;
+    display:inline-flex;align-items:center;justify-content:center;flex:none;
+  }
+  .select-value .label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .select .caret{
+    margin-left:auto;flex:none;color:var(--text-3);
+    transition:transform .18s ease;
+  }
+  .select.open .caret{transform:rotate(180deg)}
+  .select.clearable .caret{display:none}
+
+  /* 清空按钮 × */
+  .select-clear{
+    margin-left:auto;flex:none;
+    width:18px;height:18px;border:none;border-radius:50%;
+    background:#eef1f5;color:var(--text-2);
+    font-size:12px;line-height:1;cursor:pointer;
+    display:none;align-items:center;justify-content:center;
+  }
+  .select.clearable .select-clear{display:inline-flex}
+  .select.clearable.open .select-clear{display:none}
+  .select-clear:hover{background:#e1e6ee;color:var(--text)}
+
+  /* 下拉面板 */
+  .select-panel{
+    position:absolute;top:calc(100% + 6px);left:0;
+    width:100%;min-width:240px;
+    background:#fff;border:1px solid var(--line);border-radius:10px;
+    box-shadow:0 8px 24px rgba(31,39,51,.14);
+    padding:6px;
+    z-index:30;
+    opacity:0;transform:translateY(-4px);pointer-events:none;
+    transition:opacity .15s ease, transform .15s ease;
+  }
+  .select.open .select-panel{opacity:1;transform:translateY(0);pointer-events:auto}
+  .select-option{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 10px;border-radius:7px;cursor:pointer;
+  }
+  .select-option:hover{background:#f3f6fa}
+  .select-option .name{flex:1}
+  .select-option .count{color:var(--text-3);font-size:12px}
+  .select-option.selected{background:var(--primary-soft)}
+  .select-option.selected .name{color:var(--primary);font-weight:600}
+  .select-option .check{visibility:hidden;color:var(--primary);flex:none}
+  .select-option.selected .check{visibility:visible}
+  .select-option.all-option{border-bottom:1px solid var(--line);border-radius:7px 7px 0 0;margin-bottom:2px;padding-bottom:10px}
+
+  /* 条件标签（激活的筛选条件，可单独移除） */
+  .chips{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--primary-soft);color:var(--primary);
+    border-radius:999px;padding:3px 6px 3px 12px;
+    font-size:13px;
+  }
+  .chip .chip-label{color:var(--text-3);margin-right:2px}
+  .chip button{
+    border:none;background:rgba(47,107,255,.14);color:var(--primary);
+    width:18px;height:18px;border-radius:50%;cursor:pointer;
+    font-size:11px;line-height:1;display:inline-flex;align-items:center;justify-content:center;
+  }
+  .chip button:hover{background:rgba(47,107,255,.26)}
+  .chips .hint{color:var(--text-3);font-size:12px}
+
+  .result-count{margin-left:auto;color:var(--text-2);white-space:nowrap}
+  .result-count strong{color:var(--text);font-weight:600}
+
+  /* ===== 订单表格卡片 ===== */
+  .table-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    overflow:hidden;
+  }
+  table{width:100%;border-collapse:collapse}
+  thead th{
+    text-align:left;
+    font-size:12px;font-weight:500;color:var(--text-3);
+    padding:12px 16px;
+    background:#fafbfc;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  tbody td{
+    padding:13px 16px;
+    border-bottom:1px solid var(--line);
+    color:var(--text);
+    white-space:nowrap;
+  }
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr{transition:background .12s}
+  tbody tr:hover{background:#fafbfd}
+  td.num, th.num{text-align:right}
+  td.num{font-variant-numeric:tabular-nums;font-weight:600}
+  .order-no{font-variant-numeric:tabular-nums;color:var(--text-2)}
+  td .date{color:var(--text-3)}
+
+  .badge{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:2px 10px;border-radius:999px;font-size:12px;
+    background:#f1f3f7;color:var(--text-2);
+  }
+  .badge .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+  .badge.status-pending{background:#fff4e5;color:#c77700}
+  .badge.status-doing{background:#eaf0ff;color:#2f6bff}
+  .badge.status-done{background:#e8f7ee;color:#1a9e55}
+
+  .badge.owner{cursor:pointer}
+  .badge.owner:hover{outline:1px solid currentColor}
+
+  /* ===== 筛选无果空状态 ===== */
+  .empty{
+    display:none;
+    padding:56px 24px;
+    text-align:center;
+  }
+  .empty.show{display:block}
+  .empty .icon{
+    width:56px;height:56px;margin:0 auto 14px;
+    border-radius:16px;background:#f1f3f7;color:#b6bfcc;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .empty h3{font-size:15px;font-weight:600;margin-bottom:4px}
+  .empty p{color:var(--text-3);margin-bottom:16px}
+  .empty p .kw{color:var(--text);font-weight:500}
+  .btn-clear-filter{
+    border:1px solid #d5dbe4;background:#fff;color:var(--text);
+    padding:7px 16px;border-radius:8px;cursor:pointer;font-size:13px;
+    transition:border-color .15s,color .15s;
+  }
+  .btn-clear-filter:hover{border-color:var(--primary);color:var(--primary)}
+
+  @media (max-width:720px){
+    body{padding:20px 12px 48px}
+    .select{width:100%}
+    .result-count{margin-left:0}
+    td,th{padding:11px 12px}
+    .hide-sm{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <h1>订单管理</h1>
+    <p>按负责人筛选订单，或点击表格中的负责人徽章快速筛选</p>
+  </header>
+
+  <!-- 筛选栏：负责人 Select 单选下拉 -->
+  <div class="filter-bar">
+    <span class="filter-label">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+      负责人
+    </span>
+
+    <div class="select" id="ownerSelect">
+      <button class="select-trigger" type="button" aria-haspopup="listbox" aria-expanded="false" id="ownerTrigger">
+        <span class="select-value" id="ownerValue"><span class="select-placeholder">全部负责人</span></span>
+        <span class="select-clear" id="ownerClear" role="button" aria-label="清空筛选" title="清空">×</span>
+        <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+      <div class="select-panel" role="listbox" id="ownerPanel"></div>
+    </div>
+
+    <!-- 已生效的筛选条件（可单独移除） -->
+    <div class="chips" id="chips"></div>
+
+    <span class="result-count" id="resultCount"></span>
+  </div>
+
+  <!-- 订单表格 -->
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>订单号</th>
+          <th>客户</th>
+          <th>负责人</th>
+          <th>状态</th>
+          <th class="num">金额（元）</th>
+          <th class="hide-sm">创建日期</th>
+        </tr>
+      </thead>
+      <tbody id="orderBody"></tbody>
+    </table>
+
+    <!-- 筛选无果空状态：保留当前条件，可移除 -->
+    <div class="empty" id="emptyState">
+      <div class="icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </div>
+      <h3>没有符合条件的订单</h3>
+      <p>当前负责人 <span class="kw" id="emptyOwner"></span> 名下暂无订单，可清除筛选查看全部订单</p>
+      <button class="btn-clear-filter" id="btnClearFilter" type="button">清除筛选</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- 数据 ---------- */
+  var OWNERS = [
+    { id:"o1", name:"陈晓明" },
+    { id:"o2", name:"林小雨" },
+    { id:"o3", name:"赵文博" },
+    { id:"o4", name:"王思琪" },
+    { id:"o5", name:"周凯" },
+    { id:"o6", name:"许静怡" }
+  ];
+
+  var STATUS = {
+    pending: { text:"待处理", cls:"status-pending" },
+    doing:   { text:"进行中", cls:"status-doing" },
+    done:    { text:"已完成", cls:"status-done" }
+  };
+
+  var ORDERS = [
+    { no:"SO-20261001", customer:"星辰科技",   owner:"o1", status:"doing",    amount:12800, date:"2026-10-03" },
+    { no:"SO-20261002", customer:"云帆贸易",   owner:"o2", status:"pending",  amount:5600,  date:"2026-10-05" },
+    { no:"SO-20261003", customer:"远山制造",   owner:"o3", status:"done",     amount:45200, date:"2026-10-07" },
+    { no:"SO-20261004", customer:"蓝鲸传媒",   owner:"o1", status:"pending",  amount:8900,  date:"2026-10-09" },
+    { no:"SO-20261005", customer:"启明星教育", owner:"o4", status:"doing",    amount:21500, date:"2026-10-11" },
+    { no:"SO-20261006", customer:"恒达物流",   owner:"o5", status:"done",     amount:33400, date:"2026-10-13" },
+    { no:"SO-20261007", customer:"晨光餐饮",   owner:"o2", status:"doing",    amount:7300,  date:"2026-10-15" },
+    { no:"SO-20261008", customer:"峰度体育",   owner:"o6", status:"pending",  amount:16800, date:"2026-10-17" },
+    { no:"SO-20261009", customer:"拓维软件",   owner:"o3", status:"doing",    amount:58900, date:"2026-10-19" },
+    { no:"SO-20261010", customer:"青禾农业",   owner:"o4", status:"done",     amount:9200,  date:"2026-10-21" },
+    { no:"SO-20261011", customer:"锐进电子",   owner:"o5", status:"pending",  amount:27600, date:"2026-10-23" },
+    { no:"SO-20261012", customer:"银河文旅",   owner:"o6", status:"doing",    amount:14300, date:"2026-10-25" },
+    { no:"SO-20261013", customer:"北辰医疗",   owner:"o1", status:"done",     amount:62100, date:"2026-10-27" },
+    { no:"SO-20261014", customer:"方舟环保",   owner:"o2", status:"doing",    amount:11800, date:"2026-10-28" }
+  ];
+
+  var AVATAR_COLORS = ["#2f6bff","#1a9e55","#c77700","#8b5cf6","#e5484d","#0ea5b7"];
+
+  /* ---------- 状态 ---------- */
+  var state = { owner: null }; // null = 全部负责人
+  var ownerById = {};
+  OWNERS.forEach(function(o){ ownerById[o.id] = o; });
+
+  function ownerCount(id){
+    return ORDERS.filter(function(od){ return od.owner === id; }).length;
+  }
+  function avatarColor(id){
+    var i = OWNERS.findIndex(function(o){ return o.id === id; });
+    return AVATAR_COLORS[(i < 0 ? 0 : i) % AVATAR_COLORS.length];
+  }
+
+  /* ---------- DOM ---------- */
+  var select   = document.getElementById("ownerSelect");
+  var trigger  = document.getElementById("ownerTrigger");
+  var valueEl  = document.getElementById("ownerValue");
+  var clearBtn = document.getElementById("ownerClear");
+  var panel    = document.getElementById("ownerPanel");
+  var chipsEl  = document.getElementById("chips");
+  var countEl  = document.getElementById("resultCount");
+  var tbody    = document.getElementById("orderBody");
+  var emptyEl  = document.getElementById("emptyState");
+  var emptyOwner = document.getElementById("emptyOwner");
+  var btnClearFilter = document.getElementById("btnClearFilter");
+
+  function avatarHTML(o){
+    return '<span class="avatar" style="background:'+avatarColor(o.id)+'">'
+         + o.name.charAt(o.name.length - 2 > 0 ? o.name.length - 2 : 0) + o.name.charAt(o.name.length - 1)
+         + '</span>';
+  }
+
+  /* ---------- 渲染下拉面板 ---------- */
+  function renderPanel(){
+    var html = '<div class="select-option all-option'+(state.owner===null?" selected":"")+'" role="option" data-id="">'
+             +   '<span class="name">全部负责人</span>'
+             +   '<span class="count">'+ORDERS.length+' 单</span>'
+             +   '<svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+             + '</div>';
+    OWNERS.forEach(function(o){
+      var c = ownerCount(o.id);
+      html += '<div class="select-option'+(state.owner===o.id?" selected":"")+'" role="option" data-id="'+o.id+'">'
+            +   avatarHTML(o)
+            +   '<span class="name">'+o.name+'</span>'
+            +   '<span class="count">'+c+' 单</span>'
+            +   '<svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+            + '</div>';
+    });
+    panel.innerHTML = html;
+
+    panel.querySelectorAll(".select-option").forEach(function(opt){
+      opt.addEventListener("click", function(e){
+        e.stopPropagation();
+        var id = opt.getAttribute("data-id");
+        setOwner(id === "" ? null : id);
+        close();
+      });
+    });
+  }
+
+  /* ---------- 触发框显示 ---------- */
+  function renderTrigger(){
+    if(state.owner === null){
+      valueEl.innerHTML = '<span class="select-placeholder">全部负责人</span>';
+      select.classList.remove("clearable");
+    } else {
+      var o = ownerById[state.owner];
+      valueEl.innerHTML = avatarHTML(o) + '<span class="label">'+o.name+'</span>';
+      select.classList.add("clearable");
+    }
+    trigger.setAttribute("aria-expanded", select.classList.contains("open") ? "true" : "false");
+  }
+
+  /* ---------- 条件标签 ---------- */
+  function renderChips(){
+    if(state.owner === null){ chipsEl.innerHTML = ""; return; }
+    var o = ownerById[state.owner];
+    chipsEl.innerHTML =
+        '<span class="chip">'
+      +   '<span class="chip-label">负责人</span>'+o.name
+      +   '<button type="button" id="chipRemove" aria-label="移除该筛选条件" title="移除">×</button>'
+      + '</span>'
+      + '<span class="hint">点击 × 减少一个条件</span>';
+    document.getElementById("chipRemove").addEventListener("click", function(){
+      setOwner(null);
+    });
+  }
+
+  /* ---------- 表格与结果数 ---------- */
+  function renderTable(){
+    var rows = state.owner === null
+      ? ORDERS
+      : ORDERS.filter(function(od){ return od.owner === state.owner; });
+
+    countEl.innerHTML = state.owner === null
+      ? '共 <strong>'+ORDERS.length+'</strong> 单'
+      : '共 '+ORDERS.length+' 单，筛出 <strong>'+rows.length+'</strong> 单';
+
+    if(rows.length === 0){
+      tbody.innerHTML = "";
+      emptyOwner.textContent = ownerById[state.owner].name;
+      emptyEl.classList.add("show");
+      return;
+    }
+    emptyEl.classList.remove("show");
+
+    var html = "";
+    rows.forEach(function(od){
+      var o = ownerById[od.owner];
+      var s = STATUS[od.status];
+      html += '<tr>'
+            +   '<td class="order-no">'+od.no+'</td>'
+            +   '<td>'+od.customer+'</td>'
+            +   '<td><span class="badge owner" data-owner="'+o.id+'" title="按 '+o.name+' 筛选">'+avatarHTML(o)+o.name+'</span></td>'
+            +   '<td><span class="badge '+s.cls+'"><span class="dot"></span>'+s.text+'</span></td>'
+            +   '<td class="num">'+od.amount.toLocaleString("zh-CN")+'</td>'
+            +   '<td class="hide-sm"><span class="date">'+od.date+'</span></td>'
+            + '</tr>';
+    });
+    tbody.innerHTML = html;
+
+    // 点击行内负责人徽章 = 按该负责人筛选
+    tbody.querySelectorAll(".badge.owner").forEach(function(b){
+      b.addEventListener("click", function(){
+        setOwner(b.getAttribute("data-owner"));
+      });
+    });
+  }
+
+  function renderAll(){
+    renderTrigger();
+    renderPanel();
+    renderChips();
+    renderTable();
+  }
+
+  function setOwner(id){
+    state.owner = id;
+    renderAll();
+  }
+
+  /* ---------- 面板开关与关闭规则 ---------- */
+  function open(){
+    select.classList.add("open");
+    trigger.setAttribute("aria-expanded","true");
+  }
+  function close(){
+    select.classList.remove("open");
+    trigger.setAttribute("aria-expanded","false");
+  }
+
+  trigger.addEventListener("click", function(){
+    select.classList.contains("open") ? close() : open();
+  });
+
+  // 点击清空按钮：清空重选
+  clearBtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    setOwner(null);
+  });
+
+  // 点击外部关闭
+  document.addEventListener("click", function(e){
+    if(!select.contains(e.target)) close();
+  });
+  // Esc 关闭
+  document.addEventListener("keydown", function(e){
+    if(e.key === "Escape") close();
+  });
+
+  // 空状态里的清除筛选
+  btnClearFilter.addEventListener("click", function(){ setOwner(null); });
+
+  /* ---------- 初始化 ---------- */
+  renderAll();
+})();
+</script>
+</body>
+</html>

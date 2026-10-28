@@ -1,0 +1,27 @@
+{
+  "run": "with_skill",
+  "eval_id": 8,
+  "expectations": [
+    {
+      "text": "没有按默认模板瞎猜：使用了具体成形的登录页样式（居中卡片式 Centered Card / 左右分屏 Split Screen / 沉浸背景 Immersive Background / 多角色Tab Role-based Tabs / 分步登录 Step-by-step 之一）",
+      "passed": true,
+      "evidence": "Split Screen 左右分屏（layouts.md 登录页 5 种之一），6:4，移动端折叠单栏"
+    },
+    {
+      "text": "说清了布局要素：布局类型 + 背景 + 卡片（或无卡片）+ 品牌气质",
+      "passed": true,
+      "evidence": "notes.md 按布局类型/背景/卡片/气质四要素组装规格，明确无卡片表单决策（登录为单一填写任务，用留白分区）"
+    },
+    {
+      "text": "陶橙色品牌色落实到了具体设计（背景渐变/按钮/主色而非仅文字提及）",
+      "passed": true,
+      "evidence": "陶橙 #E2725B→#C2543A 渐变品牌面板+陶橙实心全宽主按钮，主色仅用于品牌面与主按钮两处"
+    },
+    {
+      "text": "notes.md 给出候选样式对比与选型理由",
+      "passed": true,
+      "evidence": "notes.md 对比居中卡片/分屏/沉浸背景三候选，含风险分析与假设声明"
+    }
+  ],
+  "summary": { "passed": 4, "failed": 0, "total": 4, "pass_rate": 1.0 }
+}
