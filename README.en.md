@@ -6,7 +6,7 @@
 
 A translation dictionary for web controls in the vibe coding era
 
-Vague requests like “make a dropdown” are open to interpretation. This skill turns them into a spec an AI can execute in one pass, naming the control, its form and its interaction rules.
+Vague requests like make a dropdown are open to interpretation. This skill turns them into a spec an AI can execute in one pass, naming the control, its form and its interaction rules.
 
 [English](README.en.md) | [中文](README.md)
 
@@ -42,8 +42,8 @@ One request, two phrasings:
 
 | | What you tell the AI | What you get |
 |---|---|---|
-| Before | “Make a dropdown to pick an owner” | Whatever comes up: possibly a native `<select>`, possibly no clear button and no keyboard support, with no stated reason for the choice |
-| After | “Owner selector: a single-select Select dropdown: options are team members, checkmark on selection, clear via ×, close on outside click or Esc” | Built to spec in one pass, form and interaction rules in place |
+| Before | Make a dropdown to pick an owner | Whatever comes up: possibly a native `<select>`, possibly no clear button and no keyboard support, with no stated reason for the choice |
+| After | “Owner selector: a single-select Select dropdown: options are team members, checkmark on selection, clear with a clear control, close on outside click or Esc” | Built to spec in one pass, form and interaction rules in place |
 
 The skill makes that translation part of the AI's workflow: identify the request type, read the matching reference file, list candidates with reasons, then produce an executable spec.
 
@@ -84,19 +84,19 @@ Per-scenario results:
 | # | Scenario | With skill | Without skill | Failure without skill |
 |:---:|---|:---:|:---:|---|
 | 0 | Navbar | 4/4 | 3/4 | No candidate comparison or rationale |
-| 1 | Page fixes | 4/4 | 4/4 | — |
-| 2 | Carousel | 4/4 | 4/4 | — |
+| 1 | Page fixes | 4/4 | 4/4 | n/a |
+| 2 | Carousel | 4/4 | 4/4 | n/a |
 | 3 | Owner dropdown | 4/4 | 3/4 | No candidate comparison or rationale |
-| 4 | Delete confirmation | 4/4 | 4/4 | — |
-| 5 | Save feedback | 4/4 | 4/4 | — |
+| 4 | Delete confirmation | 4/4 | 4/4 | n/a |
+| 5 | Save feedback | 4/4 | 4/4 | n/a |
 | 6 | Business report charts | 4/4 | 3/4 | No chart selection rationale |
 | 7 | Empty states (two cases) | 4/4 | 3/4 | Wrong primary button on no-results state |
 | 8 | Login page | 4/4 | 3/4 | No candidate comparison or rationale |
 
 Two things stand out.
 
-- Most of the gap comes from the selection process: 4 of the 5 failures were “no candidate comparison or rationale”. The no-skill runs hand over an implementation with an unreviewable choice behind it; the skill runs carry candidates, reasons and upgrade conditions, which can be checked.
-- Implicit rules decide whether the output is right. In the empty-state scenario the no-skill run rendered “search returned nothing” as a message with a large button, plus a “new customer” primary action that pushes a user who is stuck toward the wrong next step. The skill's rule avoids this: a search that finds nothing is fixed by changing the keyword, and a filter that matches nothing by changing the conditions.
+- Most of the gap comes from the selection process: 4 of the 5 failures were no candidate comparison or rationale. The no-skill runs hand over an implementation with an unreviewable choice behind it; the skill runs carry candidates, reasons and upgrade conditions, which can be checked.
+- Implicit rules decide whether the output is right. In the empty-state scenario the no-skill run rendered search returned nothing as a message with a large button, plus a new customer primary action that pushes a user who is stuck toward the wrong next step. The skill's rule avoids this: a search that finds nothing is fixed by changing the keyword, and a filter that matches nothing by changing the conditions.
 
 Full report with per-assertion evidence: [web-controls-workspace/iteration-2/benchmark.md](web-controls-workspace/iteration-2/benchmark.md)
 
