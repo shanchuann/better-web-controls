@@ -1,6 +1,6 @@
 {
   "skill_name": "better-web-controls",
-  "project_context": "Sue的AI知识库《web控件合集》35集方法论 → Vibe Coding 网页控件翻译词典。测试内容均为单文件 HTML 产出，对比带 skill 与不带 skill 的结果。",
+  "project_context": "Vibe Coding 网页控件翻译词典。测试内容均为单文件 HTML 产出，对比带 skill 与不带 skill 的结果。",
   "evals": [
     {
       "id": 0,

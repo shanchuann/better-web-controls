@@ -1,0 +1,4 @@
+# 各 agent 的本机技能目录（由 npx skills add 安装时自动生成）
+.opencode/
+.agents/
+skills-lock.json

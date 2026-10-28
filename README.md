@@ -1,8 +1,8 @@
 # Better Web Controls
 
-Vibe Coding 网页控件翻译词典，方法来自 Sue的AI知识库《web控件合集》35集。
+Vibe Coding 网页控件翻译词典。
 
-将「做个下拉」「加个按钮」「做个好看的导航」「页面乱七八糟」这类模糊需求，转写为 AI 可一次执行的准确描述：控件中文名、英文名、使用场景、操作规则。
+将"做个下拉""加个按钮""做个好看的导航""页面乱七八糟"这类模糊需求，转写为 AI 可一次执行的准确描述：控件中文名、英文名、使用场景、操作规则。
 
 ## 安装
 
@@ -17,7 +17,7 @@ npx skills add shanchuann/better-web-controls --skill better-web-controls -a ope
 npx skills add shanchuann/better-web-controls -g
 ```
 
-需要 Node.js 22.20 以上版本。安装后 OpenCode 自动发现该技能：项目级安装位置为 `.opencode/skills/`，全局安装位置为 `~/.config/opencode/skills/`。
+需要 Node.js 22.20 以上版本。skills CLI 支持 75 个以上的 agent，安装时自动写入对应 agent 的技能目录，例如 OpenCode 为 `.opencode/skills/`，全局安装为 `~/.config/opencode/skills/`。其他 agent 的目录由 CLI 自动识别，无需手动放置。
 
 ## 技能做什么
 
@@ -28,7 +28,7 @@ npx skills add shanchuann/better-web-controls -g
 3. 将候选对比与选型理由写入 `notes.md`
 4. 输出可直接使用的 Prompt，或按 Prompt 规格直接生成页面
 
-## 内容覆盖（35集全量）
+## 内容覆盖
 
 | 参考文件 | 内容 |
 |---|---|
@@ -38,25 +38,26 @@ npx skills add shanchuann/better-web-controls -g
 | `references/fixes.md` | 细节修复7句（症状、病因、指令）、常见问题6句 Prompt |
 | `references/charts.md` | 10种图表与场景选型、决策问句 |
 
-全部条目经原视频逐帧验证，无推断性内容。
+全部条目经逐帧核对原始素材，无推断性内容。
 
 ## 仓库结构
 
 ```
 skills/better-web-controls/   技能本体（npx skills add 的安装源）
 ├── SKILL.md                  触发条件、工作流、核心公式、完整示例
-├── CHANGELOG.md              版本与素材验证记录
+├── CHANGELOG.md              版本记录
 └── references/               5 个参考文件（按需加载）
-.opencode/skills/             本地已安装副本（与 skills/ 内容一致）
 web-controls-workspace/       评测（9 个场景，对比带与不带技能的结果）
 ```
+
+各 agent 的技能目录（如 `.opencode/skills/`、`.agents/skills/`）是安装时自动生成的本机副本，不入版本控制。
 
 ## 发布与更新
 
 1. 已发布至 `https://github.com/shanchuann/better-web-controls`
-2. 更新流程：修改 `skills/better-web-controls/`，同步复制到 `.opencode/skills/better-web-controls/`，推送后用户端执行 `npx skills update` 跟进
+2. 更新流程：修改 `skills/better-web-controls/`，推送后用户端执行 `npx skills update` 跟进
 3. 评测场景见 `web-controls-workspace/evals.json`
 
 ## License
 
-MIT。技能内容方法论来源：Sue的AI知识库《web控件合集》，使用时请保留来源署名。
+MIT。
