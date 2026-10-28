@@ -26,13 +26,13 @@ Vibe Coding 网页控件翻译词典
 
 | 登录页（Split Screen） | 月度经营报告（上总下分） |
 |:---:|:---:|
-| ![登录页](docs/screenshots/login.png) | ![经营报告](docs/screenshots/chart.png) |
+| ![登录页](https://files.seeusercontent.com/2026/10/28/0Dvo/login.png) | ![经营报告](https://files.seeusercontent.com/2026/10/28/6fyN/chart.png) |
 | 下拉选人 + 表格筛选 | 导航栏（悬浮吸顶） |
-| ![下拉选人](docs/screenshots/dropdown.png) | ![导航栏](docs/screenshots/navbar.png) |
+| ![下拉选人](https://files.seeusercontent.com/2026/10/28/lgS8/dropdown.png) | ![导航栏](https://files.seeusercontent.com/2026/10/28/iG0h/navbar.png) |
 | 轮播 | 删除确认（输入文字确认） |
-| ![轮播](docs/screenshots/carousel.png) | ![删除确认](docs/screenshots/confirm.png) |
+| ![轮播](https://files.seeusercontent.com/2026/10/28/gYk2/carousel.png) | ![删除确认](https://files.seeusercontent.com/2026/10/28/bDi4/confirm.png) |
 | 空状态（首次使用） | |
-| ![空状态](docs/screenshots/empty.png) | |
+| ![空状态](https://files.seeusercontent.com/2026/10/28/0Ybh/empty.png) | |
 
 ## 为什么需要它
 
@@ -117,7 +117,6 @@ skills/better-web-controls/   技能本体（npx skills add 的安装源）
 ├── SKILL.md                  触发条件、工作流、核心公式、完整示例
 ├── CHANGELOG.md              版本记录
 └── references/               5 个参考文件（按需加载）
-docs/screenshots/             效果图（评测产出的页面截图）
 docs/logo.svg                 标识（IP 角色，含 32/128/512 PNG）
 web-controls-workspace/       评测（9 个场景，对比带与不带技能的结果）
 ```

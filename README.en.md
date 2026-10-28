@@ -26,13 +26,13 @@ Each page below is a single-file HTML build from the benchmark scenarios, genera
 
 | Login page (Split Screen) | Monthly business report (Summary First) |
 |:---:|:---:|
-| ![Login page](docs/screenshots/login.png) | ![Business report](docs/screenshots/chart.png) |
+| ![Login page](https://files.seeusercontent.com/2026/10/28/0Dvo/login.png) | ![Business report](https://files.seeusercontent.com/2026/10/28/6fyN/chart.png) |
 | Owner dropdown + table filter | Navbar (floating sticky) |
-| ![Dropdown](docs/screenshots/dropdown.png) | ![Navbar](docs/screenshots/navbar.png) |
+| ![Dropdown](https://files.seeusercontent.com/2026/10/28/lgS8/dropdown.png) | ![Navbar](https://files.seeusercontent.com/2026/10/28/iG0h/navbar.png) |
 | Carousel | Delete confirmation (type to confirm) |
-| ![Carousel](docs/screenshots/carousel.png) | ![Delete confirmation](docs/screenshots/confirm.png) |
+| ![Carousel](https://files.seeusercontent.com/2026/10/28/gYk2/carousel.png) | ![Delete confirmation](https://files.seeusercontent.com/2026/10/28/bDi4/confirm.png) |
 | Empty state (first use) | |
-| ![Empty state](docs/screenshots/empty.png) | |
+| ![Empty state](https://files.seeusercontent.com/2026/10/28/0Ybh/empty.png) | |
 
 ## Why it exists
 
@@ -117,7 +117,6 @@ skills/better-web-controls/   The skill (install source for npx skills add)
 ├── SKILL.md                  Triggers, workflow, core formula, full example
 ├── CHANGELOG.md              Version history
 └── references/               5 reference files (loaded on demand)
-docs/screenshots/             Preview images (screenshots of benchmark outputs)
 docs/logo.svg                 Logo (IP character, with 32/128/512 PNGs)
 web-controls-workspace/       Benchmark (9 scenarios, with vs without the skill)
 ```
