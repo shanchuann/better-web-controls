@@ -43,7 +43,7 @@ One request, two phrasings:
 | | What you tell the AI | What you get |
 |---|---|---|
 | Before | Make a dropdown to pick an owner | Whatever comes up: possibly a native `<select>`, possibly no clear button and no keyboard support, with no stated reason for the choice |
-| After | “Owner selector: a single-select Select dropdown: options are team members, checkmark on selection, clear with a clear control, close on outside click or Esc” | Built to spec in one pass, form and interaction rules in place |
+| After | Owner selector: a single-select Select dropdown: options are team members, checkmark on selection, clear with a clear control, close on outside click or Esc | Built to spec in one pass, form and interaction rules in place |
 
 The skill makes that translation part of the AI's workflow: identify the request type, read the matching reference file, list candidates with reasons, then produce an executable spec.
 
