@@ -120,9 +120,9 @@ Full report with per-assertion evidence:
 
 | Reference file | Content |
 |---|---|
-| `references/controls.md` | Buttons (6 forms), dropdowns (7), carousels (7), tabs (6), sidebars (5), modals, progress (8), uploads (5), tables (5), special controls (8), form inputs |
+| `references/controls.md` | Buttons (6 forms), dropdowns (7), carousels (7), tabs (6), sidebars (5), modals, progress (8), uploads (5), tables (5), long-list loading (3), stepper, tooltip, command palette, special controls (10), form inputs |
 | `references/layouts.md` | Site layouts (7), AI product layouts (6), login pages (5), navbars (9), homepage modules (10), hero design, dashboards (5), workbench walkthrough, style references |
-| `references/rules.md` | Messages (7 levels), confirmations (7), waiting states (6), validation timing, form checklist (7), empty states (5), alignment (5), long-page anchoring (7), grouping, design vocabulary (7) |
+| `references/rules.md` | Messages (7 levels), confirmations (7), waiting states (6), validation timing, form checklist (7), empty states (5), alignment (5), long-page anchoring (7), grouping, design vocabulary (7), dark mode, mobile degradation (7 checks) |
 | `references/fixes.md` | Detail fixes (7 symptom-cause-fix triplets), common problem prompts (6) |
 | `references/charts.md` | 10 chart types with scenario matching, decision questions |
 
