@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRM 客户列表 - 空状态</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+    background: #f5f6f8;
+    color: #1f2329;
+    min-height: 100vh;
+  }
+  .topbar {
+    background: #fff;
+    border-bottom: 1px solid #e5e6eb;
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .topbar .logo { font-weight: 600; font-size: 16px; color: #3370ff; }
+  .topbar nav { display: flex; gap: 20px; font-size: 14px; color: #646a73; }
+  .topbar nav span.active { color: #3370ff; font-weight: 500; }
+
+  .page { max-width: 1080px; margin: 0 auto; padding: 32px 32px 60px; }
+  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+  .page-header h1 { font-size: 20px; font-weight: 600; }
+
+  .toolbar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .search-box { position: relative; }
+  .search-box svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); }
+  .search-box input {
+    width: 260px; height: 36px; border: 1px solid #e5e6eb; border-radius: 6px;
+    padding: 0 12px 0 32px; font-size: 14px; outline: none; background: #fff;
+  }
+  .search-box input:focus { border-color: #3370ff; box-shadow: 0 0 0 2px rgba(51,112,255,.15); }
+  select {
+    height: 36px; border: 1px solid #e5e6eb; border-radius: 6px; background: #fff;
+    padding: 0 8px; font-size: 14px; color: #1f2329; outline: none; cursor: pointer;
+  }
+
+  .btn {
+    height: 36px; padding: 0 16px; border-radius: 6px; border: 1px solid transparent;
+    font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+    transition: background .15s, box-shadow .15s;
+  }
+  .btn-primary { background: #3370ff; color: #fff; }
+  .btn-primary:hover { background: #2860e1; }
+  .btn-ghost { background: #fff; border-color: #e5e6eb; color: #1f2329; }
+  .btn-ghost:hover { background: #f2f3f5; }
+  .btn:focus-visible { outline: none; box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(51,112,255,.4); }
+
+  .card { background: #fff; border: 1px solid #e5e6eb; border-radius: 8px; overflow: hidden; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid #f0f1f3; }
+  th { background: #fafbfc; color: #646a73; font-weight: 500; font-size: 13px; }
+  tbody tr:hover { background: #f7f9ff; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+  .tag-high { background: #e8fce8; color: #23a52c; }
+  .tag-mid { background: #fff3e0; color: #e6820a; }
+  .tag-low { background: #f0f1f3; color: #646a73; }
+
+  .empty { display: none; padding: 72px 24px; text-align: center; }
+  .empty.active { display: block; animation: fadeIn .25s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  .empty-icon {
+    width: 96px; height: 96px; margin: 0 auto 20px;
+    display: flex; align-items: center; justify-content: center;
+    background: #f2f6ff; border-radius: 24px;
+  }
+  .empty h2 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .empty p { font-size: 14px; color: #8f959e; line-height: 1.6; max-width: 380px; margin: 0 auto 24px; }
+  .empty .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  .steps { display: flex; gap: 16px; justify-content: center; margin-top: 28px; flex-wrap: wrap; }
+  .step {
+    width: 180px; padding: 16px; background: #fafbfc; border: 1px solid #e5e6eb;
+    border-radius: 8px; text-align: left; font-size: 13px;
+  }
+  .step .num {
+    width: 24px; height: 24px; border-radius: 50%; background: #3370ff; color: #fff;
+    display: flex; align-items: center; justify-content: center; font-size: 12px; margin-bottom: 8px;
+  }
+  .step b { display: block; margin-bottom: 4px; font-size: 13px; }
+  .step span { color: #8f959e; }
+
+  .switch { display: flex; gap: 8px; margin-bottom: 20px; font-size: 13px; align-items: center; color: #646a73; }
+  .switch label { display: flex; align-items: center; gap: 4px; cursor: pointer; }
+  .demo-hint { font-size: 12px; color: #8f959e; margin-bottom: 16px; }
+
+  .clear-link { color: #3370ff; font-size: 14px; background: none; border: none; cursor: pointer; padding: 8px 12px; border-radius: 6px; }
+  .clear-link:hover { background: #f2f6ff; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="logo">云客 CRM</div>
+  <nav>
+    <span>工作台</span>
+    <span class="active">客户</span>
+    <span>线索</span>
+    <span>商机</span>
+  </nav>
+</header>
+
+<main class="page">
+  <div class="page-header">
+    <h1>客户列表</h1>
+    <button class="btn btn-primary" id="btnNew">＋ 新建客户</button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8f959e" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input type="search" id="searchInput" placeholder="搜索客户名称、联系人…" aria-label="搜索客户">
+    </div>
+    <select id="filterStage" aria-label="筛选阶段">
+      <option value="">全部阶段</option>
+      <option value="potential">潜在客户</option>
+      <option value="contacted">已联系</option>
+      <option value="deal">已成交</option>
+    </select>
+    <button class="btn btn-ghost" id="btnReset">清空筛选</button>
+  </div>
+
+  <div class="switch">
+    <label><input type="radio" name="scenario" value="data" checked> 场景：有数据</label>
+    <label><input type="radio" name="scenario" value="new"> 场景：新用户（无客户）</label>
+  </div>
+
+  <div class="card">
+    <!-- 表格：有数据时显示 -->
+    <table id="dataTable" aria-hidden="false">
+      <thead>
+        <tr><th>客户名称</th><th>联系人</th><th>电话</th><th>阶段</th><th>负责人</th><th>最近跟进</th></tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+
+    <!-- 空状态一：新用户，一个客户都没有 -->
+    <div class="empty" id="emptyNew" role="region" aria-label="暂无客户">
+      <div class="empty-icon">
+        <svg width="44" height="44" viewBox="0 0 48 48" fill="none" stroke="#7ba2ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M43 25v-5a5 5 0 0 0-5-5H31l-3.5-5.5A2 2 0 0 0 25.8 9H10a5 5 0 0 0-5 5v20a5 5 0 0 0 5 5h14"/>
+          <path d="M36 19v-4.5M33.8 16.8h4.4"/>
+          <circle cx="36" cy="35" r="7"/>
+          <path d="M36 31.5v3.5l2 1.5"/>
+        </svg>
+      </div>
+      <h2>还没有客户，从第一笔开始</h2>
+      <p>创建第一位客户后，你可以在这里使用搜索、筛选和批量跟进，所有客户信息都会汇总在列表中。</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnCreateFirst" onclick="document.getElementById('btnNew').click()">＋ 立即新建客户</button>
+        <button class="btn btn-ghost">导入客户（Excel）</button>
+      </div>
+      <div class="steps">
+        <div class="step"><i class="num">1</i><b>新建客户</b><span>填写名称和联系方式，30 秒搞定</span></div>
+        <div class="step"><i class="num">2</i><b>录入跟进记录</b><span>电话、会议进展随时记录</span></div>
+        <div class="step"><i class="num">3</i><b>分析转化</b><span>列表和报表自动统计</span></div>
+      </div>
+    </div>
+
+    <!-- 空状态二：搜索/筛选无结果 -->
+    <div class="empty" id="emptyNoResult" role="status" aria-live="polite">
+      <div class="empty-icon">
+        <svg width="44" height="44" viewBox="0 0 48 48" fill="none" stroke="#7ba2ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="21" cy="21" r="12"/>
+          <path d="M30.5 30.5L41 41"/>
+          <path d="M16.5 19.5h9M16.5 24h6"/>
+        </svg>
+      </div>
+      <h2>没有找到匹配的客户</h2>
+      <p id="noResultDesc">当前搜索或筛选条件下没有客户，试试调整关键词或放宽筛选范围。</p>
+      <div class="actions">
+        <button class="btn btn-primary" id="btnClearFilters">清空搜索与筛选</button>
+        <button class="btn btn-ghost" onclick="document.getElementById('btnNew').click()">新建客户</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  var DEMO = [
+    ["杭州云帆科技", "李婷", "138-0000-1123", "deal", "已成交", "张伟", "2024-06-14"],
+    ["上海明驰物流", "王强", "139-1234-5678", "contacted", "已联系", "刘洋", "2024-06-12"],
+    ["北京松鹤教育", "赵敏", "136-5555-2233", "potential", "潜在客户", "张伟", "2024-06-10"],
+    ["深圳蓝海电商", "陈磊", "137-8888-9911", "contacted", "已联系", "孙倩", "2024-06-08"],
+    ["广州恒星制造", "周芳", "135-6666-3344", "potential", "潜在客户", "刘洋", "2024-06-05"]
+  ];
+  var LEVEL = { potential: "tag-low", contacted: "tag-mid", deal: "tag-high" };
+
+  var inp = document.getElementById("searchInput");
+  var stage = document.getElementById("filterStage");
+  var table = document.getElementById("dataTable");
+  var emptyNew = document.getElementById("emptyNew");
+  var emptyNo = document.getElementById("emptyNoResult");
+  var btnNew = document.getElementById("btnNew");
+
+  function msg() {
+    var parts = [];
+    if (inp.value.trim()) parts.push("关键词“" + inp.value.trim() + "”");
+    if (stage.value) {
+      var opt = stage.options[stage.selectedIndex].text;
+      parts.push("阶段“" + opt + "”");
+    }
+    return parts.join(" 且 ") + " 没有匹配到的客户，试试调整条件或放宽筛选范围。";
+  }
+
+  function render() {
+    var kw = inp.value.trim().toLowerCase();
+    var st = stage.value;
+    var rows = DEMO.filter(function(r) {
+      return (!kw || r[0].toLowerCase().indexOf(kw) > -1 || r[1].indexOf(kw) > -1) && (!st || r[3] === st);
+    });
+
+    emptyNew.classList.remove("active");
+    emptyNo.classList.remove("active");
+    table.style.display = "";
+    table.setAttribute("aria-hidden", "false");
+
+    document.getElementById("noResultDesc").textContent = msg();
+
+    if (document.querySelector('input[name="scenario"]:checked').value === "new") {
+      table.style.display = "none";
+      emptyNew.classList.add("active");
+      table.setAttribute("aria-hidden", "true");
+      return;
+    }
+    if (!rows.length) {
+      table.style.display = "none";
+      emptyNo.classList.add("active");
+      table.setAttribute("aria-hidden", "true");
+      return;
+    }
+    document.getElementById("tableBody").innerHTML = rows.map(function(r) {
+      return "<tr><td>" + r[0] + "</td><td>" + r[1] + "</td><td>" + r[2] + "</td>" +
+        "<td><span class='tag " + LEVEL[r[3]] + "'>" + r[4] + "</span></td><td>" + r[5] + "</td><td>" + r[6] + "</td></tr>";
+    }).join("");
+  }
+
+  inp.addEventListener("input", render);
+  stage.addEventListener("change", render);
+  document.querySelectorAll('input[name="scenario"]').forEach(function(r) { r.addEventListener("change", render); });
+
+  function clearFilters() {
+    inp.value = "";
+    stage.value = "";
+    inp.focus();
+    render();
+  }
+  document.getElementById("btnClearFilters").addEventListener("click", clearFilters);
+  document.getElementById("btnReset").addEventListener("click", clearFilters);
+
+  btnNew.addEventListener("click", function() {
+    btnNew.textContent = "✓ 已模拟创建";
+    setTimeout(function() {
+      document.querySelector('input[value="data"]').checked = true;
+      clearFilters();
+      btnNew.textContent = "＋ 新建客户";
+    }, 600);
+  });
+
+  render();
+</script>
+</body>
+</html>
