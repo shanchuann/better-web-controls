@@ -7,6 +7,8 @@
 把"做个下拉""加个按钮""做个好看的导航"这类模糊需求，翻译成 AI 能一次做对的准确描述：
 控件名称、形式、操作规则，一个不少。
 
+[中文](README.md) | [English](README.en.md)
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-22c55e)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-22.20%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org)
 [![Install](https://img.shields.io/badge/Install-npx%20skills%20add-2563eb)](#安装)
