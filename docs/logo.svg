@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Better Web Controls — IP mark. Hand-drawn vector, 512 x 512 canvas.
+     Exactly three colors: #141414 background, #FFEF93 body, #C2A8FF pins.
+     Six shapes total: body + two pins form one continuous outline; two eyes + one mouth.
+     No strokes, no gradients, no text, no shadow, no third color. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Better Web Controls">
+  <title>Better Web Controls</title>
+  <rect width="512" height="512" fill="#141414"/>
+  <!-- two blunt pins: the adapter that plugs a vague phrase into a precise control -->
+  <g fill="#C2A8FF">
+    <rect x="93" y="60" width="116" height="156" rx="58"/>
+    <rect x="285" y="60" width="116" height="156" rx="58"/>
+  </g>
+  <!-- body: rises out of the bottom edge, its lower corners crop at the canvas so it grows from below -->
+  <rect x="24" y="176" width="446" height="400" rx="118" fill="#FFEF93"/>
+  <!-- face: same three-color set, ink on bright yellow keeps ~16:1 contrast at 32 px -->
+  <g fill="#141414">
+    <circle cx="181" cy="296" r="40"/>
+    <circle cx="313" cy="296" r="40"/>
+    <rect x="222" y="368" width="50" height="20" rx="10"/>
+  </g>
+</svg>
