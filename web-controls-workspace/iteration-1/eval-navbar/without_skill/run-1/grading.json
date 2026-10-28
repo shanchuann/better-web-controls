@@ -1,0 +1,32 @@
+{
+  "run": "without_skill",
+  "eval_id": 0,
+  "expectations": [
+    {
+      "text": "输出为可直接打开的单文件 HTML，包含 nav 导航元素和首屏区块",
+      "passed": true,
+      "evidence": "index.html 单文件，全屏 Hero + 深色毛玻璃滚动导航 + 移动端汉堡菜单，可直接打开"
+    },
+    {
+      "text": "导航栏采用具体成形的形式（悬浮吸顶 Floating+Sticky / 抽屉 / 侧边栏等），而非普通的静态水平菜单拼装饰",
+      "passed": true,
+      "evidence": "首页透明、滚动 24px 后切深色毛玻璃块（backdrop-filter），移动端汉堡下拉——行为上接近但不 involuntary 地带吸顶/悬浮形态词"
+    },
+    {
+      "text": "导航在页面滚动时保持条理（吸顶/悬浮有阴影、留白、圆角等悬浮感处理，或做了移动端适配）",
+      "passed": true,
+      "evidence": "backdrop-filter 毛玻璃 + 底部分隔线 + 汉堡菜单移动端收起"
+    },
+    {
+      "text": "notes.md 给出了 2 种以上候选方案对比并写明最终选型理由",
+      "passed": false,
+      "evidence": "notes.md 仅说明最终设计要点（颜色/交互/背景图），没有列出任何候选方案或备选对比"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  }
+}

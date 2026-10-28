@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>山晨民宿 · 精选房型</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: "PingFang SC", "Microsoft YaHei", sans-serif; margin: 0; background: #faf8f5; color: #333; }
+
+  /* 顶部导航：fixed + 半透明（保持原样） */
+  nav { position: fixed; top: 0; left: 0; right: 0; height: 64px;
+        background: rgba(255,255,255,0.55); backdrop-filter: blur(4px);
+        display: flex; align-items: center; padding: 0 40px; z-index: 10; }
+  nav .logo { font-weight: 700; margin-right: 40px; }
+  nav a { margin-right: 24px; text-decoration: none; color: #444; }
+
+  /* 修复1：为 fixed 导航预留 64px 空间，首屏不再被遮挡 */
+  .hero { margin-top: 64px; }
+  /* 修复2：hero 图按比例裁切填满，不再被拉伸变形 */
+  .hero img { display: block; width: 100%; height: 380px; object-fit: cover; object-position: center; }
+
+  .content { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+  .content .lead { margin: 0 0 16px; }
+
+  section { padding: 48px 0; }
+  h2 { font-size: 22px; }
+
+  .rooms { display: flex; gap: 24px; }
+  /* 修复4：去掉固定 300px 宽度，改为等分 flex，避免 3 张卡片总宽超出容器导致挤压/溢出 */
+  .room { background: #fff; border-radius: 12px; padding: 16px; flex: 1; min-width: 0; }
+  .room .pic { height: 220px; border-radius: 8px; overflow: hidden; background: #eee; }
+  /* 修复3：图片用 cover 居中裁切，不再因 contain 留白而显得歪斜偏移 */
+  .room .pic img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+  .room .price { font-size: 26px; font-weight: 700; }
+  .room .unit { font-size: 13px; color: #888; }
+  .room .desc { font-size: 14px; color: #666; line-height: 1.6; }
+
+  footer { text-align: center; padding: 32px 0; color: #999; }
+</style>
+</head>
+<body>
+  <nav>
+    <span class="logo">山晨民宿</span>
+    <a href="#">房型</a><a href="#">体验</a><a href="#">预订</a>
+  </nav>
+
+  <div class="hero">
+    <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1200" alt="民宿外观">
+  </div>
+
+  <div class="content">
+    <!-- 修复5：移除旧模板残留的 .old-copy 包裹层及其 margin-left:40px / margin-top:24px -->
+    <section>
+      <h2>为什么选山晨</h2>
+      <p class="lead">推窗见山，晨起听林。海拔 900 米的独立院落，全年只有 6 间房，为一小部分人保留山中清晨。</p>
+      <p>山晨民宿藏于莫干山北麓，四面环林。我们相信：安静是这个时代最贵的享受。</p>
+    </section>
+
+    <section>
+      <h2>精选房型</h2>
+      <div class="rooms">
+        <div class="room">
+          <div class="pic"><img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800" alt="山景大床房"></div>
+          <div><span class="price">¥128</span> <span class="unit">/ 晚起</span></div>
+          <p class="desc">山景大床房 · 32㎡ · 独立浴缸</p>
+        </div>
+        <div class="room">
+          <div class="pic"><img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800" alt="庭院套房"></div>
+          <div><span class="price">¥256</span> <span class="unit">/ 晚起</span></div>
+          <p class="desc">庭院套房 · 55㎡ · 私汤温泉</p>
+        </div>
+        <div class="room">
+          <div class="pic"><img src="https://images.unsplash.com/photo-1554995207-c18c203602cb?w=800" alt="观星树屋"></div>
+          <div><span class="price">¥388</span> <span class="unit">/ 晚起</span></div>
+          <p class="desc">观星树屋 · 40㎡ · 全景天窗</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>© 2026 山晨民宿 · 浙ICP备000000号</footer>
+</body>
+</html>

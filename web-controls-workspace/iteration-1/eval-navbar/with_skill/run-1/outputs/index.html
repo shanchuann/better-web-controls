@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>刘一舟 · 独立设计师作品集</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0e0e0c;            /* 近黑，不是纯黑 */
+    --ink-2:#161614;
+    --paper:#f5f2ec;          /* 米白纸感 */
+    --paper-dim:#b8b2a6;
+    --gold:#c8a96a;           /* 唯一强调色 */
+    --line:rgba(245,242,236,.14);
+    --serif:"Playfair Display","Source Han Serif SC","Noto Serif SC","STSong",serif;
+    --sans:"Inter","Source Han Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--ink);color:var(--paper);
+    font-family:var(--sans);font-size:16px;line-height:1.7;
+    -webkit-font-smoothing:antialiased;overflow-x:hidden;
+  }
+  ::selection{background:var(--gold);color:var(--ink)}
+  img{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+  .wrap{width:min(1180px,90%);margin-inline:auto}
+
+  /* ================= 导航栏 NAVBAR =================
+     悬浮吸顶 Floating · Sticky：浮起的圆角玻璃卡，
+     离顶留白，下滚收缩变实（Shrink on Scroll），
+     桌面 scrollspy 锚点高亮；移动端汉堡 + 全屏遮罩菜单 Full-screen Overlay */
+  .navbar{
+    position:fixed;inset-inline:0;top:18px;z-index:100;
+    pointer-events:none;transition:top .4s var(--ease);
+  }
+  .navbar .bar{
+    pointer-events:auto;
+    width:min(1180px,90%);margin-inline:auto;
+    display:flex;align-items:center;justify-content:space-between;
+    gap:24px;padding:14px 12px 14px 22px;
+    border-radius:999px; /* 胶囊形浮岛 */
+    border:1px solid rgba(245,242,236,.10);
+    background:rgba(14,14,12,.35);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px); /* 液态玻璃 Liquid Glass */
+    transition:padding .35s var(--ease),background .35s var(--ease),
+               box-shadow .35s var(--ease),border-color .35s var(--ease);
+  }
+  .navbar.scrolled{top:10px}
+  .navbar.scrolled .bar{
+    padding-top:9px;padding-bottom:9px;
+    background:rgba(14,14,12,.78);
+    border-color:rgba(245,242,236,.16);
+    box-shadow:0 12px 32px rgba(0,0,0,.45); /* 下滚钉顶时的投影 */
+  }
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .mono{
+    font-family:var(--serif);font-size:1.25rem;letter-spacing:.06em;
+    color:var(--paper);
+  }
+  .brand .mono em{color:var(--gold);font-style:normal}
+  .brand .role{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--paper-dim)}
+  .nav-links{display:flex;gap:6px}
+  .nav-links a{
+    position:relative;padding:8px 16px;border-radius:999px;
+    font-size:.88rem;letter-spacing:.04em;color:var(--paper-dim);
+    transition:color .25s var(--ease);
+  }
+  .nav-links a::after{
+    content:"";position:absolute;left:50%;bottom:4px;width:0;height:2px;
+    background:var(--gold);border-radius:2px;transform:translateX(-50%);
+    transition:width .3s var(--ease);
+  }
+  .nav-links a:hover{color:var(--paper)}
+  .nav-links a.active{color:var(--paper)} /* scrollspy：滚到哪高亮哪 */
+  .nav-links a.active::after{width:16px}
+  .nav-cta{
+    flex-shrink:0;padding:9px 20px;border-radius:999px;
+    border:1px solid rgba(200,169,106,.55); /* 线状按钮 OUTLINE，不抢主按钮 */
+    font-size:.85rem;letter-spacing:.05em;color:var(--gold);
+    transition:background .25s var(--ease),color .25s var(--ease),transform .25s var(--ease);
+  }
+  .nav-cta:hover{background:var(--gold);color:var(--ink);transform:translateY(-1px)}
+  .burger{
+    display:none;width:40px;height:40px;border-radius:50%;
+    border:1px solid var(--line);background:transparent;color:var(--paper);
+    align-items:center;justify-content:center;cursor:pointer;
+  }
+  .burger svg{width:18px;height:18px}
+
+  /* 移动端：汉堡抽屉 → 全屏遮罩 Full-screen Overlay（有仪式感，作品集常用） */
+  .overlay{
+    position:fixed;inset:0;z-index:200;background:var(--ink-2);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    opacity:0;visibility:hidden;transition:opacity .4s var(--ease),visibility .4s;
+  }
+  .overlay.open{opacity:1;visibility:visible}
+  .overlay a{
+    font-family:var(--serif);font-size:2.2rem;color:var(--paper);
+    padding:10px 24px;opacity:0;transform:translateY(18px);
+    transition:opacity .5s var(--ease),transform .5s var(--ease),color .2s;
+  }
+  .overlay.open a{opacity:1;transform:none}
+  .overlay.open a:nth-child(2){transition-delay:.08s}
+  .overlay.open a:nth-child(3){transition-delay:.16s}
+  .overlay.open a:nth-child(4){transition-delay:.24s}
+  .overlay a:hover{color:var(--gold)}
+  .overlay .close{
+    position:absolute;top:26px;right:26px;width:44px;height:44px;
+    border-radius:50%;border:1px solid var(--line);background:transparent;
+    color:var(--paper);font-size:1.1rem;cursor:pointer;
+  }
+
+  /* ================= 首屏 HERO =================
+     个人品牌形象类：回答「你是谁、擅长什么」
+     全屏沉浸式 Full-screen + 圆形头像 + 放大代表作品 Banner */
+  .hero{
+    position:relative;min-height:100svh;
+    display:flex;align-items:center;
+    padding:140px 0 90px;overflow:hidden;
+  }
+  /* 放大代表作品 Banner：右半幅大图，向左渐隐融入墨色 */
+  .hero-bg{
+    position:absolute;top:0;right:0;bottom:0;width:58%;
+    background:url("https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1600&q=80")
+      center/cover no-repeat;
+    -webkit-mask-image:linear-gradient(105deg,transparent 4%,#000 62%);
+    mask-image:linear-gradient(105deg,transparent 4%,#000 62%);
+    opacity:.85;
+  }
+  .hero-bg::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(14,14,12,.25),rgba(14,14,12,.55));
+  }
+  .hero-inner{position:relative;z-index:2}
+  .kicker{
+    display:inline-flex;align-items:center;gap:12px;
+    font-size:.75rem;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:28px;
+  }
+  .kicker::before{content:"";width:36px;height:1px;background:var(--gold)}
+  h1{
+    font-family:var(--serif);font-weight:500;
+    font-size:clamp(2.6rem,6.4vw,5.2rem);line-height:1.12;
+    letter-spacing:.01em;max-width:12em;
+  }
+  h1 em{font-style:italic;color:var(--gold)}
+  .hero-sub{
+    margin-top:28px;max-width:34em;color:var(--paper-dim);font-size:1.02rem;
+  }
+  /* 圆形头像 + 姓名：个人品牌元素 */
+  .identity{display:flex;align-items:center;gap:16px;margin-top:36px}
+  .identity img{
+    width:52px;height:52px;border-radius:50%;object-fit:cover;
+    border:1px solid rgba(200,169,106,.5);
+  }
+  .identity .who{font-size:.92rem}
+  .identity .who b{display:block;font-weight:600;letter-spacing:.02em}
+  .identity .who span{color:var(--paper-dim);font-size:.8rem;letter-spacing:.06em}
+  .hero-cta{display:flex;gap:16px;margin-top:44px;flex-wrap:wrap}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:15px 34px;border-radius:999px;font-size:.92rem;letter-spacing:.04em;
+    cursor:pointer;transition:all .3s var(--ease);
+  }
+  /* 面状按钮 SOLID：全页唯一的实心主按钮 */
+  .btn-solid{background:var(--paper);color:var(--ink);border:1px solid var(--paper)}
+  .btn-solid:hover{background:var(--gold);border-color:var(--gold);transform:translateY(-2px);
+    box-shadow:0 14px 30px rgba(200,169,106,.22)}
+  .btn-outline{border:1px solid var(--line);color:var(--paper);background:transparent}
+  .btn-outline:hover{border-color:var(--paper-dim);transform:translateY(-2px)}
+  .hero-meta{
+    position:absolute;left:0;right:0;bottom:34px;z-index:2;
+  }
+  .hero-meta .wrap{
+    display:flex;justify-content:space-between;align-items:center;
+    border-top:1px solid var(--line);padding-top:18px;
+    font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--paper-dim);
+  }
+  .hero-meta .dot{color:var(--gold)}
+  .scroll-hint{display:flex;align-items:center;gap:10px}
+  .scroll-hint svg{width:14px;height:14px;animation:dip 2s var(--ease) infinite}
+  @keyframes dip{0%,100%{transform:translateY(0)}50%{transform:translateY(5px)}}
+
+  /* ================= 区块（占位示意，撑起锚点与 scrollspy） ================= */
+  section{padding:130px 0}
+  .sec-head{margin-bottom:56px}
+  .sec-head .no{
+    font-size:.72rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);
+    display:block;margin-bottom:14px;
+  }
+  .sec-head h2{font-family:var(--serif);font-weight:500;font-size:clamp(1.8rem,3.4vw,2.6rem)}
+
+  /* 作品 Selected Work：瀑布流 Masonry（不等高卡片，图片多也不乱） */
+  .masonry{columns:3;column-gap:26px}
+  .work-card{
+    break-inside:avoid;margin-bottom:26px;
+    border-radius:14px;overflow:hidden;background:var(--ink-2);
+    border:1px solid rgba(245,242,236,.07);
+    transition:transform .35s var(--ease),box-shadow .35s var(--ease);
+  }
+  .work-card:hover{transform:translateY(-6px);
+    box-shadow:0 24px 48px rgba(0,0,0,.5);border-color:rgba(200,169,106,.35)}
+  .work-card img{width:100%;height:auto;transition:transform .6s var(--ease)}
+  .work-card:hover img{transform:scale(1.04)}
+  .work-card .cap{padding:18px 20px}
+  .work-card .cap b{font-weight:600;font-size:.95rem}
+  .work-card .cap span{display:block;color:var(--paper-dim);font-size:.78rem;
+    letter-spacing:.08em;margin-top:4px}
+
+  /* 关于 About：左对齐，头像+短文+数据背书 */
+  .about-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:70px;align-items:start}
+  .about-grid img{border-radius:14px;aspect-ratio:4/5;object-fit:cover;filter:grayscale(30%)}
+  .about-text p{color:var(--paper-dim);max-width:36em}
+  .about-text p strong{color:var(--paper);font-weight:500}
+  .stats{display:flex;gap:56px;margin-top:44px;border-top:1px solid var(--line);padding-top:34px}
+  .stats b{display:block;font-family:var(--serif);font-size:2rem;color:var(--gold)}
+  .stats span{font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--paper-dim)}
+
+  /* 联系 CTA：通栏色块 */
+  .contact{padding:110px 0;text-align:center;border-top:1px solid var(--line)}
+  .contact h2{font-family:var(--serif);font-size:clamp(2rem,4.6vw,3.4rem);font-weight:500}
+  .contact h2 em{font-style:italic;color:var(--gold)}
+  .contact p{color:var(--paper-dim);margin:18px auto 40px;max-width:28em}
+  footer{padding:34px 0;border-top:1px solid var(--line)}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+    font-size:.78rem;color:var(--paper-dim);letter-spacing:.08em}
+
+  /* 进场微交互：结构先出现，内容上浮渐现（留白+微动的体感） */
+  .reveal{opacity:0;transform:translateY(26px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+  .reveal.in{opacity:1;transform:none}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .scroll-hint svg{animation:none}
+  }
+
+  /* 响应式 */
+  @media (max-width:900px){
+    .masonry{columns:2}
+    .about-grid{grid-template-columns:1fr;gap:40px}
+  }
+  @media (max-width:760px){
+    .nav-links,.navbar .nav-cta,.brand .role{display:none}
+    .burger{display:inline-flex}
+    .navbar .bar{padding-right:10px}
+    .hero-bg{width:100%;opacity:.35;-webkit-mask-image:none;mask-image:none}
+    .hero{padding:120px 0 90px}
+    .masonry{columns:1}
+    .stats{flex-wrap:wrap;gap:32px}
+    .hero-meta .wrap span:nth-child(2){display:none}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ 悬浮吸顶导航栏 Floating Sticky Navbar ============ -->
+<header class="navbar" id="navbar">
+  <div class="bar">
+    <a class="brand" href="#top">
+      <span class="mono">L<em>·</em>Y</span>
+      <span class="role">Portfolio</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#work" data-spy>作品 Work</a>
+      <a href="#about" data-spy>关于 About</a>
+      <a href="#contact" data-spy>联系 Contact</a>
+    </nav>
+    <a class="nav-cta" href="#contact">联系我</a>
+    <button class="burger" id="burger" aria-label="打开菜单" aria-expanded="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <path d="M3 7h18M3 12h18M3 17h10"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- 移动端全屏遮罩菜单 Full-screen Overlay -->
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="菜单">
+  <button class="close" id="closeMenu" aria-label="关闭菜单">✕</button>
+  <a href="#work">作品</a>
+  <a href="#about">关于</a>
+  <a href="#contact">联系</a>
+</div>
+
+<!-- ============ 首屏 Hero ============ -->
+<main id="top">
+  <div class="hero">
+    <div class="hero-bg" role="img" aria-label="代表作品视觉"></div>
+    <div class="wrap hero-inner">
+      <p class="kicker reveal">Independent Designer · Since 2018</p>
+      <h1 class="reveal">为好产品，<br>做<em>有分量</em>的设计。</h1>
+      <p class="hero-sub reveal">专注品牌视觉与交互设计，从一句话的定位到一套可落地的系统，帮中小团队把「还行」做到「耐看」。</p>
+      <div class="identity reveal">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" alt="刘一舟的头像" loading="eager" onerror="this.style.display='none'">
+        <div class="who">
+          <b>刘一舟</b>
+          <span>Brand &amp; Interaction · 杭州</span>
+        </div>
+      </div>
+      <div class="hero-cta reveal">
+        <!-- 主操作唯一实心；次操作线状 -->
+        <a class="btn btn-solid" href="#work">查看作品 ↓</a>
+        <a class="btn btn-outline" href="#contact">与我聊聊</a>
+      </div>
+    </div>
+    <div class="hero-meta">
+      <div class="wrap">
+        <span>Selected Works 2018 — 2026</span>
+        <span class="scroll-hint">Scroll <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v16m0 0l-6-6m6 6l6-6"/></svg></span>
+        <span><span class="dot">●</span> 目前可接新项目</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ 作品 Selected Work ============ -->
+  <section id="work">
+    <div class="wrap">
+      <header class="sec-head reveal">
+        <span class="no">01 · Selected Work</span>
+        <h2>最近三年，我最拿得出手的三件事</h2>
+      </header>
+      <div class="masonry">
+        <article class="work-card reveal">
+          <img src="https://images.unsplash.com/photo-1558655146-9f40138edfeb?auto=format&fit=crop&w=800&q=80" alt="品牌重塑项目" loading="lazy">
+          <div class="cap"><b>山野茶事 · 品牌重塑</b><span>Branding · 2025</span></div>
+        </article>
+        <article class="work-card reveal">
+          <img src="https://images.unsplash.com/photo-1541462608601-6f71a1bf6c8c?auto=format&fit=crop&w=800&q=80" alt="App 交互设计" loading="lazy">
+          <div class="cap"><b>节气饮食 App · 0→1</b><span>Product · 2024</span></div>
+        </article>
+        <article class="work-card reveal">
+          <img src="https://images.unsplash.com/photo-1493421419110-74f4e85ba126?auto=format&fit=crop&w=800&q=80" alt="展览视觉" loading="lazy">
+          <div class="cap"><b>白昼展览 · 视觉系统</b><span>Visual · 2024</span></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 关于 About ============ -->
+  <section id="about">
+    <div class="wrap about-grid">
+      <img class="reveal" src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&w=900&q=80" alt="工作台一瞥" loading="lazy">
+      <div class="about-text reveal">
+        <header class="sec-head" style="margin-bottom:24px">
+          <span class="no">02 · About</span>
+          <h2>设计之外，先把问题想清楚</h2>
+        </header>
+        <p>我从 2018 年开始独立接案，服务过 <strong>40+ 家中小团队</strong>。比起「产出图」，我更在意把商业目标翻译成看得见的秩序——所以每个项目都从一句定位开始，落到可复用的设计系统结束。</p>
+        <div class="stats">
+          <div><b>8<span style="font-size:1.1rem">年</span></b><span>从业经验</span></div>
+          <div><b>40+</b><span>合作团队</span></div>
+          <div><b>12</b><span>获得奖项</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 联系 Contact ============ -->
+  <section id="contact" class="contact">
+    <div class="wrap">
+      <h2 class="reveal">有个想法？<em>我们聊聊。</em></h2>
+      <p class="reveal">接受项目委托与长期合作，通常在 24 小时内回复。</p>
+      <a class="btn btn-solid reveal" href="mailto:hello@example.com">hello@example.com</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 刘一舟 LIU YIZHOU</span>
+    <span>Hangzhou · CN</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var navbar=document.getElementById('navbar');
+  var links=[].slice.call(document.querySelectorAll('[data-spy]'));
+  var burger=document.getElementById('burger');
+  var overlay=document.getElementById('overlay');
+
+  /* 滚动收缩 Shrink on Scroll：贴 hero 时更透更松，下滚变矮变实 */
+  function onScroll(){
+    navbar.classList.toggle('scrolled',window.scrollY>60);
+  }
+  window.addEventListener('scroll',onScroll,{passive:true});
+  onScroll();
+
+  /* 锚点导航 Scrollspy：滚到哪个区块，对应导航自动高亮 */
+  var spy=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        links.forEach(function(l){l.classList.toggle('active',l.getAttribute('href')==='#'+e.target.id)});
+      }
+    });
+  },{rootMargin:'-40% 0px -55% 0px'});
+  ['work','about','contact'].forEach(function(id){
+    var el=document.getElementById(id); if(el)spy.observe(el);
+  });
+
+  /* 进场微交互：进入视口后上浮渐现，首屏元素最先亮起 */
+  var ro=new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){e.target.classList.add('in');ro.unobserve(e.target);}
+    });
+  },{threshold:.12});
+  document.querySelectorAll('.reveal').forEach(function(el){ro.observe(el)});
+
+  /* 移动端全屏遮罩菜单 */
+  function setMenu(open){
+    overlay.classList.toggle('open',open);
+    burger.setAttribute('aria-expanded',open);
+    document.body.style.overflow=open?'hidden':'';
+  }
+  burger.addEventListener('click',function(){setMenu(true)});
+  document.getElementById('closeMenu').addEventListener('click',function(){setMenu(false)});
+  overlay.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){setMenu(false)})});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')setMenu(false)});
+})();
+</script>
+</body>
+</html>

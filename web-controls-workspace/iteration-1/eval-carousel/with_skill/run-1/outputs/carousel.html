@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陶声 · 一号 — 陶瓷蓝牙音箱 | 360° 实景浏览</title>
+<style>
+  :root{
+    --paper:#f5efe4;
+    --paper-deep:#ece2d2;
+    --ink:#2b241d;
+    --ink-soft:#6f6153;
+    --hairline:rgba(43,36,29,.14);
+    --accent:#b0562f;          /* 釉里红 · 可被换釉覆盖 */
+    --accent-deep:#8f431f;
+    --glaze-hi:#faf3e7;
+    --glaze-mid:#efe0cd;
+    --glaze-lo:#d6bfa5;
+    --char:#241d17;
+    --brass-hi:#e7cd92;
+    --brass-lo:#a8813f;
+    --serif:"Songti SC","Noto Serif SC","STSong","SimSun",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    background:
+      radial-gradient(120% 90% at 15% 0%, #faf5ec 0%, transparent 55%),
+      var(--paper);
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:rgba(176,86,47,.22)}
+
+  /* ============ 顶栏（氛围，非重点） ============ */
+  header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:26px 56px 0;
+  }
+  .logo{font-family:var(--serif);font-size:19px;letter-spacing:.42em;color:var(--ink)}
+  .logo small{display:block;font-size:10px;letter-spacing:.5em;color:var(--ink-soft);margin-top:3px}
+  nav{display:flex;gap:34px;font-size:13px;color:var(--ink-soft);letter-spacing:.18em}
+  nav span{cursor:pointer;transition:color .25s}
+  nav span:hover{color:var(--ink)}
+  .cart{position:relative;width:20px;height:20px}
+  .cart::before{content:"";position:absolute;left:2px;top:0;width:16px;height:11px;border:1.5px solid var(--ink);border-radius:0 0 4px 4px}
+  .cart::after{content:"";position:absolute;left:6px;top:-3px;width:8px;height:5px;border:1.5px solid var(--ink);border-bottom:0;border-radius:5px 5px 0 0}
+  .cart i{position:absolute;right:-4px;top:-5px;width:14px;height:14px;border-radius:50%;background:var(--accent);color:#fff;font-style:normal;font-size:9px;line-height:14px;text-align:center}
+
+  /* ============ 布局 ============ */
+  .page{max-width:1160px;margin:0 auto;padding:44px 56px 90px}
+  .breadcrumb{font-size:12px;letter-spacing:.14em;color:var(--ink-soft);margin-bottom:34px}
+  .breadcrumb em{font-style:normal;color:var(--ink)}
+  .product{display:grid;grid-template-columns:minmax(0,7fr) minmax(0,4fr);gap:64px;align-items:start}
+  @media (max-width:960px){
+    header,.page{padding-left:24px;padding-right:24px}
+    .product{grid-template-columns:1fr;gap:36px}
+  }
+
+  /* ============ 展示区 ============ */
+  .gallery{
+    --r:150px;
+    position:relative;
+    border-radius:18px;
+    background:linear-gradient(180deg,#fbf7ef 0%,#f1e8da 100%);
+    border:1px solid var(--hairline);
+    box-shadow:0 30px 60px -30px rgba(60,45,28,.25);
+    overflow:hidden;
+  }
+  .stage{position:relative;height:560px}
+  .panes{position:absolute;inset:0}
+  .pane{
+    position:absolute;inset:0;
+    opacity:0;pointer-events:none;
+    transition:opacity .45s ease;
+    overflow:hidden;
+  }
+  .pane.is-active{opacity:1;pointer-events:auto}
+
+  /* ---------- 360° 主舞台 ---------- */
+  .viewport{
+    position:absolute;inset:0;
+    display:grid;place-items:center;
+    perspective:1100px;
+    perspective-origin:50% 42%;
+    cursor:grab;
+    touch-action:pan-y;
+    user-select:none;
+  }
+  .viewport.dragging{cursor:grabbing}
+  .spin{
+    position:relative;
+    width:10px;height:10px;
+    transform-style:preserve-3d;
+    will-change:transform;
+  }
+  .slice{
+    position:absolute;left:50%;top:50%;
+    width:39.6px;height:330px;
+    margin-left:-19.8px;margin-top:-165px;
+    backface-visibility:hidden;
+    background:
+      linear-gradient(90deg, rgba(70,45,25,.18), rgba(70,45,25,0) 16% 84%, rgba(70,45,25,.18)),
+      radial-gradient(rgba(120,88,55,.14) 1px, transparent 1.5px),
+      linear-gradient(180deg, var(--glaze-hi) 0%, var(--glaze-mid) 62%, #cdb597 100%);
+    background-size:100% 100%, 6px 6px, 100% 100%;
+  }
+  .slice::before{ /* 釉里红环带（随换釉变色） */
+    content:"";position:absolute;left:0;right:0;top:54px;height:2px;
+    background:var(--accent);opacity:.85;
+  }
+  .slice::after{
+    content:"";position:absolute;left:0;right:0;top:60px;height:1px;
+    background:rgba(0,0,0,.07);
+  }
+  .cap{
+    position:absolute;left:50%;top:50%;
+    border-radius:50%;
+    backface-visibility:hidden;
+  }
+  .cap-front,.cap-back{
+    width:292px;height:292px;margin:-146px 0 0 -146px;
+    background:radial-gradient(circle at 34% 28%, #fffdf8 0%, #f0e0cc 58%, #d9c2a8 100%);
+  }
+  .cap-front{transform:translateZ(149.6px)}
+  .cap-back{transform:rotateY(180deg) translateZ(149.6px)}
+  .cap-top{
+    width:296px;height:296px;margin:-148px 0 0 -148px;
+    transform:rotateX(90deg) translateZ(164.6px);
+    background:radial-gradient(circle at 36% 32%, #fffdf8 0%, #f0e0cc 62%, #d5bda2 100%);
+  }
+  .cap-top::before{
+    content:"";position:absolute;inset:11%;border-radius:50%;
+    border:1px solid rgba(0,0,0,.1);
+  }
+  .cap-back::before{
+    content:"";position:absolute;inset:34%;border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #f3e3cf, #decbaf);
+    box-shadow:inset 0 1px 3px rgba(0,0,0,.15);
+  }
+  .ring{
+    position:absolute;inset:0;border-radius:50%;
+    box-shadow:
+      inset 0 0 0 2px color-mix(in srgb, var(--accent) 78%, transparent),
+      inset 0 0 0 5px rgba(255,255,255,.35),
+      inset 0 -8px 18px rgba(90,60,30,.12);
+    pointer-events:none;
+  }
+  .grille{
+    position:absolute;inset:17%;border-radius:50%;
+    background:
+      radial-gradient(rgba(10,8,6,.9) 1.5px, transparent 2px),
+      radial-gradient(circle at 35% 30%, #4a4038 0%, var(--char) 72%);
+    background-size:13px 13px, 100% 100%;
+    box-shadow:
+      inset 0 2px 6px rgba(0,0,0,.5),
+      0 1px 0 rgba(255,255,255,.5);
+  }
+  .grille::after{
+    content:"";position:absolute;inset:8%;border-radius:50%;
+    border:1px solid rgba(255,255,255,.06);
+  }
+  .badge{
+    position:absolute;left:50%;top:38px;width:52px;height:9px;margin-left:-26px;border-radius:5px;
+    background:linear-gradient(100deg,var(--brass-hi),var(--brass-lo));
+  }
+  .cap-brand{
+    position:absolute;left:0;right:0;bottom:36px;text-align:center;
+    font-size:10px;letter-spacing:.42em;color:#93806a;text-indent:.42em;
+  }
+  .plug{
+    position:absolute;left:50%;top:50%;width:86px;height:46px;margin:-23px 0 0 -43px;border-radius:23px;
+    background:linear-gradient(100deg,var(--brass-hi) 0%,var(--brass-lo) 90%);
+    box-shadow:inset 0 1px 2px rgba(255,255,255,.6), inset 0 -2px 4px rgba(0,0,0,.28);
+    color:#3d2f18;font-size:9px;letter-spacing:.3em;display:grid;place-items:center;text-indent:.3em;
+  }
+  /* 静态光照（不随旋转走，制造"实物感"） */
+  .lighting{
+    position:absolute;inset:0;pointer-events:none;
+    background:
+      radial-gradient(58% 46% at 26% 8%, rgba(255,255,255,.5), transparent 70%),
+      radial-gradient(120% 90% at 50% 118%, rgba(84,58,32,.16), transparent 55%);
+  }
+  .floor{
+    position:absolute;left:50%;bottom:78px;width:360px;height:44px;margin-left:-180px;
+    background:radial-gradient(50% 50% at 50% 50%, rgba(58,40,22,.32), transparent 70%);
+    filter:blur(9px);
+    pointer-events:none;
+  }
+  .hint{
+    position:absolute;left:26px;bottom:22px;
+    padding:9px 16px;border-radius:999px;
+    background:rgba(43,36,29,.82);color:#f3ead9;
+    font-size:12px;letter-spacing:.12em;
+    display:flex;align-items:center;gap:9px;
+    transition:opacity .6s;pointer-events:none;
+  }
+  .hint .arrow{display:inline-block;animation:sway 1.8s ease-in-out infinite}
+  @keyframes sway{0%,100%{transform:translateX(-3px)}50%{transform:translateX(3px)}}
+  .hint.gone{opacity:0}
+  .angle{
+    position:absolute;right:26px;bottom:22px;
+    font-family:var(--serif);font-size:13px;letter-spacing:.2em;color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+  .angle b{color:var(--ink);font-weight:600}
+
+  /* ---------- 细节/场景可视层（Ken-Burns 微动） ---------- */
+  .scene{position:absolute;inset:0;display:grid;place-items:center}
+  .scene-inner{position:relative;width:min(430px,72%);aspect-ratio:4/3;overflow:hidden;border-radius:14px;
+    box-shadow:0 24px 48px -22px rgba(60,42,24,.38)}
+  .ken{animation:ken 7s ease-out both}
+  @keyframes ken{from{transform:scale(1)}to{transform:scale(1.07)}}
+  .pane-glass{background:linear-gradient(180deg,#fbf7ef,#f0e6d6)}
+  .pane-glass .scene-inner{
+    background:
+      linear-gradient(90deg, rgba(70,45,25,.14), transparent 12% 88%, rgba(70,45,25,.14)),
+      radial-gradient(rgba(120,88,55,.16) 1.4px, transparent 2px),
+      linear-gradient(170deg,#fcf6eb 0%, #f2e3cf 58%, #d8c0a4 100%);
+    background-size:100% 100%, 7px 7px, 100% 100%;
+  }
+  .pane-glass .ring-line{position:absolute;left:0;right:0;top:34%;height:8px;background:linear-gradient(180deg,var(--accent),var(--accent-deep));box-shadow:0 2px 3px rgba(0,0,0,.18)}
+  .pane-holes{background:linear-gradient(180deg,#fbf7ef,#efe4d3)}
+  .pane-holes .scene-inner{
+    border-radius:50%;width:min(330px,58%);
+    aspect-ratio:1/1;
+    background:
+      radial-gradient(rgba(10,8,6,.92) 3.4px, transparent 4.1px) 0 0/27px 27px,
+      radial-gradient(circle at 34% 30%, #52473d 0%, var(--char) 70%);
+    box-shadow:inset 0 3px 8px rgba(0,0,0,.55), 0 26px 46px -18px rgba(50,35,18,.5);
+  }
+  .pane-mood{background:radial-gradient(80% 70% at 50% 18%, #2e2620 0%, #16110d 70%)}
+  .mood-glow{position:absolute;left:50%;top:52%;width:460px;height:300px;margin:-150px 0 0 -230px;border-radius:50%;
+    background:radial-gradient(50% 50% at 50% 50%, rgba(228,168,96,.25), transparent 70%);filter:blur(20px)}
+  .mood-object{
+    position:relative;width:210px;height:272px;border-radius:104px 104px 26px 26px;
+    background:linear-gradient(104deg,#f6ecdc 0%,#ecdac2 55%,#cbb296 100%);
+    box-shadow:inset -10px 0 24px rgba(96,64,34,.22), 0 34px 60px -18px rgba(0,0,0,.6);
+  }
+  .mood-object::before{content:"";position:absolute;left:16%;top:20%;width:68%;aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(rgba(10,8,6,.9) 1.6px, transparent 2.2px) 0 0/13px 13px, radial-gradient(circle at 34% 30%, #453b33 0%, var(--char) 70%);
+    box-shadow:inset 0 2px 5px rgba(0,0,0,.5)}
+  .mood-object::after{content:"";position:absolute;left:0;right:0;top:15%;height:2px;background:var(--accent);opacity:.8}
+  .pane-size{background:linear-gradient(180deg,#fbf7ef,#f2e9da)}
+  .size-wrap{position:relative;width:240px;margin-top:-16px}
+  .size-object{position:relative;width:172px;height:224px;margin:0 auto;border-radius:86px 86px 20px 20px;
+    background:linear-gradient(104deg,#f8efe0 0%,#efdcc5 58%,#d2ba9d 100%);
+    box-shadow:inset -8px 0 18px rgba(96,64,34,.2), 0 24px 44px -18px rgba(60,42,24,.4)}
+  .size-object::before{content:"";position:absolute;left:14%;top:19%;width:72%;aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle at 34% 30%, #4a4038 0%, var(--char) 70%)}
+  .size-object::after{content:"";position:absolute;left:0;right:0;top:15%;height:2px;background:var(--accent);opacity:.8}
+  .dim{position:absolute;font-size:11px;letter-spacing:.12em;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+  .dim-v{left:-44px;top:0;height:224px;display:grid;place-items:center;writing-mode:vertical-rl;
+    border-left:1px solid var(--ink-soft)}
+  .dim-v::after{content:"";display:none}
+  .dim-h{left:0;right:0;bottom:-34px;text-align:center;padding-bottom:6px;border-bottom:1px solid var(--ink-soft)}
+  .cap-tag{
+    position:absolute;left:18px;bottom:16px;z-index:3;
+    padding:9px 15px;border-radius:999px;
+    background:rgba(255,253,248,.88);color:var(--ink);
+    font-size:12px;letter-spacing:.16em;backdrop-filter:blur(6px);
+    border:1px solid rgba(43,36,29,.1);
+  }
+  .pane-mood .cap-tag{background:rgba(22,17,13,.72);color:#eee2cf;border-color:rgba(255,255,255,.08)}
+
+  /* ---------- 缩略图导轨（指示器） ---------- */
+  .thumbs{
+    position:relative;z-index:2;
+    display:grid;grid-template-columns:repeat(5,1fr);gap:1px;
+    background:var(--hairline);
+    border-top:1px solid var(--hairline);
+  }
+  .thumb{
+    appearance:none;border:0;background:#fbf6ec;cursor:pointer;
+    padding:13px 6px 12px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    font-family:var(--sans);font-size:11px;letter-spacing:.14em;color:var(--ink-soft);
+    transition:background .3s, box-shadow .3s;
+  }
+  .thumb:hover{background:#fffdf7}
+  .thumb .chip{position:relative;height:40px;display:grid;place-items:center}
+  .thumb.is-active{
+    background:#fffdf7;color:var(--ink);
+    box-shadow:inset 0 -3px 0 var(--accent);
+  }
+  .mini{border-radius:50%}
+  .mini-360{width:34px;height:34px;
+    background:radial-gradient(circle at 34% 30%, #fffdf8 0%, #f0e0cc 58%, #d9c2a8 100%);
+    box-shadow:inset 0 0 0 2px color-mix(in srgb, var(--accent) 78%, transparent)}
+  .mini-360::after{content:"";position:absolute;inset:24%;border-radius:50%;
+    background:radial-gradient(rgba(10,8,6,.9) 1px, transparent 1.5px) 0 0/7px 7px, radial-gradient(circle at 34% 30%, #4a4038 0%, var(--char) 70%)}
+  .mini-glass{width:38px;height:24px;border-radius:5px;
+    background:linear-gradient(170deg,#fcf6eb,#d8c0a4);
+    box-shadow:inset 0 -7px 0 var(--accent)}
+  .mini-holes{width:34px;height:34px;border-radius:50%;
+    background:radial-gradient(rgba(10,8,6,.9) 1px, transparent 1.4px) 0 0/7px 7px, radial-gradient(circle at 34% 30%, #4a4038 0%, var(--char) 70%)}
+  .mini-mood{width:34px;height:34px;border-radius:50%;
+    background:radial-gradient(circle at 40% 30%, #3a2f26 0%, #16110d 75%);
+    box-shadow:0 0 0 2px rgba(255,255,255,.14)}
+  .mini-size{width:34px;height:34px;display:grid;place-items:center;color:var(--ink-soft)}
+
+  /* ============ 右侧信息（上下文） ============ */
+  .info{padding-top:6px}
+  .eyebrow{font-size:12px;letter-spacing:.34em;color:var(--accent);margin-bottom:14px}
+  h1{font-family:var(--serif);font-weight:600;font-size:34px;line-height:1.25;letter-spacing:.05em;margin-bottom:6px}
+  .sub{font-size:13px;letter-spacing:.2em;color:var(--ink-soft);margin-bottom:18px}
+  .rating{font-size:13px;color:var(--ink-soft);letter-spacing:.06em;margin-bottom:20px}
+  .rating b{color:var(--ink)}
+  .rating .star{color:var(--accent);letter-spacing:2px;margin-right:6px}
+  .price{display:flex;align-items:baseline;gap:12px;margin-bottom:22px}
+  .price .now{font-family:var(--serif);font-size:34px;font-weight:600}
+  .price .was{font-size:14px;color:var(--ink-soft);text-decoration:line-through}
+  .price .tag{font-size:11px;letter-spacing:.1em;color:#fff;background:var(--accent);padding:3px 9px;border-radius:999px}
+  .desc{font-size:14.5px;line-height:2;color:var(--ink-soft);margin-bottom:26px}
+  .glazes{margin-bottom:26px}
+  .glazes .lab{font-size:12px;letter-spacing:.2em;color:var(--ink-soft);margin-bottom:10px}
+  .glazes .lab b{color:var(--ink);font-weight:600}
+  .swatches{display:flex;gap:10px}
+  .swatch{width:34px;height:34px;border-radius:50%;cursor:pointer;border:2px solid rgba(43,36,29,.14);
+    transition:transform .2s, border-color .2s;padding:0}
+  .swatch:hover{transform:scale(1.08)}
+  .swatch.is-active{border-color:var(--ink)}
+  .sw-white{background:radial-gradient(circle at 34% 30%, #fdf8ef, #e4d2b8)}
+  .sw-red{background:radial-gradient(circle at 34% 30%, #c96b3d, #8f431f)}
+  .cta{display:flex;gap:12px;margin-bottom:30px}
+  .btn-solid{
+    flex:1;appearance:none;border:0;cursor:pointer;
+    background:var(--ink);color:#f6efe2;
+    font-size:14px;letter-spacing:.24em;text-indent:.24em;padding:15px 0;border-radius:999px;
+    transition:background .25s, transform .15s;
+  }
+  .btn-solid:hover{background:#43382c}
+  .btn-solid:active{transform:scale(.985)}
+  .btn-line{
+    appearance:none;cursor:pointer;background:transparent;
+    border:1px solid rgba(43,36,29,.35);border-radius:999px;
+    font-size:13px;letter-spacing:.2em;padding:15px 22px;color:var(--ink);
+    transition:border-color .25s, background .25s;
+  }
+  .btn-line:hover{border-color:var(--ink);background:rgba(255,255,255,.5)}
+  .specs{border-top:1px solid var(--hairline);padding-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:12px 20px}
+  .specs div{font-size:13px;color:var(--ink-soft);letter-spacing:.04em}
+  .specs b{display:block;color:var(--ink);font-weight:600;margin-bottom:2px;font-size:12px;letter-spacing:.16em}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">陶声<small>CHUNHUA · CERAMIC AUDIO</small></div>
+  <nav><span>器物</span><span>声学</span><span>手作</span><span>门店</span><i class="cart"><i>2</i></i></nav>
+</header>
+
+<main class="page">
+  <p class="breadcrumb">器物 / 空间发声 / <em>陶声 · 一号 TONE ONE</em></p>
+
+  <section class="product">
+
+    <!-- ==================== 图片展示区 ==================== -->
+    <div class="gallery" id="gallery">
+      <div class="stage">
+
+        <div class="panes">
+          <!-- 主舞台：360° 旋转展示 -->
+          <div class="pane is-active" id="pane-360">
+            <div class="viewport" id="viewport">
+              <div class="spin" id="spinner">
+                <div class="cap cap-top"></div>
+                <div class="cap cap-back"><div class="plug">USB-C</div></div>
+                <div class="cap cap-front">
+                  <div class="badge"></div>
+                  <div class="grille"></div>
+                  <div class="ring"></div>
+                  <div class="cap-brand">CHUNHUA · 陶声</div>
+                </div>
+                <!-- 24 个刻面由 JS 注入 -->
+              </div>
+              <div class="floor"></div>
+            </div>
+            <div class="lighting" id="lighting"></div>
+            <div class="hint" id="hint"><span class="arrow">↔</span>按住左右拖动，看全角度</div>
+            <div class="angle">旋转角度 <b id="deg">342°</b> / 360°</div>
+          </div>
+
+          <!-- 细节 · 釉面 -->
+          <div class="pane pane-glass" data-pane>
+            <div class="scene"><div class="scene-inner" data-ken><div class="ring-line"></div></div></div>
+            <div class="cap-tag">釉面 · 缎白底 / 釉里红一道</div>
+          </div>
+
+          <!-- 细节 · Hi-Fi 孔阵 -->
+          <div class="pane pane-holes" data-pane>
+            <div class="scene"><div class="scene-inner" data-ken></div></div>
+            <div class="cap-tag">Hi-Fi 孔阵 · 手工冲孔 169 眼</div>
+          </div>
+
+          <!-- 场景 · 客厅一隅 -->
+          <div class="pane pane-mood" data-pane>
+            <div class="mood-glow"></div>
+            <div class="scene"><div class="mood-object" data-ken></div></div>
+            <div class="cap-tag">客厅一隅 · 与原木和暖光同处</div>
+          </div>
+
+          <!-- 尺寸 · 比例 -->
+          <div class="pane pane-size" data-pane>
+            <div class="scene">
+              <div class="size-wrap">
+                <div class="size-object" data-ken></div>
+                <div class="dim dim-v">高 330 mm</div>
+                <div class="dim dim-h">Ø 300 mm</div>
+              </div>
+            </div>
+            <div class="cap-tag">尺寸 · 双手可捧的体量</div>
+          </div>
+        </div>
+
+        <!-- 缩略图导轨（指示器） -->
+        <div class="thumbs" role="tablist">
+          <button class="thumb is-active" data-target="pane-360" role="tab">
+            <span class="chip"><span class="mini mini-360" style="position:relative"></span></span>360° 旋转
+          </button>
+          <button class="thumb" data-target-glass role="tab">
+            <span class="chip"><span class="mini mini-glass"></span></span>釉面细节
+          </button>
+          <button class="thumb" data-target-holes role="tab">
+            <span class="chip"><span class="mini mini-holes"></span></span>Hi-Fi 孔阵
+          </button>
+          <button class="thumb" data-target-mood role="tab">
+            <span class="chip"><span class="mini mini-mood"></span></span>客厅实景
+          </button>
+          <button class="thumb" data-target-size role="tab">
+            <span class="chip"><span class="mini mini-size">⌐</span></span>尺寸比例
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 商品信息（上下文） ==================== -->
+    <aside class="info">
+      <p class="eyebrow">手作陶瓷 · 慢工窑烧</p>
+      <h1>陶声 · 一号<br>TONE ONE</h1>
+      <p class="sub">CERAMIC BLUETOOTH SPEAKER</p>
+      <p class="rating"><span class="star">★★★★★</span><b>4.9</b> · 327 条评价</p>
+      <div class="price">
+        <span class="now">¥1,299</span><span class="was">¥1,599</span><span class="tag">首发 9 折</span>
+      </div>
+      <p class="desc">
+        以传统釉里红工艺烧制的圆筒腔体，缎白釉面上一道红釉环带，随角度流转。
+        腔体天然阻尼带来温润的中频，169 眼手工冲孔网面干净克制。
+        每一只的釉色落点皆不相同——独一无二，由窑火决定。
+      </p>
+
+      <div class="glazes">
+        <p class="lab">釉色 · 当前 <b id="glaze-name">缎白 / 釉里红</b></p>
+        <div class="swatches">
+          <button class="swatch sw-white is-active" data-glaze="缎白 / 釉里红" data-accent="#b0562f" aria-label="缎白釉面"></button>
+          <button class="swatch sw-red" data-glaze="满红釉" data-accent="#5a311c" aria-label="满红釉"></button>
+        </div>
+      </div>
+
+      <div class="cta">
+        <button class="btn-solid">加入购物车</button>
+        <button class="btn-line">看手作过程</button>
+      </div>
+
+      <div class="specs">
+        <div><b>单元</b>10W 全频 × 2</div>
+        <div><b>续航</b>约 12 小时</div>
+        <div><b>充电</b>USB-C · 2.5h 充满</div>
+        <div><b>材质</b>1300°C 高温窑烧陶瓷</div>
+      </div>
+    </aside>
+  </section>
+</main>
+
+<script>
+/* ================= 360° 旋转展示 DOUBLE ================= */
+const N = 24, STEP = 360 / N;
+const spin = document.getElementById('spinner');
+const viewport = document.getElementById('viewport');
+const hint = document.getElementById('hint');
+const degEl = document.getElementById('deg');
+const gallery = document.getElementById('gallery');
+
+/* 注入 24 分刻面圆筒 */
+for (let i = 0; i < N; i++) {
+  const s = document.createElement('div');
+  s.className = 'slice';
+  s.style.transform = `rotateY(${i * STEP}deg) translateZ(150px)`;
+  spin.appendChild(s);
+}
+
+/* 交互状态 */
+let yaw = -18;            // 当前角度
+let vel = 0;              // 惯性速度 deg/帧
+let dragging = false;
+let lastX = 0;
+let lastInteract = performance.now();
+let auto = false;         // 闲置自转
+let lastT = performance.now();
+let firstDrag = false;
+
+viewport.addEventListener('pointerdown', e => {
+  dragging = true;
+  auto = false;
+  vel = 0;
+  lastX = e.clientX;
+  lastInteract = performance.now();
+  viewport.classList.add('dragging');
+  viewport.setPointerCapture(e.pointerId);
+  if (!firstDrag) { firstDrag = true; hint.classList.add('gone'); }
+});
+viewport.addEventListener('pointermove', e => {
+  if (!dragging) return;
+  const dx = e.clientX - lastX;
+  lastX = e.clientX;
+  yaw += dx * 0.45;
+  vel = dx * 0.45 * 0.55;
+  lastInteract = performance.now();
+});
+function endDrag() {
+  if (!dragging) return;
+  dragging = false;
+  lastInteract = performance.now();
+  viewport.classList.remove('dragging');
+}
+viewport.addEventListener('pointerup', endDrag);
+viewport.addEventListener('pointercancel', endDrag);
+
+/* 键盘微调：每按一次转 15° */
+window.addEventListener('keydown', e => {
+  const pane = activePane();
+  if (pane !== 'pane-360') return;
+  if (e.key === 'ArrowLeft')  { yaw -= STEP; poke(); }
+  if (e.key === 'ArrowRight') { yaw += STEP; poke(); }
+});
+function poke() { auto = false; lastInteract = performance.now(); }
+
+function activePane() {
+  const a = document.querySelector('.pane.is-active');
+  return a ? a.id || (a.classList.contains('pane-glass') ? 'glass' : '') : '';
+}
+
+/* 主循环：惯性 → 吸附刻面 → 闲置自转 */
+function tick(t) {
+  const dt = Math.min(t - lastT, 50); lastT = t;
+
+  if (!dragging) {
+    if (Math.abs(vel) > 0.06) {            // 松手惯性滑行
+      yaw += vel; vel *= 0.93;
+    } else {
+      const idle = t - lastInteract > 4000;
+      if (idle) {                          // 闲置 4s：缓慢自动旋转
+        auto = true;
+        yaw += dt * 0.012;
+      } else {                             // 吸附最近刻面
+        auto = false;
+        const snap = Math.round(yaw / STEP) * STEP;
+        yaw += (snap - yaw) * Math.min(1, dt * 0.008);
+        if (Math.abs(snap - yaw) < 0.02) yaw = snap;
+      }
+    }
+  }
+  spin.style.transform = `rotateY(${yaw}deg)`;
+
+  const d = Math.round(((yaw % 360) + 360) % 360);
+  degEl.textContent = String(d).padStart(3, '0') + '°';
+
+  requestAnimationFrame(tick);
+}
+requestAnimationFrame(tick);
+
+/* ================= 缩略图导轨（指示器） ================= */
+const panes = document.querySelectorAll('.panes .pane');
+const thumbs = document.querySelectorAll('.thumb');
+
+function bindThumb(btn, paneIdx) {
+  btn.addEventListener('click', () => {
+    thumbs.forEach(b => b.classList.remove('is-active'));
+    btn.classList.add('is-active');
+    panes.forEach(p => p.classList.remove('is-active'));
+    const target = panes[paneIdx];
+    target.classList.add('is-active');
+    /* Ken-Burns 微动重新触发 */
+    const ken = target.querySelector('[data-ken]');
+    if (ken) { ken.classList.remove('ken'); void ken.offsetWidth; ken.classList.add('ken'); }
+    if (paneIdx === 0) { auto = false; lastInteract = performance.now(); }
+  });
+}
+thumbs.forEach((b, i) => bindThumb(b, i));
+
+/* ================= 实时换釉色 ================= */
+document.querySelectorAll('.swatch').forEach(sw => {
+  sw.addEventListener('click', () => {
+    document.querySelectorAll('.swatch').forEach(s => s.classList.remove('is-active'));
+    sw.classList.add('is-active');
+    gallery.style.setProperty('--accent', sw.dataset.accent);
+    document.getElementById('glaze-name').textContent = sw.dataset.glaze;
+  });
+});
+</script>
+</body>
+</html>

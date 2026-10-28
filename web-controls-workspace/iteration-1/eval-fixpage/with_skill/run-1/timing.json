@@ -1,0 +1,5 @@
+{
+  "total_tokens": null,
+  "duration_ms": null,
+  "note": "completion notification did not include token/timing metrics (backgrounded by user)"
+}

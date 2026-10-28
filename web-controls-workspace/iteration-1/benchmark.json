@@ -1,0 +1,293 @@
+{
+  "metadata": {
+    "skill_name": "web-controls",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-10-27T10:48:22Z",
+    "evals_run": [
+      0,
+      1,
+      2
+    ],
+    "runs_per_configuration": 3
+  },
+  "runs": [
+    {
+      "eval_id": 2,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u6ca1\u6709\u4f7f\u7528\u9ed8\u8ba4\u5f62\u5f0f\uff1a\u4e3b\u56fe\u6d4f\u89c8\u6ca1\u6709\u505a\u6210\u300ctranslateX \u5de6\u53f3\u6ed1\u52a8 + \u4ec5\u4e09\u4e2a\u5706\u70b9\u6307\u793a\u5668\u300d\u7684\u9ed8\u8ba4\u7ec4\u5408",
+          "passed": true,
+          "evidence": "\u4e3b\u821e\u53f0\u4e3a 360\u00b0 \u62d6\u52a8\u65cb\u8f6c\u7684 CSS 3D \u5706\u7b52\u97f3\u7bb1\uff0824 \u523b\u9762\uff09\uff0c\u6307\u793a\u5668\u4e3a\u7f29\u7565\u56fe\u5bfc\u8f68+\u89d2\u5ea6\u8bfb\u6570\uff0c\u5168\u65e0\u5706\u70b9\uff1b\u4ee3\u7801\u4e2d\u552f\u4e00\u7684 translateX \u53ea\u662f\u63d0\u793a\u80f6\u56ca\u7684 sway \u52a8\u753b"
+        },
+        {
+          "text": "\u4f7f\u7528\u4e86\u4e00\u79cd\u6210\u5f62\u7684\u66ff\u4ee3\u5f62\u5f0f\uff083D \u65cb\u8f6c\u6728\u9a6c / \u5361\u7247\u5806\u53e0 / \u7ffb\u9875\u5f0f / \u624b\u98ce\u7434\u753b\u5eca / 360\u00b0\u5c55\u793a / \u89c6\u5dee / \u6de1\u5165\u5f0f \u4e4b\u4e00\uff09",
+          "passed": true,
+          "evidence": "360\u00b0\u65cb\u8f6c\u5c55\u793a 360\u00b0 View \u505a\u4e3b\u821e\u53f0\uff08controls.md \u8f6e\u64ad 7 \u79cd\u4e4b\u4e00\uff0c\u4e5f\u662f\u552f\u4e00\u547d\u4e2d'\u7535\u5546\u4ea7\u54c1\u56fe'\u573a\u666f\u7684\u4e00\u79cd\uff09+ \u56fe\u7247\u9884\u89c8\u6807\u7b7e IMAGE PREVIEW TABS \u505a\u8f85\u52a9\u5bfc\u8f68"
+        },
+        {
+          "text": "\u5c55\u793a\u7ec6\u8282\u8bf4\u6e05\u4e86\uff1a\u542b\u6307\u793a\u5668\uff08\u7f29\u7565\u56fe/\u8fdb\u5ea6/\u7f16\u53f7\u7b49\uff09\u4e0e\u81ea\u52a8\u64ad\u653e\u6216\u660e\u786e\u7684\u4ea4\u4e92\u63a7\u5236\uff08\u62d6\u62fd/\u60ac\u505c/\u70b9\u51fb\u5207\u6362\u7b49\uff09",
+          "passed": true,
+          "evidence": "\u7ec6\u8282\u4e09\u6b65\u9f50\u5168\uff1a\u5f62\u5f0f\uff08\u62d6\u52a8+\u60ef\u6027\u5438\u964424\u523b\u9762\uff09\u2192 \u6307\u793a\u5668\uff085\u683c\u7f29\u7565\u56fe\u5bfc\u8f68+\u53f3\u4e0b\u89d2\u5b9e\u65f6\u89d2\u5ea6'217\u00b0'+\u62d6\u52a8\u63d0\u793a\u80f6\u56ca\uff09\u2192 \u81ea\u52a8\u64ad\u653e\uff08\u95f2\u7f6e4s\u7f13\u6162\u81ea\u8f6c\uff0c\u4ea4\u4e92\u5373\u505c\uff09\uff1b\u53e6\u6709\u952e\u76d8\u2190\u2192 15\u00b0\u6b65\u8fdb\u3001\u53cc\u91c9\u8272\u5207\u6362\u3001\u79fb\u52a8\u7aef\u964d\u7ea7\u65b9\u6848"
+        },
+        {
+          "text": "notes.md \u7ed9\u51fa\u5019\u9009\u65b9\u6848\u5bf9\u6bd4\u4e0e\u9009\u578b\u7406\u7531",
+          "passed": true,
+          "evidence": "notes.md \u5217 A\u2013E 5 \u4e2a\u5019\u9009\uff08\u542b skill \u539f\u6587\u573a\u666f\u4e0e'\u5bf9Merchant\u5546\u54c1\u7684\u95ee\u9898'\u4e24\u5217\uff09\uff0c\u9010\u6761\u6392\u9664 accordion/\u89c6\u5dee\u7b49\uff0c\u5e76\u7ed9\u51fa'\u4e3a\u4ec0\u4e48\u4e0d\u7eaf\u7528\u7f29\u7565\u56fe'\u7684\u53cd\u8bc1"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u4fee\u590d\u300c\u56fe\u7247\u770b\u7740\u504f/\u6b6a\u300d\uff1a\u623f\u578b\u5361\u56fe\u7247\u6539\u7528 object-fit: cover \u586b\u6ee1\u5bb9\u5668\uff08\u4ee3\u7801\u4e2d\u51fa\u73b0 cover\uff0c\u4e14\u4e0d\u518d\u662f contain\uff09",
+          "passed": true,
+          "evidence": "fixed.html line 42\uff1a.room .pic img { object-fit: cover }\uff0c\u6ce8\u91ca\u5f15\u7528 fixes.md \u539f\u53e5\u300c\u6539\u6210\u586b\u6ee1\u5bb9\u5668 cover\uff0c\u522b\u5c45\u4e2d\u300d\uff1b.hero img \u4e5f\u4e00\u5e76\u8865\u4e86 cover"
+        },
+        {
+          "text": "\u4fee\u590d\u300c\u95f4\u8ddd\u53bb\u4e0d\u6389\u300d\uff1a\u65e7\u6a21\u677f\u6b8b\u7559\u7684 margin\uff08.old-copy \u7684 margin-left:40px / margin-top:24px\uff09\u88ab\u6e05\u9664\uff0c\u6392\u7248\u95f4\u8ddd\u6062\u590d\u6b63\u5e38",
+          "passed": true,
+          "evidence": "line 47 \u6ce8\u91ca\u300c\u5df2\u5220\u9664\u65e7\u6a21\u677f\u6b8b\u7559\u7684 .old-copy \u89c4\u5219\u300d\uff0c\u89c4\u5219\u4e0e\u5305\u88f9 div \u4e00\u5e76\u79fb\u9664"
+        },
+        {
+          "text": "\u4fee\u590d\u300c\u88ab\u5bfc\u822a\u6321\u4f4f\u300d\uff1a\u4e3a fixed \u9876\u90e8\u5bfc\u822a\u7559\u51fa\u4e86\u9ad8\u5ea6\uff08body \u6216\u9996\u5c4f\u7684 padding-top/margin-top \u2265 64px\uff09\uff0c\u9996\u5c4f\u6587\u5b57\u4e0d\u518d\u88ab\u8986\u76d6",
+          "passed": true,
+          "evidence": "body { padding-top: 64px }\uff08line 11\uff09\uff0c\u6574\u9875\u5185\u5bb9\u968f\u4e4b\u4e0b\u79fb\uff0c\u4efb\u4f55\u6eda\u52a8\u4f4d\u7f6e\u90fd\u4e0d\u88ab\u906e\u6321"
+        },
+        {
+          "text": "\u5185\u5bb9\u4e0e\u89c6\u89c9\u57fa\u672c\u4fdd\u6301\uff1a\u6c11\u5bbf\u540d\u79f0\u3001\u623f\u578b\u4e09\u5361\u3001\u4ef7\u683c\u7b49\u6587\u6848\u4e0e\u6574\u4f53\u98ce\u683c\u672a\u91cd\u5199\uff0c\u53ea\u505a\u6837\u5f0f\u4fee\u590d",
+          "passed": true,
+          "evidence": "\u6c11\u5bbf\u540d\u79f0/\u4e09\u623f\u578b/\u00a5128/\u00a5256/\u00a5388 \u7b49\u6587\u6848\u4e0e #faf8f5 \u914d\u8272\u5168\u90e8\u4fdd\u7559\uff1bnotes.md \u672b\u5c3e\u8fd8\u9644\u300c\u5bf9\u9f50\u3001\u95f4\u8ddd\u3001\u906e\u6321\u300d\u81ea\u67e5\u6e05\u5355"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u4e3a\u53ef\u76f4\u63a5\u6253\u5f00\u7684\u5355\u6587\u4ef6 HTML\uff0c\u5305\u542b nav \u5bfc\u822a\u5143\u7d20\u548c\u9996\u5c4f\u533a\u5757",
+          "passed": true,
+          "evidence": "index.html \u5355\u6587\u4ef6\uff0cfixed \u9876\u90e8\u5bfc\u822a\uff08line 39\uff09+ .hero \u9996\u5c4f\u533a\u5757\u4ff1\u5168\uff0c\u76f4\u63a5\u53cc\u51fb\u53ef\u6253\u5f00"
+        },
+        {
+          "text": "\u5bfc\u822a\u680f\u91c7\u7528\u5177\u4f53\u6210\u5f62\u7684\u5f62\u5f0f\uff08\u60ac\u6d6e\u5438\u9876 Floating+Sticky / \u62bd\u5c49 / \u4fa7\u8fb9\u680f\u7b49\uff09\uff0c\u800c\u975e\u666e\u901a\u7684\u9759\u6001\u6c34\u5e73\u83dc\u5355\u62fc\u88c5\u9970",
+          "passed": true,
+          "evidence": "\u9009\u578b\u4e3a\u300c\u60ac\u6d6e\u5438\u9876 Floating \u00b7 Sticky\u300d\uff08\u79bb\u9876 18px \u5706\u89d2\u73bb\u7483\u6d6e\u5c9b\uff09+ \u79fb\u52a8\u7aef\u300c\u5168\u5c4f\u906e\u7f69 Full-screen Overlay\u300d+ \u300cScrollspy \u951a\u70b9\u5bfc\u822a\u300d+ \u4e0b\u6eda\u300cShrink on Scroll\u300d\uff0c\u5168\u90e8\u4e3a layouts.md \u5bfc\u822a 9 \u79cd\u4e2d\u7684\u6210\u5f62\u5f62\u5f0f\u5e76\u5728\u4ee3\u7801\u6ce8\u91ca\u6807\u540d"
+        },
+        {
+          "text": "\u5bfc\u822a\u5728\u9875\u9762\u6eda\u52a8\u65f6\u4fdd\u6301\u6761\u7406\uff08\u5438\u9876/\u60ac\u6d6e\u6709\u9634\u5f71\u3001\u7559\u767d\u3001\u5706\u89d2\u7b49\u60ac\u6d6e\u611f\u5904\u7406\uff0c\u6216\u505a\u4e86\u79fb\u52a8\u7aef\u9002\u914d\uff09",
+          "passed": true,
+          "evidence": "position:fixed; top:18px + backdrop-filter:blur(14px)\uff08\u6ce8\u91ca\u6807'\u6db2\u6001\u73bb\u7483'\uff09\uff1b\u79fb\u52a8\u7aef\u5207\u6362\u4e3a\u5168\u5c4f\u906e\u7f69\u83dc\u5355\uff1bscrollspy \u9ad8\u4eae"
+        },
+        {
+          "text": "notes.md \u7ed9\u51fa\u4e86 2 \u79cd\u4ee5\u4e0a\u5019\u9009\u65b9\u6848\u5bf9\u6bd4\u5e76\u5199\u660e\u6700\u7ec8\u9009\u578b\u7406\u7531",
+          "passed": true,
+          "evidence": "notes.md \u7ae0\u8282\u4e8c\u300c\u5bfc\u822a\u680f\u9009\u578b\uff1a9 \u79cd\u91cc\u6311\u4e86\u54ea\u79cd\u300d\u9010\u6761\u5217\u51fa 9 \u79cd\u5019\u9009\u5e76\u7ed9\u51fa\u51fa\u5c40\u7406\u7531\uff08\u5982'\u4fa7\u8fb9\u680f\u2014\u2014\u504f\u540e\u53f0\u5de5\u5177\u7ad9\u6c14\u8d28'\uff09"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u6ca1\u6709\u4f7f\u7528\u9ed8\u8ba4\u5f62\u5f0f\uff1a\u4e3b\u56fe\u6d4f\u89c8\u6ca1\u6709\u505a\u6210\u300ctranslateX \u5de6\u53f3\u6ed1\u52a8 + \u4ec5\u4e09\u4e2a\u5706\u70b9\u6307\u793a\u5668\u300d\u7684\u9ed8\u8ba4\u7ec4\u5408",
+          "passed": true,
+          "evidence": "\u672a\u505a\u8f6e\u64ad\uff0c\u7528\u300c\u62f1\u5f62\u9f9b\u4f4d\u753b\u5eca\u300d\uff1acrossfade \u6362\u56fe + \u5e95\u90e8\u6709\u8ba1\u6570\u5668 01/06 \u548c\u7ec6\u8fdb\u5ea6\u7ebf\uff0c\u660e\u786e'\u66ff\u4ee3\u4e09\u4e2a\u5706\u70b9'"
+        },
+        {
+          "text": "\u4f7f\u7528\u4e86\u4e00\u79cd\u6210\u5f62\u7684\u66ff\u4ee3\u5f62\u5f0f\uff083D \u65cb\u8f6c\u6728\u9a6c / \u5361\u7247\u5806\u53e0 / \u7ffb\u9875\u5f0f / \u624b\u98ce\u7434\u753b\u5eca / 360\u00b0\u5c55\u793a / \u89c6\u5dee / \u6de1\u5165\u5f0f \u4e4b\u4e00\uff09",
+          "passed": true,
+          "evidence": "\u6362\u56fe\u7528\u6de1\u5165\uff08crossfade\uff09+ \u7f13\u63a8\u955c\uff081.02\u21921.05 scale\uff09\u2014\u2014\u5c5e\u4e8e\u6e05\u5355\u4e2d\u7684\u300c\u6de1\u5165\u5f0f\u300d\u53d8\u4f53\uff1b\u53e6\u6709\u6307\u9488\u89c6\u5dee\uff08\u00b112px\uff09\u53e0\u52a0\uff1b\u5176\u81ea\u521b\u7684'\u62f1\u5f62\u9f9b'\u662f\u6e7f\u6cd5\u5305\u88c5\u800c\u975e\u65b9\u6cd5\u8bba\u4f53\u7cfb\u5185\u7684\u6210\u5f62\u540d\u8bcd"
+        },
+        {
+          "text": "\u5c55\u793a\u7ec6\u8282\u8bf4\u6e05\u4e86\uff1a\u542b\u6307\u793a\u5668\uff08\u7f29\u7565\u56fe/\u8fdb\u5ea6/\u7f16\u53f7\u7b49\uff09\u4e0e\u81ea\u52a8\u64ad\u653e\u6216\u660e\u786e\u7684\u4ea4\u4e92\u63a7\u5236\uff08\u62d6\u62fd/\u60ac\u505c/\u70b9\u51fb\u5207\u6362\u7b49\uff09",
+          "passed": true,
+          "evidence": "\u6307\u793a\u5668=\u8ba1\u6570\u5668+\u8fdb\u5ea6\u7ebf+\u7f29\u7565\u5c0f\u9f9b\u5217\uff1b\u4ea4\u4e92=\u963b\u5c3c\u62d6\u62fd/\u6eda\u8f6escrub/\u952e\u76d8/\u70b9\u7f29\u7565\u56fe\uff0c\u53cc\u51fb\u8fdb\u7ec6\u8282\u6a21\u5f0f\uff082.2\u00d7\u5149\u6807\u8ddf\u968f\uff09"
+        },
+        {
+          "text": "notes.md \u7ed9\u51fa\u5019\u9009\u65b9\u6848\u5bf9\u6bd4\u4e0e\u9009\u578b\u7406\u7531",
+          "passed": true,
+          "evidence": "notes.md \u6709'\u8003\u8651\u8fc7\u7684\u5019\u9009\u65b9\u6848'\u7ae0\u8282\u4e0e\u820d\u5f03\u9879\u8bf4\u660e\uff08\u820d\u5f03\u88c5\u8ba2\u523b\u5ea6\u70b9\u3001\u5927\u7bad\u5934\u6309\u94ae\u7b49\uff09"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 4,
+        "failed": 0,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u4fee\u590d\u300c\u56fe\u7247\u770b\u7740\u504f/\u6b6a\u300d\uff1a\u623f\u578b\u5361\u56fe\u7247\u6539\u7528 object-fit: cover \u586b\u6ee1\u5bb9\u5668\uff08\u4ee3\u7801\u4e2d\u51fa\u73b0 cover\uff0c\u4e14\u4e0d\u518d\u662f contain\uff09",
+          "passed": true,
+          "evidence": "fixed.html line 34\uff1a.room .pic img { object-fit: cover; object-position: center }\uff0c\u5e76\u89e3\u91ca\u4e86 contain \u9732\u7070\u5e95\u7684\u75c5\u56e0"
+        },
+        {
+          "text": "\u4fee\u590d\u300c\u95f4\u8ddd\u53bb\u4e0d\u6389\u300d\uff1a\u65e7\u6a21\u677f\u6b8b\u7559\u7684 margin\uff08.old-copy \u7684 margin-left:40px / margin-top:24px\uff09\u88ab\u6e05\u9664\uff0c\u6392\u7248\u95f4\u8ddd\u6062\u590d\u6b63\u5e38",
+          "passed": true,
+          "evidence": "line 53 \u6ce8\u91ca\u300c\u4fee\u590d5\uff1a\u79fb\u9664\u65e7\u6a21\u677f\u6b8b\u7559\u7684 .old-copy \u5305\u88f9\u5c42\u53ca\u5176 margin\u300d\uff0c\u89c4\u5219\u4e0e\u5305\u88f9 div \u4e00\u5e76\u79fb\u9664"
+        },
+        {
+          "text": "\u4fee\u590d\u300c\u88ab\u5bfc\u822a\u6321\u4f4f\u300d\uff1a\u4e3a fixed \u9876\u90e8\u5bfc\u822a\u7559\u51fa\u4e86\u9ad8\u5ea6\uff08body \u6216\u9996\u5c4f\u7684 padding-top/margin-top \u2265 64px\uff09\uff0c\u9996\u5c4f\u6587\u5b57\u4e0d\u518d\u88ab\u8986\u76d6",
+          "passed": true,
+          "evidence": ".hero { margin-top: 64px }\uff08line 19\uff09\uff0c\u4e0efixed\u5bfc\u822a\u7b49\u9ad8\u9884\u7559"
+        },
+        {
+          "text": "\u5185\u5bb9\u4e0e\u89c6\u89c9\u57fa\u672c\u4fdd\u6301\uff1a\u6c11\u5bbf\u540d\u79f0\u3001\u623f\u578b\u4e09\u5361\u3001\u4ef7\u683c\u7b49\u6587\u6848\u4e0e\u6574\u4f53\u98ce\u683c\u672a\u91cd\u5199\uff0c\u53ea\u505a\u6837\u5f0f\u4fee\u590d",
+          "passed": true,
+          "evidence": "\u6587\u6848/\u4ef7\u683c/\u914d\u8272\u5168\u4fdd\u7559\uff0c\u53e6\u5c06\u4e09\u5361\u6539 flex:1 \u7b49\u5206\u4fee\u590d\u6324\u51fa\u4e00\u5904\u8d85\u5bbd\u95ee\u9898\uff08\u989d\u5916\u81ea\u67e5\uff09\uff0cnotes.md \u6709\u5b8c\u6574\u8bca\u65ad\u8868"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.75,
+        "passed": 3,
+        "failed": 1,
+        "total": 4,
+        "time_seconds": 0.0,
+        "tokens": 0,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "\u8f93\u51fa\u4e3a\u53ef\u76f4\u63a5\u6253\u5f00\u7684\u5355\u6587\u4ef6 HTML\uff0c\u5305\u542b nav \u5bfc\u822a\u5143\u7d20\u548c\u9996\u5c4f\u533a\u5757",
+          "passed": true,
+          "evidence": "index.html \u5355\u6587\u4ef6\uff0c\u5168\u5c4f Hero + \u6df1\u8272\u6bdb\u73bb\u7483\u6eda\u52a8\u5bfc\u822a + \u79fb\u52a8\u7aef\u6c49\u5821\u83dc\u5355\uff0c\u53ef\u76f4\u63a5\u6253\u5f00"
+        },
+        {
+          "text": "\u5bfc\u822a\u680f\u91c7\u7528\u5177\u4f53\u6210\u5f62\u7684\u5f62\u5f0f\uff08\u60ac\u6d6e\u5438\u9876 Floating+Sticky / \u62bd\u5c49 / \u4fa7\u8fb9\u680f\u7b49\uff09\uff0c\u800c\u975e\u666e\u901a\u7684\u9759\u6001\u6c34\u5e73\u83dc\u5355\u62fc\u88c5\u9970",
+          "passed": true,
+          "evidence": "\u9996\u9875\u900f\u660e\u3001\u6eda\u52a8 24px \u540e\u5207\u6df1\u8272\u6bdb\u73bb\u7483\u5757\uff08backdrop-filter\uff09\uff0c\u79fb\u52a8\u7aef\u6c49\u5821\u4e0b\u62c9\u2014\u2014\u884c\u4e3a\u4e0a\u63a5\u8fd1\u4f46\u4e0d involuntary \u5730\u5e26\u5438\u9876/\u60ac\u6d6e\u5f62\u6001\u8bcd"
+        },
+        {
+          "text": "\u5bfc\u822a\u5728\u9875\u9762\u6eda\u52a8\u65f6\u4fdd\u6301\u6761\u7406\uff08\u5438\u9876/\u60ac\u6d6e\u6709\u9634\u5f71\u3001\u7559\u767d\u3001\u5706\u89d2\u7b49\u60ac\u6d6e\u611f\u5904\u7406\uff0c\u6216\u505a\u4e86\u79fb\u52a8\u7aef\u9002\u914d\uff09",
+          "passed": true,
+          "evidence": "backdrop-filter \u6bdb\u73bb\u7483 + \u5e95\u90e8\u5206\u9694\u7ebf + \u6c49\u5821\u83dc\u5355\u79fb\u52a8\u7aef\u6536\u8d77"
+        },
+        {
+          "text": "notes.md \u7ed9\u51fa\u4e86 2 \u79cd\u4ee5\u4e0a\u5019\u9009\u65b9\u6848\u5bf9\u6bd4\u5e76\u5199\u660e\u6700\u7ec8\u9009\u578b\u7406\u7531",
+          "passed": false,
+          "evidence": "notes.md \u4ec5\u8bf4\u660e\u6700\u7ec8\u8bbe\u8ba1\u8981\u70b9\uff08\u989c\u8272/\u4ea4\u4e92/\u80cc\u666f\u56fe\uff09\uff0c\u6ca1\u6709\u5217\u51fa\u4efb\u4f55\u5019\u9009\u65b9\u6848\u6216\u5907\u9009\u5bf9\u6bd4"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.9167,
+        "stddev": 0.1443,
+        "min": 0.75,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0.0,
+        "max": 0.0
+      },
+      "tokens": {
+        "mean": 0.0,
+        "stddev": 0.0,
+        "min": 0,
+        "max": 0
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.08",
+      "time_seconds": "+0.0",
+      "tokens": "+0"
+    }
+  },
+  "notes": []
+}

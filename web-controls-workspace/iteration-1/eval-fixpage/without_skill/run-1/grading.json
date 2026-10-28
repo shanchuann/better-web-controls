@@ -1,0 +1,32 @@
+{
+  "run": "without_skill",
+  "eval_id": 1,
+  "expectations": [
+    {
+      "text": "修复「图片看着偏/歪」：房型卡图片改用 object-fit: cover 填满容器（代码中出现 cover，且不再是 contain）",
+      "passed": true,
+      "evidence": "fixed.html line 34：.room .pic img { object-fit: cover; object-position: center }，并解释了 contain 露灰底的病因"
+    },
+    {
+      "text": "修复「间距去不掉」：旧模板残留的 margin（.old-copy 的 margin-left:40px / margin-top:24px）被清除，排版间距恢复正常",
+      "passed": true,
+      "evidence": "line 53 注释「修复5：移除旧模板残留的 .old-copy 包裹层及其 margin」，规则与包裹 div 一并移除"
+    },
+    {
+      "text": "修复「被导航挡住」：为 fixed 顶部导航留出了高度（body 或首屏的 padding-top/margin-top ≥ 64px），首屏文字不再被覆盖",
+      "passed": true,
+      "evidence": ".hero { margin-top: 64px }（line 19），与fixed导航等高预留"
+    },
+    {
+      "text": "内容与视觉基本保持：民宿名称、房型三卡、价格等文案与整体风格未重写，只做样式修复",
+      "passed": true,
+      "evidence": "文案/价格/配色全保留，另将三卡改 flex:1 等分修复挤出一处超宽问题（额外自查），notes.md 有完整诊断表"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}
