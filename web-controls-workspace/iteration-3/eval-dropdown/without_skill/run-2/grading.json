@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用浏览器原生 <select> 默认样式直接糊弄（自绘了下拉组件或对 select 做了成形样式）",
+      "passed": true,
+      "evidence": "page.html 使用自绘组件：无任何 <select> 标签，而是 button#ownerBtn（aria-haspopup=\"listbox\"）+ div#ownerMenu（role=\"listbox\"）+ .dropdown-option 选项（page.html:162-168, 229-273）；notes.md:7 明确写明\"自定义下拉组件（非原生 <select>）\""
+    },
+    {
+      "text": "负责人筛选场景用了合适的下拉形态：单选用 Select；若体现多选则用 Multi-select 且选中项显示为可单独移除的标签",
+      "passed": true,
+      "evidence": "page.html:254-270 选项点击后 current = o.name 单值替换，label 显示单项（含色点），配合 .dropdown-option.selected 的 ✓ 标记（page.html:95-96）构成标准单选 Select 形态；按负责人筛订单为单选场景，未引入多选语义"
+    },
+    {
+      "text": "下拉说清了操作规则：选项来源、单选/多选、清空或重选方式",
+      "passed": false,
+      "evidence": "notes.md:16 提及选项来源（\"内置 5 位负责人、10 条示例订单……可按 ORDERS、OWNERS 两个数组直接替换为真实数据源\"），page.html 的\"全部负责人\"选项（OWNERS 第一项，page.html:187）可视为清空方式；但两个文件均未明确说明该下拉是\"单选\"（无\"单选/多选\"表述，也无 UI 内规则提示文案），操作规则未说清"
+    },
+    {
+      "text": "notes.md 给出候选方案（Select / Multi-select / Combobox 等）对比与选型理由",
+      "passed": false,
+      "evidence": "notes.md 全文（19 行）只有功能、数据、视觉三节说明，未出现 Select / Multi-select / Combobox 等候选方案的对比或选型理由"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 2,
+    "total": 4,
+    "pass_rate": 0.5
+  },
+  "run": "without_skill",
+  "eval_id": 3
+}

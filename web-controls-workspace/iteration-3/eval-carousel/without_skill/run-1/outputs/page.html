@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>拾音 · 陶瓷蓝牙音箱 — 商品详情</title>
+<style>
+  :root{
+    --bg:#f3ede5;
+    --panel:#fcfaf6;
+    --ink:#2b2723;
+    --ink-soft:#7d746a;
+    --line:#e4dccf;
+    --brass:#a8763e;
+    --brass-deep:#8a5d2b;
+    --ceramic-a:#f7f2ea;
+    --ceramic-b:#e3d8c9;
+    --ceramic-c:#efe6da;
+    --radius:18px;
+    --ease:cubic-bezier(.22,.61,.25,1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Source Han Sans SC",system-ui,-apple-system,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    padding:28px clamp(16px,4vw,56px) 60px;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(255,255,255,.55), transparent 60%),
+      radial-gradient(700px 500px at 95% 110%, rgba(168,118,62,.08), transparent 60%);
+  }
+  .page{max-width:1240px;margin:0 auto;position:relative;z-index:1}
+
+  /* ---------- 顶部 ---------- */
+  header.topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:34px;
+  }
+  .brand{font-size:20px;font-weight:700;letter-spacing:.14em}
+  .brand small{display:block;font-size:11px;font-weight:400;color:var(--ink-soft);letter-spacing:.4em;margin-top:2px}
+  .crumbs{font-size:13px;color:var(--ink-soft)}
+  .crumbs b{color:var(--ink);font-weight:500}
+
+  /* ---------- 主布局 ---------- */
+  .detail{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);gap:clamp(28px,4vw,60px)}
+  @media (max-width:960px){
+    .detail{grid-template-columns:1fr}
+  }
+
+  /* ---------- 3D 展台 ---------- */
+  .stage-wrap{position:relative}
+  .stage-viewport{
+    position:relative;
+    height:clamp(460px,58vw,620px);
+    perspective:1400px;
+    perspective-origin:50% 42%;
+    user-select:none;
+    touch-action:pan-y;
+    cursor:grab;
+  }
+  .stage-viewport.dragging{cursor:grabbing}
+  .stage-viewport.zoomed{cursor:zoom-out}
+  .stage{
+    position:absolute;inset:0;
+    transform-style:preserve-3d;
+    transition:transform .7s var(--ease);
+  }
+  .stage-viewport.dragging .slide{transition:none}
+
+  .slide{
+    position:absolute;
+    left:50%;top:50%;
+    width:min(52%,440px);aspect-ratio:1/1.06;
+    margin:calc(min(52%,440px) * -.53) 0 0 calc(min(52%,440px) * -.5);
+    border-radius:var(--radius);
+    box-shadow:0 30px 60px -24px rgba(60,45,25,.35), 0 4px 14px rgba(60,45,25,.08);
+    transform:translateX(calc(var(--o) * 66% - 50% + var(--drag, 0px)) ) translateY(-50%)
+              translateZ(calc(-1 * abs(var(--o)) * 170px))
+              rotateY(calc(var(--o) * -20deg))
+              scale(calc(1 - abs(var(--o)) * .14));
+    opacity:calc(1 - abs(var(--o)) * .55);
+    filter:brightness(calc(1 - abs(var(--o)) * .22)) blur(calc(abs(var(--o)) * 1.4px));
+    transition:transform .7s var(--ease), opacity .7s var(--ease), filter .7s var(--ease);
+    pointer-events:auto;
+    background:var(--slide-bg,#efe8dd);
+    overflow:hidden;
+  }
+  .slide[data-o="0"]{z-index:10;cursor:zoom-in}
+  .slide[data-o="1"], .slide[data-o="-1"]{z-index:6;cursor:pointer}
+  .slide svg{display:block;width:100%;height:100%}
+  .slide figcaption{
+    position:absolute;left:0;right:0;bottom:0;
+    padding:14px 18px 12px;font-size:12px;letter-spacing:.22em;
+    color:rgba(43,39,35,.55);text-align:center;
+    background:linear-gradient(to top, rgba(255,255,255,.5), transparent);
+    opacity:0;transition:opacity .5s var(--ease);
+  }
+  .slide[data-o="0"] figcaption{opacity:1}
+  .stage-viewport.zoomed .slide[data-o="0"]{
+    transform:translateX(-50%) translateY(-50%) scale(1.28);
+    z-index:20;
+  }
+
+  /* 舞台上的覆盖元素 */
+  .badge-new{
+    position:absolute;top:14px;left:14px;z-index:30;
+    font-size:11px;letter-spacing:.28em;color:var(--brass-deep);
+    border:1px solid rgba(168,118,62,.4);
+    padding:6px 10px 6px 13px;border-radius:99px;
+    background:rgba(255,255,255,.6);backdrop-filter:blur(4px);
+  }
+  .stage-nav{
+    position:absolute;top:50%;z-index:30;transform:translateY(-50%);
+    width:42px;height:42px;border-radius:50%;
+    border:1px solid var(--line);background:rgba(255,255,255,.75);
+    backdrop-filter:blur(6px);cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .25s var(--ease);
+  }
+  .stage-nav:hover{background:#fff;border-color:var(--brass);}
+  .stage-nav svg{stroke:var(--ink);transition:stroke .25s}
+  .stage-nav:hover svg{stroke:var(--brass-deep)}
+  .stage-nav.prev{left:6px}
+  .stage-nav.next{right:6px}
+  .zoom-hint{
+    position:absolute;right:14px;top:14px;z-index:30;
+    font-size:11px;color:var(--ink-soft);letter-spacing:.15em;
+    background:rgba(255,255,255,.6);backdrop-filter:blur(4px);
+    padding:5px 10px;border-radius:99px;pointer-events:none;
+  }
+
+  /* ---------- 底部胶片条 ---------- */
+  .filmstrip{
+    margin-top:26px;display:flex;gap:10px;
+  }
+  .film-item{
+    flex:1;position:relative;background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;
+    padding:10px 6px 12px;text-align:center;cursor:pointer;
+    transition:all .3s var(--ease);overflow:hidden;
+  }
+  .film-item:hover{border-color:#d3c6b2;transform:translateY(-2px)}
+  .film-item .num{font-size:10px;color:var(--ink-soft);letter-spacing:.2em}
+  .film-item .lbl{font-size:13px;margin-top:3px;letter-spacing:.1em;color:var(--ink-soft)}
+  .film-item.active{
+    border-color:var(--brass);
+    box-shadow:0 6px 18px -8px rgba(168,118,62,.4);
+  }
+  .film-item.active .lbl{color:var(--ink);font-weight:600}
+  .film-item::after{
+    content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;
+    background:var(--brass);transform:scaleX(0);transform-origin:left;
+    transition:transform .7s var(--ease);
+  }
+  .film-item.active.fill::after{transform:scaleX(1)}
+
+  .slide-count{
+    margin-top:16px;text-align:center;font-size:12px;color:var(--ink-soft);letter-spacing:.35em;
+  }
+  .slide-count b{color:var(--ink);font-weight:600}
+
+  /* ---------- 右侧信息 ---------- */
+  .info{padding-top:6px}
+  .info .collection{font-size:12px;letter-spacing:.4em;color:var(--brass-deep);margin-bottom:12px}
+  .info h1{font-size:clamp(26px,3vw,34px);font-weight:700;line-height:1.25;margin-bottom:10px}
+  .info .sub{color:var(--ink-soft);font-size:14px;line-height:1.8;margin-bottom:20px}
+  .rating{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--ink-soft);margin-bottom:24px}
+  .stars{color:var(--brass);letter-spacing:2px}
+  .price-row{display:flex;align-items:baseline;gap:14px;padding:20px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:24px}
+  .price{font-size:32px;font-weight:700}
+  .price small{font-size:16px;font-weight:600}
+  .origin{font-size:13px;color:var(--ink-soft);text-decoration:line-through}
+
+  .opt-title{font-size:13px;margin-bottom:12px}
+  .opt-title b{font-weight:600}
+  .opt-title span{color:var(--ink-soft);margin-left:8px}
+  .swatches{display:flex;gap:12px;margin-bottom:28px}
+  .swatch{
+    width:42px;height:42px;border-radius:50%;cursor:pointer;
+    border:2px solid transparent;outline:1px solid var(--line);
+    position:relative;transition:all .25s var(--ease);
+  }
+  .swatch:hover{transform:translateY(-2px)}
+  .swatch.on{border-color:var(--panel);outline:2px solid var(--brass)}
+  .swatch[data-name="月苔白"]{background:var(--ceramic-b)}
+  .swatch[data-name="松烟青"]{background:#8d9b8a}
+  .swatch[data-name="暮陶粉"]{background:#d8b8a8}
+
+  .buy{
+    width:100%;padding:16px 0;font-size:15px;letter-spacing:.3em;
+    background:var(--ink);color:#fdf9f2;border:none;border-radius:14px;
+    cursor:pointer;font-family:inherit;font-weight:600;
+    transition:all .3s var(--ease);
+    box-shadow:0 12px 24px -10px rgba(43,39,35,.4);
+  }
+  .buy:hover{background:var(--brass-deep);transform:translateY(-2px)}
+  .buy:active{transform:translateY(0)}
+  .meta{margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:13px;color:var(--ink-soft)}
+  .meta span{display:flex;align-items:center;gap:8px}
+  .meta i{width:5px;height:5px;border-radius:50%;background:var(--brass);flex:none}
+
+  /* 滚动进入的细节区 */
+  .specs{
+    margin-top:56px;padding:34px 0 0;border-top:1px solid var(--line);
+    display:grid;grid-template-columns:repeat(3,1fr);gap:26px;
+  }
+  .spec h3{font-size:15px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+  .spec h3::before{content:"";width:22px;height:1px;background:var(--brass)}
+  .spec p{font-size:13px;line-height:1.9;color:var(--ink-soft)}
+  @media (max-width:720px){.specs{grid-template-columns:1fr}}
+
+  @media (prefers-reduced-motion:reduce){
+    *{transition-duration:.01ms !important}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="topbar">
+    <div class="brand">拾音<small>SHIYIN STUDIO</small></div>
+    <div class="crumbs">首页 / 音响设备 / <b> Hear 陶瓷蓝牙音箱</b></div>
+  </header>
+
+  <main class="detail">
+
+    <!-- ============ 左：3D 展台 ============ -->
+    <section class="stage-wrap" aria-label="商品图片浏览">
+
+      <div class="stage-viewport" id="viewport" role="region" aria-label="商品图片 3D 画廊，支持拖拽、滚轮与方向键" tabindex="0">
+        <div class="stage" id="stage">
+
+          <!-- 1 正面 -->
+          <figure class="slide" data-cap="正面视图" style="--slide-bg:#f0e9df">
+            <svg viewBox="0 0 800 800" role="img" aria-label="陶瓷蓝牙音箱正面">
+              <defs>
+                <linearGradient id="ceramicF" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" style="stop-color:var(--ceramic-a)"/>
+                  <stop offset=".48" style="stop-color:var(--ceramic-b)"/>
+                  <stop offset=".62" style="stop-color:var(--ceramic-c)"/>
+                  <stop offset="1" style="stop-color:var(--ceramic-a)"/>
+                </linearGradient>
+                <linearGradient id="brassF" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#d9b072"/><stop offset=".55" stop-color="#a8763e"/><stop offset="1" stop-color="#6e4a1e"/>
+                </linearGradient>
+                <pattern id="grillF" width="26" height="26" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <circle cx="13" cy="13" r="3.2" fill="#b9ab97"/>
+                </pattern>
+              </defs>
+              <rect width="800" height="800" fill="#f0e9df"/>
+              <ellipse cx="410" cy="700" rx="250" ry="34" fill="rgba(90,70,45,.14)"/>
+              <!-- 木质底座 -->
+              <ellipse cx="400" cy="626" rx="168" ry="34" fill="#5c4330"/>
+              <path d="M232 620 Q400 668 568 620 L568 668 Q400 716 232 668 Z" fill="#7a5a3a"/>
+              <path d="M232 620 Q400 668 568 620 L568 640 Q400 684 232 640 Z" fill="#8f6c48"/>
+              <!-- 陶瓷机身 -->
+              <path d="M258 236 Q258 178 400 178 Q542 178 542 236 L542 596 Q400 660 258 596 Z" fill="url(#ceramicF)"/>
+              <!-- 陶瓷光泽 -->
+              <path d="M292 210 Q284 380 300 590 Q312 612 322 616 Q304 400 312 222 Z" fill="rgba(255,255,255,.65)"/>
+              <ellipse cx="452" cy="250" rx="34" ry="120" fill="rgba(255,255,255,.28)"/>
+              <!-- 音孔区 -->
+              <path d="M300 430 Q400 470 500 430 L492 560 Q400 598 308 558 Z" fill="url(#grillF)" opacity=".85"/>
+              <!-- 顶盘 -->
+              <ellipse cx="400" cy="200" rx="146" ry="44" fill="#e9e0d3" stroke="#cfc3b0" stroke-width="2"/>
+              <ellipse cx="400" cy="196" rx="146" ry="44" fill="#f4ede2"/>
+              <ellipse cx="400" cy="196" rx="98" ry="29" fill="#e2d6c4"/>
+              <!-- 黄铜旋钮 -->
+              <circle cx="400" cy="194" r="52" fill="url(#brassF)"/>
+              <circle cx="400" cy="194" r="52" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="2"/>
+              <rect x="397" y="152" width="6" height="26" rx="3" fill="#f6ecd9"/>
+              <!-- 底部标识线 -->
+              <rect x="330" y="598" width="140" height="3" rx="1.5" fill="#8a5d2b" opacity=".5"/>
+            </svg>
+            <figcaption>.01 — 正面 · 冰裂纹釉面</figcaption>
+          </figure>
+
+          <!-- 2 侧颜 -->
+          <figure class="slide" data-cap="侧颜欣赏" style="--slide-bg:#e7e2d8">
+            <svg viewBox="0 0 800 800" role="img" aria-label="陶瓷蓝牙音箱侧面">
+              <defs>
+                <linearGradient id="ceramicS" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" style="stop-color:var(--ceramic-c)"/>
+                  <stop offset=".7" style="stop-color:var(--ceramic-b)"/>
+                  <stop offset="1" style="stop-color:#cbbca6"/>
+                </linearGradient>
+              </defs>
+              <rect width="800" height="800" fill="#e7e2d8"/>
+              <circle cx="640" cy="150" r="110" fill="rgba(214,178,128,.25)"/>
+              <ellipse cx="400" cy="706" rx="230" ry="30" fill="rgba(90,70,45,.15)"/>
+              <g transform="rotate(-7 400 420)">
+                <ellipse cx="372" cy="614" rx="64" ry="26" fill="#4e3826"/>
+                <path d="M330 610 Q372 632 414 610 L414 650 Q372 674 330 650 Z" fill="#6d5034"/>
+                <path d="M320 240 Q322 196 400 192 Q478 196 480 240 L476 590 Q400 636 324 592 Z" fill="url(#ceramicS)"/>
+                <path d="M332 236 Q326 360 334 574 Q344 596 354 602 Q342 380 348 248 Z" fill="rgba(255,255,255,.6)"/>
+                <ellipse cx="400" cy="210" rx="80" ry="30" fill="#eee5d6" stroke="#d0c4b1" stroke-width="2"/>
+                <circle cx="400" cy="208" r="30" fill="url(#brassS)"/>
+                <rect x="397" y="182" width="6" height="15" rx="3" fill="#f6ecd9" transform="rotate(40 400 208)"/>
+              </g>
+              <defs>
+                <linearGradient id="brassS" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0" stop-color="#d9b072"/><stop offset=".55" stop-color="#a8763e"/><stop offset="1" stop-color="#6e4a1e"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <figcaption>.02 — 侧颜 · 一体旋压成型</figcaption>
+          </figure>
+
+          <!-- 3 黄铜旋钮特写 -->
+          <figure class="slide" data-cap="旋钮特写" style="--slide-bg:#ece3d3">
+            <svg viewBox="0 0 800 800" role="img" aria-label="黄铜音量旋钮特写">
+              <defs>
+                <radialGradient id="brassBig" cx=".35" cy=".3" r="1">
+                  <stop offset="0" stop-color="#eccb8d"/><stop offset=".5" stop-color="#a8763e"/><stop offset="1" stop-color="#5d3d18"/>
+                </radialGradient>
+              </defs>
+              <rect width="800" height="800" fill="#ece3d3"/>
+              <ellipse cx="400" cy="470" rx="320" ry="290" fill="rgba(255,255,255,.35)"/>
+              <ellipse cx="400" cy="560" rx="290" ry="160" fill="#e0d3bd"/>
+              <ellipse cx="400" cy="470" rx="290" ry="160" fill="#efe5d4" stroke="#cfc0a8" stroke-width="3"/>
+              <ellipse cx="400" cy="470" rx="205" ry="115" fill="#e6dac6"/>
+              <circle cx="400" cy="440" r="150" fill="url(#brassBig)"/>
+              <circle cx="400" cy="440" r="150" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="3"/>
+              <circle cx="352" cy="382" r="26" fill="rgba(255,255,255,.35)"/>
+              <rect x="394" y="308" width="12" height="66" rx="6" fill="#f6ecd9"/>
+              <g fill="#7d5423" opacity=".55">
+                <circle cx="400" cy="440" r="158" fill="none" stroke-dasharray="2 14" stroke-width="3"/>
+              </g>
+              <text x="400" y="668" text-anchor="middle" font-size="26" letter-spacing="12" fill="#7d746a" font-family="inherit">V O L U M E</text>
+            </svg>
+            <figcaption>.03 — 实心黄铜旋钮 · 手工倒角</figcaption>
+          </figure>
+
+          <!-- 4 音孔织面特写 -->
+          <figure class="slide" data-cap="织物音孔" style="--slide-bg:#e9e1d4">
+            <svg viewBox="0 0 800 800" role="img" aria-label="织物音孔特写">
+              <defs>
+                <pattern id="weave" width="34" height="34" patternUnits="userSpaceOnUse" patternTransform="rotate(38)">
+                  <rect width="34" height="34" fill="#d8cbb6"/>
+                  <circle cx="17" cy="17" r="6.5" fill="#8d7a5f"/>
+                  <circle cx="17" cy="17" r="3.2" fill="#5c4b35"/>
+                </pattern>
+              </defs>
+              <rect width="800" height="800" fill="#e9e1d4"/>
+              <ellipse cx="400" cy="400" rx="400" ry="430" fill="url(#weave)"/>
+              <path d="M0 180 Q400 90 800 200 L800 0 L0 0 Z" style="fill:var(--ceramic-a)" opacity=".98"/>
+              <path d="M0 700 Q400 620 800 720 L800 800 L0 800 Z" fill="#5c4330"/>
+              <path d="M0 696 Q400 618 800 718 L800 760 Q400 664 0 758 Z" fill="#7a5a3a"/>
+              <text x="66" y="96" font-size="24" letter-spacing="8" fill="#8a7d6a" font-family="inherit"> removal 扬声器网面</text>
+            </svg>
+            <figcaption>.04 — 磁吸织物网罩 · 可拆洗</figcaption>
+          </figure>
+
+          <!-- 5 生活场景 -->
+          <figure class="slide" data-cap="生活场景" style="--slide-bg:#ded6c6">
+            <svg viewBox="0 0 800 800" role="img" aria-label="置于书架的生活场景">
+              <defs>
+                <linearGradient id="ceramicL" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0" style="stop-color:var(--ceramic-a)"/>
+                  <stop offset="1" style="stop-color:var(--ceramic-b)"/>
+                </linearGradient>
+              </defs>
+              <rect width="800" height="800" fill="#ded6c6"/>
+              <circle cx="170" cy="160" r="86" fill="rgba(228,178,120,.4)"/>
+              <rect x="60" y="588" width="680" height="22" rx="4" fill="#b29370"/>
+              <rect x="60" y="610" width="680" height="10" fill="#987957" opacity=".6"/>
+              <!-- 龟背竹 -->
+              <g transform="translate(600 588)">
+                <path d="M0 0 C-30 -80 -20 -150 20 -190 C10 -120 6 -60 8 0 Z" fill="#6f7d5c"/>
+                <path d="M10 0 C50 -60 70 -110 110 -130 C80 -70 50 -30 26 4 Z" fill="#83936c"/>
+                <path d="M-6 0 C-60 -40 -90 -60 -120 -58 C-90 -20 -50 -4 -12 4 Z" fill="#79885f"/>
+                <rect x="40" y="-2" width="60" height="4" fill="#b29370"/>
+                <path d="M44 0 Q70 -30 66 -6 Z" fill="#b0865f"/>
+              </g>
+              <!-- 音箱 -->
+              <g transform="translate(280 588) scale(1)">
+                <ellipse cx="110" cy="6" rx="118" ry="16" fill="rgba(90,70,45,.2)"/>
+                <ellipse cx="110" cy="-40" rx="92" ry="20" fill="#5c4330"/>
+                <path d="M42 -46 Q110 -22 178 -46 L178 -14 Q110 12 42 -14 Z" fill="#7a5a3a"/>
+                <path d="M52 -250 Q110 -290 172 -250 L176 -60 Q110 -22 48 -62 Z" fill="url(#ceramicL)"/>
+                <ellipse cx="86" cy="-248" rx="14" ry="52" fill="rgba(255,255,255,.55)"/>
+                <ellipse cx="144" cy="-240" rx="12" ry="36" fill="rgba(255,255,255,.28)"/>
+                <ellipse cx="112" cy="-258" rx="58" ry="17" fill="#f2eadb" stroke="#cfc3b0"/>
+                <circle cx="112" cy="-260" r="22" fill="#a8763e"/>
+                <rect x="110" y="-278" width="4" height="11" rx="2" fill="#f6ecd9"/>
+                <path d="M84 -140 Q112 -126 140 -142 L136 -84 Q112 -70 88 -86 Z" fill="url(#grillL)"/>
+              </g>
+              <defs>
+                <pattern id="grillL" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <circle cx="11" cy="11" r="2.6" fill="#a8967c"/>
+                </pattern>
+              </defs>
+              <text x="90" y="700" font-size="20" letter-spacing="6" fill="#7d746a" font-family="inherit">书架 · 居室 · 随手放下的好声音</text>
+            </svg>
+            <figcaption>.05 — 场景 · 与老木和绿意相安</figcaption>
+          </figure>
+
+        </div>
+
+        <div class="badge-new">新品上市</div>
+        <div class="zoom-hint" id="zoomHint">点击主图看细节</div>
+
+        <button class="stage-nav prev" id="btnPrev" aria-label="上一张">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+        <button class="stage-nav next" id="btnNext" aria-label="下一张">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="filmstrip" id="filmstrip" role="tablist" aria-label="图片缩略导航"></div>
+      <div class="slide-count" id="slideCount" aria-live="polite"><b>01</b> / 05</div>
+    </section>
+
+    <!-- ============ 右：商品信息 ============ -->
+    <aside class="info">
+      <div class="collection">拾音 · 冶陶系列</div>
+      <h1> Hear · 陶瓷蓝牙音箱</h1>
+      <p class="sub">一整块德化白瓷，旋压、修坯、素烧、釉烧，历时七日。木陶相拥， brass 旋钮与陶瓷相触时，会发出悦耳的一声"叮"。</p>
+
+      <div class="rating"><span class="stars">★★★★★</span> 4.9 <span>|</span> 1,284 条评价 <span>|</span> 已售 6,000+</div>
+
+      <div class="price-row">
+        <div class="price"><small>¥</small>699</div>
+        <div class="origin">¥899</div>
+        <div style="margin-left:auto;font-size:12px;color:var(--brass-deep);letter-spacing:.1em">限量发售</div>
+      </div>
+
+      <p class="opt-title"><b>釉色</b><span id="glazeName">月苔白 · 现货</span></p>
+      <div class="swatches" role="radiogroup" aria-label="选择釉色">
+        <button class="swatch on" data-name="月苔白" aria-label="月苔白"></button>
+        <button class="swatch" data-name="松烟青" data-tint="#cfd8cc;#9aa793" aria-label="松烟青"></button>
+        <button class="swatch" data-name="暮陶粉" data-tint="#ecdcd2;#c9a091" aria-label="暮陶粉"></button>
+      </div>
+
+      <button class="buy">加 购 / 立 即 下 单</button>
+
+      <div class="meta">
+        <span><i></i>续航 12 小时</span>
+        <span><i></i>蓝牙 5.3</span>
+        <span><i></i>黄铜旋钮调音</span>
+        <span><i></i>7 日守窑烧制</span>
+      </div>
+    </aside>
+  </main>
+
+  <section class="specs">
+    <div class="spec"><h3>声学</h3><p>全频陶瓷共腔设计，旋钮既是音量，也是你与音乐之间的物理阻尼——转动它，声音如老式收音机般严谨地加减。</p></div>
+    <div class="spec"><h3>材质</h3><p>德化高岭土釉烧瓷身，东北老榆木底座，实心黄铜 C3604 旋钮。每一件的釉面开片纹理均独一无二。</p></div>
+    <div class="spec"><h3>细节</h3><p>织物网罩磁吸可拆，TYPE-C 快充，支持双台串联立体声。附赠同色系防滑陶垫与定制胡桃木托盘。</p></div>
+  </section>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var viewport = document.getElementById('viewport');
+  var stage    = document.getElementById('stage');
+  var slides   = Array.prototype.slice.call(stage.querySelectorAll('.slide'));
+  var filmstrip= document.getElementById('filmstrip');
+  var countEl  = document.getElementById('slideCount');
+  var hintEl   = document.getElementById('zoomHint');
+  var n = slides.length;
+  var active = 0;
+  var fillTimer = null;
+
+  /* ---- 生成胶片条 ---- */
+  var filmItems = [];
+  slides.forEach(function(s, i){
+    var b = document.createElement('button');
+    b.className = 'film-item';
+    b.setAttribute('role','tab');
+    b.innerHTML = '<div class="num">.0'+(i+1)+'</div><div class="lbl">'+s.dataset.cap+'</div>';
+    b.addEventListener('click', function(){ go(i); restartFill(); });
+    filmstrip.appendChild(b);
+    filmItems.push(b);
+  });
+
+  function half(o){
+    if (o > n/2) return o - n;
+    if (o < -n/2) return o + n;
+    return o;
+  }
+
+  function layout(){
+    slides.forEach(function(el, i){
+      var o = half(i - active);
+      el.style.setProperty('--o', o);
+      el.dataset.o = Math.abs(o) < n/2 ? o : o; /* 供 CSS zoom 判断 */
+      el.style.zIndex = Math.abs(o) < .5 ? 10 : (Math.abs(o)<=1 ? 6 : Math.max(1, 5 - Math.abs(o)));
+    });
+    filmItems.forEach(function(b, i){
+      b.classList.toggle('active', i === active);
+      b.setAttribute('aria-selected', i === active);
+    });
+    countEl.innerHTML = '<b>0'+(active+1)+'</b> / 0'+n;
+  }
+
+  function go(i){
+    active = ((i % n) + n) % n;
+    layout();
+  }
+
+  function step(d){
+    go(active + d);
+  }
+
+  /* ---- 胶片条进度填充（约 4s 自动推进） ---- */
+  function restartFill(){
+    clearTimeout(fillTimer);
+    filmItems.forEach(function(b){ b.classList.remove('fill'); });
+    /* 强制重新触发过渡 */
+    void filmItems[active].offsetWidth;
+    fillTimer = setTimeout(function(){
+      filmItems[active].classList.add('fill');
+      fillTimer = setTimeout(function(){ step(1); restartFill(); }, 3800);
+    }, 60);
+  }
+
+  /* ---- 拖拽 ---- */
+  var dragStart = null, dx = 0;
+  viewport.addEventListener('pointerdown', function(e){
+    if (e.button !== 0) return;
+    dragStart = { x: e.clientX, t: Date.now() };
+    dx = 0;
+    viewport.classList.add('dragging');
+    viewport.setPointerCapture(e.pointerId);
+    clearTimeout(fillTimer);
+    filmItems[active].classList.remove('fill');
+  });
+  viewport.addEventListener('pointermove', function(e){
+    if (!dragStart) return;
+    dx = e.clientX - dragStart.x;
+    stage.style.setProperty('--drag', dx + 'px');
+  });
+  function endDrag(){
+    if (!dragStart) return;
+    viewport.classList.remove('dragging');
+    stage.style.setProperty('--drag', '0px');
+    var velocity = dx / Math.max(1, Date.now() - dragStart.t);
+    if (dx < -70 || velocity < -.45) step(1);
+    else if (dx > 70 || velocity > .45) step(-1);
+    dragStart = null;
+    restartFill();
+  }
+  viewport.addEventListener('pointerup', endDrag);
+  viewport.addEventListener('pointercancel', endDrag);
+
+  /* ---- 主图点击缩放（拖拽不误触） ---- */
+  viewport.addEventListener('click', function(e){
+    if (Math.abs(dx) > 6) return;
+    var main = slides[active];
+    if (!main.contains(e.target)) return;
+    var zoomed = viewport.classList.toggle('zoomed');
+    hintEl.textContent = zoomed ? '再次点击返回' : '点击主图看细节';
+  });
+
+  /* ---- 箭头 / 键盘 / 滚轮 ---- */
+  document.getElementById('btnPrev').addEventListener('click', function(e){
+    e.stopPropagation(); step(-1); restartFill();
+  });
+  document.getElementById('btnNext').addEventListener('click', function(e){
+    e.stopPropagation(); step(1); restartFill();
+  });
+  window.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') { step(1); restartFill(); }
+    if (e.key === 'ArrowLeft')  { step(-1); restartFill(); }
+  });
+  var wheelLock = 0;
+  viewport.addEventListener('wheel', function(e){
+    var now = Date.now();
+    if (Math.abs(e.deltaY) < 24 || now - wheelLock < 450) return;
+    wheelLock = now;
+    step(e.deltaY > 0 ? 1 : -1);
+    restartFill();
+  }, { passive:true });
+
+  /* ---- 釉色联动：改变陶瓷颜色的 CSS 变量 ---- */
+  var ceramicDefs = {
+    '月苔白': null,
+    '松烟青': { a:'#e8ede7', b:'#b9c5b5', c:'#d3dcd0' },
+    '暮陶粉': { a:'#f4e9e2', b:'#d9b3a2', c:'#ecd8cc' }
+  };
+  var nameEl = document.getElementById('glazeName');
+  document.querySelectorAll('.swatch').forEach(function(sw){
+    sw.addEventListener('click', function(){
+      document.querySelectorAll('.swatch').forEach(function(x){ x.classList.remove('on'); });
+      sw.classList.add('on');
+      var name = sw.dataset.name;
+      nameEl.textContent = name + (name === '月苔白' ? ' · 现货' : ' · 预售');
+      var tint = ceramicDefs[name];
+      var root = document.documentElement.style;
+      if (tint){
+        root.setProperty('--ceramic-a', tint.a);
+        root.setProperty('--ceramic-b', tint.b);
+        root.setProperty('--ceramic-c', tint.c);
+      } else {
+        root.removeProperty('--ceramic-a');
+        root.removeProperty('--ceramic-b');
+        root.removeProperty('--ceramic-c');
+      }
+    });
+  });
+
+  layout();
+  restartFill();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用默认形式：主图浏览没有做成“translateX 左右滑动 + 仅三个圆点指示器”的默认组合",
+      "passed": true,
+      "evidence": "page.html 中主图区（#stage）为缩略图轨道 + Canvas 360°旋转/内嵌 SVG 静态视图切换（line 41-74、461-498），无任何 translateX 滑动容器，指示器为缩略图轨道（.thumb，aria-selected 黄铜描边环，line 44-58）而非三个圆点；notes.md 第4节也声明“指示器＝缩略图轨道本身……不是圆点、不是箭头翻页”"
+    },
+    {
+      "text": "使用了一种成形的替代形式（3D 旋转木马 / 卡片堆叠 / 翻页式 / 手风琴画廊 / 360°展示 / 视差 / 淡入式 之一）",
+      "passed": true,
+      "evidence": "page.html 第 413-421 行 VIEWS 定义首个视图 { id:\"spin\", name:\"360° 全景\", type:\"spin\" }，第 515-701 行为 Canvas 程序化 360° 旋转展示（drawFrame 按方位角 theta 连续绘制，任意角度可拖），notes.md 第4节明确选型“360° 旋转展示 × 图片预览标签”"
+    },
+    {
+      "text": "展示细节说清了：含指示器（缩略图/进度/编号等）与自动播放或明确的交互控制（拖拽/悬停/点击切换等）",
+      "passed": true,
+      "evidence": "notes.md 第5节操作规则：“按住主图左右拖动旋转，支持触屏与鼠标，松手后自然惯性衰减，闲置 2.5 秒恢复缓慢怠速自转……点缩略图即切换……键盘 ← → 切换视图”，第5节三要素落实：“指示器：缩略图轨道（选中高亮环）……自动播放：仅 360° 视图怠速自转”；page.html 对应实现：rail role=tablist 缩略图点击切换（line 430-456）、pointerdown/move 拖动+惯性（line 704-732）、闲置 2400ms 后怠速自转 loop（line 744-751）、方向键换视图（line 508-513）"
+    },
+    {
+      "text": "notes.md 给出候选方案对比与选型理由",
+      "passed": true,
+      "evidence": "notes.md 第3节“候选对比”表格对比了 4 个候选（图片预览标签 / 360°旋转展示 / 手风琴画廊 / 翻页式）并标注“保留为基底/主交互/不选”结论；第4节“最终选型与理由”给出混合方案选型理由：“360° 提供‘上手把玩实体的高级感’，图片预览标签保证电商购物的信息效率与可预期切换路径；两者互补”"
+    },
+    {
+      "text": "汇总",
+      "passed": 4,
+      "evidence": "4 条断言全部通过",
+      "failed": 0,
+      "pass_rate": 1,
+      "total": 4
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 2
+}

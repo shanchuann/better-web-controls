@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "确认强度匹配后果严重程度：使用了强确认（弹窗 Modal 强制选择，或输入文字确认 Type to Confirm），而不是普通轻提示或直接执行",
+      "passed": true,
+      "evidence": "page.html:264-290 实现了“弹窗确认 Modal + 输入文字确认 Type to Confirm”组合：role=\"alertdialog\" 居中弹窗内包含输入区（line 277-280‘请输入项目名称以确认’），且 confirmBtn 初始 disabled（line 284），只有输入完整项目名“星链运营平台”才启用（page.html:343-348 input 事件比对 PROJECT_NAME）。notes.md:33 明确‘最终选型：弹窗确认 Modal + 输入文字确认 Type to Confirm（组合）’。删除按钮点击后不直接执行（page.html:331 deleteBtn 只调用 openModal），非轻提示、非直接执行。"
+    },
+    {
+      "text": "确认内容说明了后果（告知删除不可恢复/影响范围）",
+      "passed": true,
+      "evidence": "page.html:269‘此操作不可恢复。删除后将带来以下影响：’；page.html:270-275 影响范围清单：永久删除任务 128 个、永久删除文件 342 个（约 1.2 GB）、移除协作成员的项目访问权限 12 人。另外 page.html:243 危险操作区也写明‘删除后，本项目下的所有任务与文件将被永久移除，无法恢复’。"
+    },
+    {
+      "text": "弹窗类确认有明确的取消/确认两个出口，且不会误触关闭（如不点蒙层直接关闭或做了防误触）",
+      "passed": true,
+      "evidence": "两个出口明确：page.html:283‘取消’按钮（cancelBtn→closeModal，line 332）与 page.html:284‘永久删除’按钮。防误触已做：确认按钮默认 disabled（line 284、line 312 openModal 中重置 disabled=true），仅输入完全匹配项目名后启用（line 343-348）；page.html:354-359 再校验，不匹配时显示错误‘输入内容不匹配，请核对项目名称后重试’并聚焦输入框，强制点击（如 Tab+Enter 绕过）也无法误删。误触关闭路径（点遮罩 line 334-336、Esc line 338-340）只会关闭弹窗、绝不会执行删除，且重开弹窗会清空输入重新确认（line 308-316），无破坏性后果；notes.md:45 也把‘取消·遮罩·Esc’作为 Modal 四要素中的关闭出口明确声明。"
+    },
+    {
+      "text": "notes.md 说明选了哪种确认强度、为什么（决策线：不可逆且影响大→输入确认或弹窗）",
+      "passed": true,
+      "evidence": "notes.md:33‘最终选型：弹窗确认 Modal + 输入文字确认 Type to Confirm（组合）’；notes.md:35-39 说明原因：Modal 承担‘说明后果’（逐条列出影响范围），Type to Confirm 承担‘制造确认成本’。notes.md:28-31 明确引用决策线原文：‘严重后果用弹窗；不可逆且影响大用输入确认或独立确认页’；notes.md:11-12 判定不可逆（‘所有任务和文件都没了’）且影响大（项目级删失，连带任务、文件与成员权限）；notes.md:16-26 七种候选逐一对比并给出取舍理由（如气泡确认‘无法承载…后果说明，确认过轻’，Undo‘本删除不可恢复’）。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 4
+}

@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "确认强度匹配后果严重程度：使用了强确认（弹窗 Modal 强制选择，或输入文字确认 Type to Confirm），而不是普通轻提示或直接执行",
+      "passed": true,
+      "evidence": "page.html:222-249 实现了 role=\"alertdialog\" aria-modal=\"true\" 的确认弹窗；page.html:239-242 弹窗内含 type-to-confirm 输入框“请输入项目名称 <code>星辰数据平台</code> 以确认”；page.html:282-288 脚本监听 input 事件，仅当输入值 trim 后完全等于 PROJECT_NAME 才解除 confirmBtn.disabled，为弹窗+输入文字确认双重强确认，非轻提示或直接执行。"
+    },
+    {
+      "text": "确认内容说明了后果（告知删除不可恢复/影响范围）",
+      "passed": true,
+      "evidence": "page.html:233 弹窗正文“这是一个不可恢复的破坏性操作。删除后你将立即失去对以下内容的访问”；page.html:234-238 逐条列出后果：项目下全部 128 个任务及其记录、342 个文件（约 42 GB）、所有成员的协作历史与评论；page.html:209-212 页面危险区描述也写明“将被永久清除，此操作不可恢复”。"
+    },
+    {
+      "text": "弹窗类确认有明确的取消/确认两个出口，且不会误触关闭（如不点蒙层直接关闭或做了防误触）",
+      "passed": true,
+      "evidence": "page.html:245-246 明确两个出口：<button id=\"cancelBtn\">取消</button> 与 <button id=\"confirmDeleteBtn\" disabled>永久删除</button>；防误触确认：page.html:284 确认按钮初始 disabled，仅当输入框内容精确匹配项目名才启用（page.html:246 disabled 属性、page.html:148-150 disabled 样式），且 Esc/取消仅触发关闭（取消方向，不会执行删除）；page.html:275-280 删除执行中（deleting=true）closeModal 直接 return，不允许中途关闭，构成防误触机制。"
+    },
+    {
+      "text": "notes.md 说明选了哪种确认强度、为什么（决策线：不可逆且影响大→输入确认或弹窗）",
+      "passed": true,
+      "evidence": "notes.md:4 “删除项目属于不可恢复的破坏性操作，因此不能用简单的单步确认，采用了强确认（type-to-confirm）模式”；notes.md:3-4 阐述理由：不可恢复 → 故选用强确认，并说明弹窗后果明示（128 个任务、342 个文件、协作历史，强调不可恢复）作为决策依据。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "without_skill",
+  "eval_id": 4
+}

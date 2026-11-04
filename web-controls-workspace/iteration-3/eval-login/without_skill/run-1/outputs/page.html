@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>登录 · 澄云 SaaS</title>
+<style>
+  :root{
+    --brand:#D96A32;          /* 陶橙 */
+    --brand-deep:#B84E1D;
+    --brand-soft:#F6E3D5;
+    --brand-tint:#FDF6F0;
+    --ink:#2B2622;
+    --ink-2:#6E655E;
+    --ink-3:#9C938B;
+    --line:#E9E2DB;
+    --bg:#FBF9F6;
+    --card:#FFFFFF;
+    --ok:#2E7D4F;
+    --err:#C0392B;
+    --radius:14px;
+    --shadow:0 24px 60px -24px rgba(120,72,40,.18), 0 2px 8px rgba(120,72,40,.06);
+    font-size:16px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    background:var(--bg);color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .page{min-height:100vh;display:flex}
+  /* ---------- 左侧品牌区 ---------- */
+  .brand{
+    flex:1.1;position:relative;overflow:hidden;
+    background:linear-gradient(160deg,#E07A3F 0%,var(--brand) 42%,var(--brand-deep) 100%);
+    color:#fff;display:flex;flex-direction:column;justify-content:space-between;
+    padding:56px 64px;
+  }
+  .brand::before{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(620px 420px at 82% 12%,rgba(255,255,255,.16),transparent 62%),
+      radial-gradient(520px 520px at 8% 100%,rgba(60,22,4,.28),transparent 65%);
+    pointer-events:none;
+  }
+  .brand-header{position:relative;display:flex;align-items:center;gap:12px;font-weight:600;letter-spacing:.02em}
+  .logo-mark{
+    width:34px;height:34px;border-radius:9px;
+    background:rgba(255,255,255,.92);color:var(--brand-deep);
+    display:grid;place-items:center;font-size:17px;font-weight:800;
+  }
+  .brand-main{position:relative;max-width:560px}
+  .brand-main h1{
+    font-size:clamp(30px,3.4vw,44px);line-height:1.28;font-weight:700;letter-spacing:.01em;
+  }
+  .brand-main h1 em{font-style:normal;color:#FFE3C9}
+  .brand-main p{margin-top:20px;font-size:16px;line-height:1.9;color:rgba(255,255,255,.82);max-width:30em}
+  .brand-stats{position:relative;display:flex;gap:44px;margin-top:44px}
+  .brand-stats .num{font-size:26px;font-weight:700}
+  .brand-stats .lbl{font-size:13px;color:rgba(255,255,255,.72);margin-top:4px;letter-spacing:.04em}
+  .brand-quote{
+    position:relative;display:flex;align-items:center;gap:14px;
+    font-size:14px;color:rgba(255,255,255,.85);
+  }
+  .brand-quote .dots span{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);display:inline-block;margin-right:6px}
+  .brand-quote .dots span.on{background:#fff}
+  /* ---------- 右侧表单区 ---------- */
+  .panel{
+    width:520px;max-width:100%;background:var(--card);
+    display:flex;flex-direction:column;justify-content:center;
+    padding:56px 64px;box-shadow:var(--shadow);
+  }
+  .panel h2{font-size:26px;font-weight:700;letter-spacing:.01em}
+  .panel .sub{margin-top:10px;color:var(--ink-2);font-size:15px}
+  .panel .sub a{color:var(--brand);text-decoration:none;font-weight:600}
+  .panel .sub a:hover{text-decoration:underline}
+  form{margin-top:36px}
+  .field{margin-bottom:20px}
+  .field label{display:block;font-size:14px;font-weight:600;color:var(--ink-2);margin-bottom:8px}
+  .input-wrap{position:relative;display:flex;align-items:center}
+  .input-wrap .icon{position:absolute;left:14px;width:18px;height:18px;color:var(--ink-3);pointer-events:none}
+  .input-wrap input{
+    width:100%;height:48px;border:1.5px solid var(--line);border-radius:var(--radius);
+    background:#FCFAF8;font-size:15px;color:var(--ink);padding:0 14px 0 42px;
+    transition:border-color .18s,box-shadow .18s,background .18s;outline:none;
+  }
+  .input-wrap input::placeholder{color:var(--ink-3)}
+  .input-wrap input:hover{border-color:#D8CFC6}
+  .input-wrap input:focus{
+    border-color:var(--brand);background:#fff;
+    box-shadow:0 0 0 4px rgba(217,106,50,.13);
+  }
+  .field.invalid input{border-color:var(--err)}
+  .field.invalid .msg{color:var(--err)}
+  .eye{
+    position:absolute;right:8px;width:34px;height:34px;border:none;background:none;border-radius:8px;
+    display:grid;place-items:center;cursor:pointer;color:var(--ink-3);
+  }
+  .eye:hover{color:var(--ink-2);background:#F4EFEA}
+  .row{display:flex;justify-content:space-between;align-items:center;margin:4px 0 24px;font-size:14px;color:var(--ink-2)}
+  .check{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+  .check input{accent-color:var(--brand);width:16px;height:16px;cursor:pointer}
+  .row a{color:var(--ink-2);text-decoration:none}
+  .row a:hover{color:var(--brand)}
+  .btn{
+    width:100%;height:50px;border:none;border-radius:var(--radius);cursor:pointer;
+    background:linear-gradient(180deg,var(--brand),#C95A26);color:#fff;
+    font-size:16px;font-weight:700;letter-spacing:.06em;
+    box-shadow:0 10px 22px -8px rgba(217,106,50,.55);
+    transition:transform .12s,box-shadow .18s,filter .18s;
+    position:relative;overflow:hidden;
+  }
+  .btn:hover{filter:brightness(1.05);box-shadow:0 12px 26px -8px rgba(217,106,50,.6)}
+  .btn:active{transform:translateY(1px)}
+  .btn[disabled]{opacity:.65;cursor:default}
+  .btn .spinner{
+    display:none;width:18px;height:18px;border:2.5px solid rgba(255,255,255,.4);
+    border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;
+  }
+  .btn.loading .spinner{display:inline-block}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .divider{display:flex;align-items:center;gap:16px;margin:28px 0 20px;color:var(--ink-3);font-size:13px}
+  .divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+  .oauth{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .oauth button{
+    height:46px;border-radius:var(--radius);border:1.5px solid var(--line);background:#fff;
+    font-size:14px;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+    transition:border-color .18s,background .18s;
+  }
+  .oauth button:hover{border-color:var(--brand-soft);background:var(--brand-tint)}
+  .foot{margin-top:40px;text-align:center;font-size:13px;color:var(--ink-3)}
+  .foot a{color:var(--ink-3);text-decoration:none;margin:0 6px}
+  .foot a:hover{color:var(--brand)}
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed;left:50%;top:28px;transform:translate(-50%,-16px);
+    padding:11px 20px;border-radius:10px;font-size:14px;color:#fff;opacity:0;
+    pointer-events:none;transition:opacity .25s,transform .25s;z-index:99;
+    box-shadow:0 10px 30px -8px rgba(0,0,0,.25);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+  .toast.ok{background:var(--ok)}
+  .toast.err{background:var(--err)}
+  /* ---------- 响应式 ---------- */
+  @media (max-width:960px){
+    .brand{display:none}
+    .panel{width:100%;box-shadow:none;padding:48px 28px}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <aside class="brand">
+    <div class="brand-header">
+      <div class="logo-mark">澄</div>
+      <span>澄云 · 企业协同平台</span>
+    </div>
+    <div class="brand-main">
+      <h1>让团队的每一次协作，<br>都<em>精准而高效</em></h1>
+      <p>澄云为 3 万+ 企业团队提供项目协同、数据洞察与自动化流程能力，一站式完成从需求到交付的旅程。</p>
+      <div class="brand-stats">
+        <div><div class="num">30,000+</div><div class="lbl">企业客户</div></div>
+        <div><div class="num">99.98%</div><div class="lbl">服务可用性</div></div>
+        <div><div class="num">120万</div><div class="lbl">活跃用户</div></div>
+      </div>
+    </div>
+    <div class="brand-quote">
+      <span class="dots"><span class="on"></span><span></span><span></span></span>
+      <span>“上线澄云后，跨部门交付周期缩短了 40%。” —— 某制造企业 CIO</span>
+    </div>
+  </aside>
+
+  <main class="panel">
+    <h2>欢迎回来 👋</h2>
+    <p class="sub">还没有账号？<a href="#">免费试用 14 天</a></p>
+
+    <form id="loginForm" novalidate>
+      <div class="field" id="fAccount">
+        <label for="account">邮箱 / 手机号</label>
+        <div class="input-wrap">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="m3 8 8.4 5.6a1 1 0 0 0 1.2 0L21 8"/></svg>
+          <input id="account" name="account" type="text" placeholder="name@company.com" autocomplete="username" required>
+        </div>
+        <p class="msg" style="display:none;color:var(--err);font-size:13px;margin-top:6px"></p>
+      </div>
+
+      <div class="field" id="fPassword">
+        <label for="password">密码</label>
+        <div class="input-wrap">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="10" width="16" height="10" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+          <input id="password" name="password" type="password" placeholder="请输入密码" autocomplete="current-password" required>
+          <button type="button" class="eye" id="togglePwd" aria-label="显示/隐藏密码">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/></svg>
+          </button>
+        </div>
+        <p class="msg" style="display:none;color:var(--err);font-size:13px;margin-top:6px"></p>
+      </div>
+
+      <div class="row">
+        <label class="check"><input type="checkbox" id="remember" checked>记住我</label>
+        <a href="#">忘记密码？</a>
+      </div>
+
+      <button type="submit" class="btn" id="submitBtn">
+        <span style="display:inline-flex;align-items:center;gap:10px;vertical-align:middle">
+          登 录
+          <span class="spinner" id="spinner"></span>
+        </span>
+      </button>
+
+      <div class="divider">或使用以下方式登录</div>
+      <div class="oauth">
+        <button type="button" onclick="toast('正在跳转企业微信登录…','ok')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8.7 4C5 4 2 6.6 2 9.8c0 1.8 1 3.4 2.5 4.5l-.7 2 2.3-1.2c.8.2 1.6.4 2.5.4h.4a5 5 0 0 1-.3-1.7c0-3 3-5.4 6.6-5.4h.4C15 6 12.2 4 8.7 4Zm6 6.6c-3 0-5.4 2-5.4 4.4s2.4 4.4 5.4 4.4c.7 0 1.4-.1 2-.3l1.9 1-.5-1.7c1.2-.8 2-2 2-3.4 0-2.4-2.4-4.4-5.4-4.4Z" transform="scale(1) translate(0 .5)"/></svg>
+          企业微信
+        </button>
+        <button type="button" onclick="toast('正在跳转钉钉登录…','ok')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13.6 3 6 8.6l3-.5-1.4 4.7 2.4-.6-1.2 5.4 6.3-7-2.7.7L14.6 7l-2.5.6L13.6 3Zm4 11.2-.9 1.7 2.3-.5-1.5 4.1 4.5-6-2.4.8 1.3-2.4-3.3 2.3Z" transform="translate(0 -.5)"/></svg>
+          钉钉登录
+        </button>
+      </div>
+    </form>
+
+    <p class="foot">
+      <a href="#">服务条款</a>·<a href="#">隐私政策</a>·<a href="#">帮助中心</a>
+      <br><span style="display:inline-block;margin-top:10px">© 2026 澄云科技 ChengCloud Inc.</span>
+    </p>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const form = document.getElementById('loginForm');
+  const btn = document.getElementById('submitBtn');
+  const toastEl = document.getElementById('toast');
+  let timer = null;
+
+  window.toast = function(msg, type){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + (type || 'ok');
+    clearTimeout(timer);
+    timer = setTimeout(() => toastEl.classList.remove('show'), 2600);
+  };
+
+  // 密码可见切换
+  document.getElementById('togglePwd').addEventListener('click', function(){
+    const pwd = document.getElementById('password');
+    pwd.type = pwd.type === 'password' ? 'text' : 'password';
+    this.setAttribute('aria-label', pwd.type === 'password' ? '显示密码' : '隐藏密码');
+  });
+
+  function setError(fieldId, msg){
+    const f = document.getElementById(fieldId);
+    const input = f.querySelector('input');
+    const msgEl = f.querySelector('.msg');
+    if(msg){
+      f.classList.add('invalid');
+      msgEl.textContent = msg; msgEl.style.display = 'block';
+      input.setAttribute('aria-invalid','true');
+    }else{
+      f.classList.remove('invalid');
+      msgEl.style.display = 'none';
+      input.removeAttribute('aria-invalid');
+    }
+  }
+
+  // 输入即清除错误
+  ['account','password'].forEach(id=>{
+    document.getElementById(id).addEventListener('input', ()=> setError('f'+id[0].toUpperCase()+id.slice(1), ''));
+  });
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const account = document.getElementById('account').value.trim();
+    const pwd = document.getElementById('password').value;
+
+    if(!account){ setError('fAccount','请输入邮箱或手机号'); document.getElementById('account').focus(); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(account) && !/^1\d{10}$/.test(account)){
+      setError('fAccount','账号格式不正确，请输入有效邮箱或 11 位手机号');
+      document.getElementById('account').focus(); return;
+    }
+    if(!pwd){ setError('fPassword','请输入密码'); document.getElementById('password').focus(); return; }
+    if(pwd.length < 6){ setError('fPassword','密码长度至少 6 位'); document.getElementById('password').focus(); return; }
+
+    btn.classList.add('loading'); btn.disabled = true;
+    setTimeout(() => {
+      btn.classList.remove('loading'); btn.disabled = false;
+      toast('登录成功，正在进入工作台…', 'ok');
+    }, 1400);
+  });
+})();
+</script>
+</body>
+</html>

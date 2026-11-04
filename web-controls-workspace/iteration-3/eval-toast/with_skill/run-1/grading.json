@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "使用了轻提示 Toast（出现几秒自动消失），而不是 alert()/弹窗 Modal 这类打断式反馈",
+      "passed": true,
+      "evidence": "notes.md 明确选型“轻提示 Toast”，且 page.html 中通过 showToast()（line 255-279）实现自动消失的 Toast（setTimeout 3000ms 后加 hide 类移除），全文件无 alert() 调用、无 Modal/蒙层结构；notes.md 中也明确排除“弹窗确认 Modal——直接违反不打断约束”"
+    },
+    {
+      "text": "Toast 说清了位置（如右上角/底部居中）与消失时机（约 2-3 秒自动消失）",
+      "passed": true,
+      "evidence": "notes.md：“右上角出现、约 3 秒自动消失”；page.html 中 .toast-zone 为 position:fixed top:20px right:20px（右上角，line 119-123），JS 中 setTimeout(..., 3000)（3 秒消失，line 272-278），移动端媒体查询改为底部（bottom:20px, line 161）"
+    },
+    {
+      "text": "没有用阻塞式交互（保存后页面仍可继续操作）",
+      "passed": true,
+      "evidence": "page.html 中保存反馈为非阻塞 Toast：toast-zone 设 pointer-events:none 不遮挡页面（line 127），无遮罩层；保存完成后按钮 disabled 恢复（line 285），Toast 文案“设置已保存 — 之后可以继续调整”（line 263），页面表单操作不被打断"
+    },
+    {
+      "text": "若选了带操作的轻提示 Snackbar，附带可立即执行的按钮（如“查看”）也视为合格",
+      "passed": true,
+      "evidence": "notes.md 最终选型为无按钮的 Toast（“不带按钮，不需要用户确认”），未选择 Snackbar，无需满足附带按钮条件；且若升级 Snackbar 在技能规则中也已说明其为合格备选（“备选——仅当保存后需要撤销/查看动作时升级为它”）"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 5
+}

@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订单管理 · 负责人筛选</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --border: #e4e7ec;
+    --border-strong: #d0d5dd;
+    --text: #1d2939;
+    --text-secondary: #667085;
+    --text-muted: #98a2b3;
+    --accent: #2f5ce0;
+    --accent-bg: #eef3fe;
+    --danger: #d92d20;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06);
+    --shadow-lg: 0 8px 24px rgba(16,24,40,.14);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    --mono: ui-monospace, "SF Mono", Consolas, "Cascadia Mono", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 32px 24px 64px;
+  }
+  .page { max-width: 1040px; margin: 0 auto; }
+
+  /* 顶部 */
+  .topbar { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 20px; }
+  .topbar h1 { font-size: 20px; font-weight: 600; letter-spacing: .2px; }
+  .topbar .sub { color: var(--text-secondary); font-size: 13px; }
+
+  /* 筛选条 */
+  .toolbar {
+    display: flex; align-items: flex-end; gap: 20px; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 16px 20px; margin-bottom: 16px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field .label { font-size: 12px; font-weight: 600; color: var(--text-secondary); letter-spacing: .3px; }
+  .result-count { margin-left: auto; align-self: flex-end; color: var(--text-secondary); font-size: 13px; padding-bottom: 7px; }
+  .result-count b { color: var(--text); font-weight: 600; }
+
+  /* 自定义 Select 下拉 */
+  .select { position: relative; width: 220px; }
+  .select-trigger {
+    display: flex; align-items: center; gap: 8px;
+    width: 100%; padding: 8px 10px 8px 12px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong); border-radius: 8px;
+    font-family: inherit; font-size: 14px; color: var(--text);
+    cursor: pointer; transition: border-color .15s, box-shadow .15s;
+    user-select: none;
+  }
+  .select-trigger:hover { border-color: #98a2b3; }
+  .select-trigger:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47,92,224,.15); }
+  .select.open .select-trigger { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(47,92,224,.15); }
+  .select-trigger .avatar {
+    width: 22px; height: 22px; border-radius: 50%; flex: none;
+    display: grid; place-items: center;
+    font-size: 11px; font-weight: 600; color: #fff;
+    background: linear-gradient(135deg, #667ee0, #4961c7);
+  }
+  .select-trigger .avatar.all { background: #eef0f4; color: var(--text-secondary); font-size: 10px; }
+  .select-trigger .value { flex: 1; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .select-trigger .value.placeholder { color: var(--text-muted); }
+  .select-trigger .clear-btn {
+    width: 20px; height: 20px; border-radius: 50%; border: none; flex: none;
+    background: transparent; color: var(--text-muted); cursor: pointer;
+    display: none; place-items: center; padding: 0;
+  }
+  .select-trigger .clear-btn:hover { background: #f1f3f6; color: var(--text); }
+  .select.has-value .clear-btn { display: grid; }
+  .select-trigger .caret { flex: none; color: var(--text-muted); transition: transform .18s; }
+  .select.open .caret { transform: rotate(180deg); }
+
+  .select-panel {
+    position: absolute; z-index: 20; top: calc(100% + 6px); left: 0;
+    min-width: 100%; width: max-content;
+    background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px;
+    box-shadow: var(--shadow-lg);
+    padding: 5px; max-height: 320px; overflow: auto;
+    opacity: 0; transform: translateY(-4px) scale(.98);
+    pointer-events: none; transition: opacity .15s, transform .15s;
+    transform-origin: top left;
+  }
+  .select.open .select-panel { opacity: 1; transform: none; pointer-events: auto; }
+  .option {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px; border-radius: 7px; cursor: pointer;
+    list-style: none; font-size: 14px;
+  }
+  .option:hover, .option.active { background: var(--accent-bg); }
+  .option[aria-selected="true"] { background: var(--accent-bg); font-weight: 600; }
+  .option .avatar { width: 24px; height: 24px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #667ee0, #4961c7); }
+  .option .avatar.all { background: #eef0f4; color: var(--text-secondary); font-size: 10px; }
+  .option .name { flex: 1; }
+  .option .check { color: var(--accent); visibility: hidden; }
+  .option[aria-selected="true"] .check { visibility: visible; }
+  .option .count { color: var(--text-muted); font-size: 12px; flex: none; }
+
+  /* 表格卡片 */
+  .table-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+  }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 720px; }
+  thead th {
+    text-align: left; font-size: 12px; font-weight: 600; color: var(--text-secondary);
+    padding: 12px 16px; border-bottom: 1px solid var(--border);
+    background: #fafbfc; white-space: nowrap; letter-spacing: .3px;
+  }
+  th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  th:last-child, td:last-child { padding-right: 20px; }
+  th:first-child, td:first-child { padding-left: 20px; }
+  tbody td { padding: 12px 16px; border-bottom: 1px solid var(--border, rgba(228,231,236,.6)); }
+  tbody tr { transition: background .12s; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #f8f9fb; }
+  td .order-no { font-family: var(--mono); font-size: 13px; color: var(--text-secondary); }
+  td .owner-cell { display: flex; align-items: center; gap: 8px; }
+  td .owner-cell .avatar { width: 24px; height: 24px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 11px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #667ee0, #4961c7); }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 500; white-space: nowrap;
+  }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge.pending   { color: #b45309; background: #fef3e2; }
+  .badge.doing     { color: #175cd3; background: #eaeffd; }
+  .badge.done      { color: #067647; background: #e8f5ee; }
+  .badge.cancelled { color: #667085; background: #f1f3f6; }
+
+  .amount { font-weight: 600; color: var(--text); }
+  .amount .mono { font-family: var(--mono); font-weight: 600; letter-spacing: .1px; }
+
+  /* 空状态：筛选无果 */
+  .empty {
+    display: none; padding: 56px 24px; text-align: center;
+  }
+  .empty.show { display: block; }
+  .empty .icon {
+    width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%;
+    background: var(--accent-bg); color: var(--accent);
+    display: grid; place-items: center;
+  }
+  .empty h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .empty p { color: var(--text-secondary); font-size: 13px; margin-bottom: 16px; }
+  .empty p b { color: var(--text); }
+  .btn-ghost {
+    display: inline-block; padding: 8px 18px;
+    border: 1px solid var(--border-strong); border-radius: 8px;
+    background: var(--surface); color: var(--text);
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: border-color .15s, background .15s;
+  }
+  .btn-ghost:hover { border-color: #98a2b3; background: #fafbfc; }
+
+  ::selection { background: rgba(47,92,224,.18); }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="topbar">
+    <h1>订单管理</h1>
+    <span class="sub">选择负责人，列表即时过滤</span>
+  </header>
+
+  <div class="toolbar">
+    <div class="field">
+      <span class="label" id="ownerLabel">负责人</span>
+      <div class="select" id="ownerSelect">
+        <div class="select-trigger" id="selectTrigger" role="combobox" tabindex="0"
+                aria-haspopup="listbox" aria-expanded="false" aria-controls="selectPanel" aria-labelledby="ownerLabel triggerValue">
+          <span class="avatar all" id="triggerAvatar">全部</span>
+          <span class="value" id="triggerValue">全部负责人</span>
+          <button type="button" class="clear-btn" id="clearBtn" aria-label="清空筛选，查看全部负责人" title="清空筛选" hidden>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
+          <svg class="caret" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>
+        </div>
+        <ul class="select-panel" id="selectPanel" role="listbox" aria-label="按负责人筛选订单"></ul>
+      </div>
+    </div>
+    <span class="result-count" id="resultCount" aria-live="polite"></span>
+  </div>
+
+  <main class="table-card">
+    <div class="table-wrap">
+      <table id="orderTable">
+        <thead>
+          <tr>
+            <th style="width:15%">订单号</th>
+            <th style="width:18%">客户</th>
+            <th style="width:19%">负责人</th>
+            <th style="width:14%">状态</th>
+            <th class="num" style="width:17%">金额</th>
+            <th style="width:17%">创建日期</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="emptyState" role="status">
+      <div class="icon">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      </div>
+      <h3>筛选无果</h3>
+      <p>当前筛选条件为“负责人：<b id="emptyOwnerName"></b>”，该负责人名下暂无订单。可移除当前条件，查看全部负责人。</p>
+      <button type="button" class="btn-ghost" id="emptyReset">查看全部负责人</button>
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // 演示数据：7 位负责人（含 1 位暂无订单，用于演示筛选无果空状态）
+  var OWNERS = [
+    { name: "王强" }, { name: "李娜" }, { name: "周杰" },
+    { name: "吴敏" }, { name: "赵磊" }, { name: "陈晨" }, { name: "孙悦" }
+  ];
+
+  var STATUS_MAP = {
+    pending:   { text: "待处理", cls: "pending" },
+    doing:     { text: "进行中", cls: "doing" },
+    done:      { text: "已完成", cls: "done" },
+    cancelled: { text: "已取消", cls: "cancelled" }
+  };
+
+  var ORDERS = [
+    { no: "DD20261024001", customer: "远景科技有限公司", owner: "王强", status: "doing",     amount: 12800.00, date: "2026-10-24" },
+    { no: "DD20261022002", customer: "星辰物流集团",     owner: "李娜", status: "done",      amount: 45200.50, date: "2026-10-22" },
+    { no: "DD20261020003", customer: "启明教育机构",     owner: "周杰", status: "pending",   amount: 8600.00,  date: "2026-10-20" },
+    { no: "DD20261015004", customer: "蓝湾酒店管理",     owner: "吴敏", status: "cancelled", amount: 63500.00, date: "2026-10-15" },
+    { no: "DD20261012005", customer: "恒信医疗器械",     owner: "王强", status: "pending",   amount: 280400.00,date: "2026-10-12" },
+    { no: "DD20261008006", customer: "云杉设计工作室",   owner: "赵磊", status: "doing",     amount: 15600.80, date: "2026-10-08" },
+    { no: "DD20261002007", customer: "大隐书局",         owner: "李娜", status: "done",      amount: 3200.00,  date: "2026-10-02" },
+    { no: "DD20260928008", customer: "达盛服装贸易",     owner: "陈晨", status: "doing",     amount: 89300.00, date: "2026-09-28" },
+    { no: "DD20260925009", customer: "麒麟软件开发",     owner: "周杰", status: "done",      amount: 210000.00,date: "2026-09-25" },
+    { no: "DD20260918010", customer: "临溪民宿联盟",     owner: "吴敏", status: "pending",   amount: 22800.00, date: "2026-09-18" },
+    { no: "DD20260911011", customer: "风向标传媒",       owner: "赵磊", status: "cancelled", amount: 12000.00, date: "2026-09-11" },
+    { no: "DD20260905012", customer: "晨光生鲜配送",     owner: "陈晨", status: "done",      amount: 5480.60,  date: "2026-09-05" },
+    { no: "DD20260831013", customer: "北极光电材料",     owner: "王强", status: "done",      amount: 174500.00,date: "2026-08-31" },
+    { no: "DD20260826014", customer: "鹭洲文旅集团",     owner: "李娜", status: "doing",     amount: 33200.00, date: "2026-08-26" }
+  ];
+
+  var HUES = [222, 160, 260, 24, 190, 300, 40];
+  var esc = function (s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  };
+  function hueFor(name) {
+    var idx = OWNERS.findIndex(function (p) { return p.name === name; });
+    return HUES[(idx >= 0 ? idx : 0) % HUES.length];
+  }
+  function avatarHtml(name, opts) {
+    var o = opts || {};
+    var isAll = o.all;
+    var text = isAll ? "全部" : initial(name);
+    var cls = isAll ? "avatar all" : "avatar";
+    var style = isAll ? "" : ' style="background:linear-gradient(135deg,hsl(' + hueFor(name) + ',62%,62%),hsl(' + (hueFor(name) + 14) + ',54%,46%))"';
+    return '<span class="' + cls + '"' + style + '">' + esc(text) + "</span>";
+  }
+  var fmtMoney = function (n) { return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ","); };
+  var initial = function (name) { return name.charAt(name.length > 1 ? 1 : 0); };
+
+  var el = {
+    select: document.getElementById("ownerSelect"),
+    trigger: document.getElementById("selectTrigger"),
+    triggerAvatar: document.getElementById("triggerAvatar"),
+    triggerValue: document.getElementById("triggerValue"),
+    clearBtn: document.getElementById("clearBtn"),
+    panel: document.getElementById("selectPanel"),
+    count: document.getElementById("resultCount"),
+    body: document.getElementById("tableBody"),
+    table: document.getElementById("orderTable"),
+    empty: document.getElementById("emptyState"),
+    emptyName: document.getElementById("emptyOwnerName"),
+    emptyReset: document.getElementById("emptyReset")
+  };
+
+  var state = { owner: "全部", open: false, activeIndex: 0, options: [] };
+
+  // 预计算每位负责人的订单数
+  var counts = {};
+  ORDERS.forEach(function (o) { counts[o.owner] = (counts[o.owner] || 0) + 1; });
+  state.options = [{ name: "全部", count: ORDERS.length }].concat(
+    OWNERS.map(function (p) { return { name: p.name, count: counts[p.name] || 0 }; })
+  );
+
+  function setAvatarColor(node, name) {
+    var h = hueFor(name);
+    node.style.background = "linear-gradient(135deg, hsl(" + h + ",62%,62%), hsl(" + (h + 14) + ",54%,46%))";
+  }
+
+  function renderPanel() {
+    el.panel.innerHTML = state.options.map(function (opt, i) {
+      var isAll = opt.name === "全部";
+      return '<li class="option" role="option" data-index="' + i + '" aria-selected="' + (state.owner === opt.name) + '" tabindex="-1">' +
+        avatarHtml(opt.name, { all: isAll }) +
+        '<span class="name">' + esc(isAll ? "全部负责人" : opt.name) + "</span>" +
+        '<span class="count">' + esc(opt.count) + " 单</span>" +
+        '<svg class="check" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>' +
+      "</li>";
+    }).join("");
+  }
+  function activeHighlight() {
+    Array.prototype.forEach.call(el.panel.querySelectorAll(".option"), function (li) {
+      li.classList.toggle("active", +li.getAttribute("data-index") === state.activeIndex);
+    });
+    var cur = el.panel.querySelector(".option.active");
+    if (cur) cur.scrollIntoView({ block: "nearest" });
+  }
+
+  function openPanel() {
+    state.open = true;
+    el.select.classList.add("open");
+    el.trigger.setAttribute("aria-expanded", "true");
+    state.activeIndex = state.options.findIndex(function (o) { return o.name === state.owner; });
+    if (state.activeIndex < 0) state.activeIndex = 0;
+    activeHighlight();
+  }
+  function closePanel() {
+    state.open = false;
+    el.select.classList.remove("open");
+    el.trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function choose(name) {
+    state.owner = name;
+    closePanel();
+    syncTrigger();
+    renderRows();
+    renderPanel();
+  }
+
+  function clearFilter() {
+    choose("全部");
+    el.trigger.focus();
+  }
+
+  function syncTrigger() {
+    var isAll = state.owner === "全部";
+    el.select.classList.toggle("has-value", !isAll);
+    el.clearBtn.hidden = isAll;
+    if (isAll) {
+      el.triggerAvatar.classList.add("all");
+      el.triggerAvatar.removeAttribute("style");
+      el.triggerAvatar.textContent = "全部";
+      el.triggerValue.textContent = "全部负责人";
+      el.triggerValue.classList.remove("placeholder");
+    } else {
+      el.triggerAvatar.classList.remove("all");
+      el.triggerAvatar.textContent = initial(state.owner);
+      setAvatarColor(el.triggerAvatar, state.owner);
+      el.triggerValue.textContent = state.owner;
+    }
+  }
+
+  function renderRows() {
+    var list = ORDERS.filter(function (o) {
+      return state.owner === "全部" || o.owner === state.owner;
+    });
+    var filtered = state.owner !== "全部";
+    el.count.innerHTML = filtered
+      ? "共 " + ORDERS.length + " 条 · 筛选后 <b>" + list.length + "</b> 条"
+      : "共 <b>" + ORDERS.length + "</b> 条";
+
+    if (list.length === 0) {
+      el.table.style.display = "none";
+      el.empty.classList.add("show");
+      el.emptyName.textContent = state.owner;
+      el.body.innerHTML = "";
+      return;
+    }
+    el.table.style.display = "";
+    el.empty.classList.remove("show");
+
+    el.body.innerHTML = list.map(function (o) {
+      var st = STATUS_MAP[o.status];
+      return "<tr>" +
+        '<td class="order-no">' + esc(o.no) + "</td>" +
+        "<td>" + esc(o.customer) + "</td>" +
+        '<td><span class="owner-cell">' + avatarHtml(o.owner) + esc(o.owner) + "</span></td>" +
+        '<td><span class="badge ' + st.cls + '">' + st.text + "</span></td>" +
+        '<td class="num amount"><span class="mono">¥ ' + fmtMoney(o.amount) + "</span></td>" +
+        "<td>" + esc(o.date) + "</td>" +
+      "</tr>";
+    }).join("");
+  }
+
+  // 事件
+  el.trigger.addEventListener("click", function (e) {
+    if (e.target.closest("#clearBtn")) return;
+    state.open ? closePanel() : openPanel();
+  });
+  el.clearBtn.addEventListener("click", function (e) {
+    e.stopPropagation();
+    choose("全部");
+    el.trigger.focus();
+  });
+
+  el.panel.addEventListener("click", function (e) {
+    var li = e.target.closest(".option");
+    if (!li) return;
+    choose(state.options[+li.getAttribute("data-index")].name);
+    el.trigger.focus();
+  });
+
+  el.trigger.addEventListener("keydown", function (e) {
+    if (e.key === "Tab") { if (state.open) closePanel(); return; }
+    if (!["ArrowDown", "ArrowUp", "Enter", " ", "Escape"].includes(e.key)) return;
+    e.preventDefault();
+    if (e.key === "Escape") { if (state.open) closePanel(); return; }
+    if (!state.open) { openPanel(); return; }
+    if (e.key === "ArrowDown") state.activeIndex = (state.activeIndex + 1) % state.options.length;
+    else if (e.key === "ArrowUp") state.activeIndex = (state.activeIndex - 1 + state.options.length) % state.options.length;
+    else {
+      choose(state.options[state.activeIndex].name);
+      return;
+    }
+    activeHighlight();
+  });
+
+  el.emptyReset.addEventListener("click", clearFilter);
+
+  document.addEventListener("click", function (e) {
+    if (state.open && !e.target.closest("#ownerSelect")) closePanel();
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && state.open) closePanel();
+  });
+
+  // 初始渲染
+  renderPanel();
+  syncTrigger();
+  renderRows();
+})();
+</script>
+</body>
+</html>

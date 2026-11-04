@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "输出为可直接打开的单文件 HTML，包含 nav 导航元素和首屏区块",
+      "passed": true,
+      "evidence": "outputs/page.html 为完整单文件（<!DOCTYPE html> 开头，内嵌 <style> 与 <script>，无外部依赖）；包含 <nav class=\"nav-card\" id=\"navCard\" aria-label=\"主导航\">（L413）导航元素和 <section class=\"hero\">（L447）首屏区块，示例内容含标题、头像卡片、数据行，可直接在浏览器打开。"
+    },
+    {
+      "text": "导航栏采用具体成形的形式（悬浮吸顶 Floating+Sticky / 抽屉 / 侧边栏等），而非普通的静态水平菜单拼装饰",
+      "passed": true,
+      "evidence": "outputs/page.html L50-75：注释“===== 悬浮吸顶导航 Floating · Sticky =====”，.site-nav { position: fixed; top: 20px; } 形成离顶悬浮玻璃卡（backdrop-filter blur + border-radius 16px + box-shadow），JS 滚动监听给 .nav-card 加 .scrolled 类微缩（L503-505）；移动端为汉堡按钮呼出的全屏遮罩抽屉菜单 .overlay（L147-162、L429-444），非静态水平菜单。"
+    },
+    {
+      "text": "导航在页面滚动时保持条理（吸顶/悬浮有阴影、留白、圆角等悬浮感处理，或做了移动端适配）",
+      "passed": true,
+      "evidence": "outputs/page.html L16 --nav-shadow: 0 10px 32px rgba(27,27,30,.10)、L52 top: 20px 留白、L70 border-radius: var(--radius) 圆角、L67 backdrop-filter: blur(16px) saturate(1.5)、L75 .nav-card.scrolled { padding: 9px 22px; } 滚动后收缩；L393-395 移动端 @media (max-width: 800px) 收起 .nav-links/.nav-cta 并显示 .menu-btn 汉堡（44×44px），L507-517 抽屉开合时锁定滚动 body.locked。"
+    },
+    {
+      "text": "notes.md 给出了 2 种以上候选方案对比并写明最终选型理由",
+      "passed": true,
+      "evidence": "outputs/note s.md L14-20“候选对比（导航 — 三选一）”表格列出 ① 悬浮吸顶 Floating·Sticky ② 滚动收缩 Shrink on Scroll ③ 全屏遮罩 Full-screen Overlay 三种方案及优劣；L32-34 “最终选型：悬浮吸顶导航 Floating Sticky 导航 + 首屏 Hero + 移动端全屏遮罩菜单”；L44-47 第 5 节“选型理由（在对比中为何是①）”逐条说明①无需前置条件、②场景不存在、③仅作移动端兜底保留。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 0
+}

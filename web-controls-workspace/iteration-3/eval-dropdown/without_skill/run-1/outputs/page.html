@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订单管理 - 负责人筛选</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --primary: #2563eb;
+    --primary-light: #eff6ff;
+    --border: #e5e7eb;
+    --text: #1f2937;
+    --text-sub: #6b7280;
+    --bg: #f8fafc;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --warning: #d97706;
+  }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 24px;
+  }
+  .container { max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+
+  /* 工具栏 */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+  }
+  .toolbar label { font-size: 14px; color: var(--text-sub); white-space: nowrap; }
+
+  /* 自定义下拉 */
+  .dropdown { position: relative; width: 220px; }
+  .dropdown-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+    text-align: left;
+  }
+  .dropdown-btn:hover { border-color: #c7d2fe; }
+  .dropdown-btn:focus-visible { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+  .dropdown.open .dropdown-btn { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+  .dropdown-btn .arrow {
+    width: 16px; height: 16px;
+    transition: transform .2s;
+    color: var(--text-sub);
+    flex-shrink: 0;
+  }
+  .dropdown.open .arrow { transform: rotate(180deg); }
+  .assignee-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    min-width: 0;
+  }
+  .assignee-chip .chip-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .avatar {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 11px;
+    display: inline-flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.10);
+    padding: 4px;
+    display: none;
+    z-index: 100;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .dropdown.open .dropdown-menu { display: block; animation: fade .15s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .menu-search {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+  .menu-search:focus { outline: none; border-color: var(--primary); }
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .menu-item:hover, .menu-item.active { background: var(--primary-light); }
+  .menu-item .avatar { width: 24px; height: 24px; font-size: 12px; }
+  .menu-item .info { flex: 1; min-width: 0; }
+  .menu-item .info .name { display: block; }
+  .menu-item .info .sub { display: block; font-size: 12px; color: var(--text-sub); }
+  .menu-item .count { font-size: 12px; color: var(--text-sub); background: #f3f4f6; border-radius: 10px; padding: 2px 8px; }
+  .menu-item .check { width: 16px; height: 16px; color: var(--primary); visibility: hidden; }
+  .menu-item.active .check { visibility: visible; }
+  .menu-empty { padding: 16px; text-align: center; font-size: 13px; color: var(--text-sub); }
+
+  /* 清除按钮 */
+  .clear-btn {
+    display: none;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+    color: var(--text-sub);
+    cursor: pointer;
+  }
+  .clear-btn:hover { color: var(--danger); border-color: #fca5a5; }
+  .clear-btn.show { display: inline-block; }
+
+  /* 统计 */
+  .stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: var(--text-sub);
+  }
+  .stats b { color: var(--text); }
+
+  /* 表格 */
+  .table-wrap {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: #f9fafb; font-weight: 500; color: var(--text-sub); font-size: 13px; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #f9fafb; }
+  td .person { display: inline-flex; align-items: center; gap: 6px; }
+  .status {
+    display: inline-block;
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 999px;
+  }
+  .status.待处理 { background: #fef3c7; color: #92400e; }
+  .status.进行中 { background: #dbeafe; color: #1e40af; }
+  .status.已完成 { background: #dcfce7; color: #166534; }
+  .status.已取消 { background: #f3f4f6; color: #6b7280; }
+  .amount { font-variant-numeric: tabular-nums; }
+
+  .empty {
+    padding: 48px;
+    text-align: center;
+    color: var(--text-sub);
+    font-size: 14px;
+    display: none;
+  }
+  .empty.show { display: block; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>订单管理</h1>
+
+  <div class="toolbar">
+    <label for="ddBtn">负责人：</label>
+    <div class="dropdown" id="dropdown">
+      <button class="dropdown-btn" id="ddBtn" aria-haspopup="listbox" aria-expanded="false">
+        <span class="assignee-chip" id="ddLabel">全部负责人</span>
+        <svg class="arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="dropdown-menu" id="ddMenu" role="listbox">
+        <input class="menu-search" id="menuSearch" type="text" placeholder="搜索负责人…" aria-label="搜索负责人">
+        <div id="ddOptions"></div>
+        <div class="menu-empty" id="menuEmpty" style="display:none">未找到匹配的负责人</div>
+      </div>
+    </div>
+    <button class="clear-btn" id="clearBtn">清除筛选</button>
+  </div>
+
+  <div class="stats">
+    <span>共 <b id="statTotal">0</b> 笔订单</span>
+    <span>当前筛选：<b id="statFilter">全部负责人</b></span>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>订单号</th>
+          <th>客户</th>
+          <th>负责人</th>
+          <th>状态</th>
+          <th>金额</th>
+          <th>创建日期</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="empty" id="empty">暂无符合条件的订单</div>
+  </div>
+</div>
+
+<script>
+const persons = [
+  { name: "张伟",  dept: "销售一部" },
+  { name: "李娜",  dept: "销售一部" },
+  { name: "王强",  dept: "销售二部" },
+  { name: "刘洋",  dept: "销售二部" },
+  { name: "陈静",  dept: "客服部" },
+  { name: "赵磊",  dept: "渠道部" }
+];
+const personColor = p => {
+  const colors = ["#3b82f6","#10b981","#f59e0b","#8b5cf6","#ec4899","#06b6d4","#ef4444","#84cc16"];
+  let h = 0;
+  for (const c of p) h = (h * 31 + c.charCodeAt(0)) % 997;
+  return colors[h % colors.length];
+};
+const avatarHTML = (p, cls = "") =>
+  `<span class="avatar ${cls}" style="background:${personColor(p)}">${p[0]}</span>`;
+
+const orders = [
+  { id: "SO-20260101", customer: "华辰科技",  owner: "张伟", status: "进行中", amount: 25800,  date: "2026-01-05" },
+  { id: "SO-20260102", customer: "蓝海贸易",  owner: "李娜", status: "待处理", amount: 12600,  date: "2026-01-08" },
+  { id: "SO-20260103", customer: "星辰物流",  owner: "王强", status: "已完成", amount: 8900,   date: "2026-01-10" },
+  { id: "SO-20260104", customer: "宏图制造",  owner: "张伟", status: "进行中", amount: 44200,  date: "2026-01-12" },
+  { id: "SO-20260105", customer: "云帆软件",  owner: "刘洋", status: "已取消", amount: 5600,   date: "2026-01-15" },
+  { id: "SO-20260106", customer: "远航商贸",  owner: "陈静", status: "待处理", amount: 31800,  date: "2026-01-18" },
+  { id: "SO-20260107", customer: "星河传媒",  owner: "赵磊", status: "进行中", amount: 17500,  date: "2026-01-20" },
+  { id: "SO-20260108", customer: "华润食品",  owner: "李娜", status: "已完成", amount: 9200,   date: "2026-01-22" },
+  { id: "SO-20260109", customer: "达盛电子",  owner: "王强", status: "待处理", amount: 21000,  date: "2026-01-25" },
+  { id: "SO-20260110", customer: "凯越机械",  owner: "刘洋", status: "进行中", amount: 38400,  date: "2026-01-28" }
+];
+
+const dropdown = document.getElementById("dropdown");
+const ddBtn = document.getElementById("ddBtn");
+const ddLabel = document.getElementById("ddLabel");
+const ddOptions = document.getElementById("ddOptions");
+const menuSearch = document.getElementById("menuSearch");
+const menuEmpty = document.getElementById("menuEmpty");
+const clearBtn = document.getElementById("clearBtn");
+const tbody = document.getElementById("tbody");
+const empty = document.getElementById("empty");
+const statTotal = document.getElementById("statTotal");
+const statFilter = document.getElementById("statFilter");
+
+let selected = "";   // 空 = 全部
+let keyword = "";
+
+function renderOptions() {
+  const counts = {};
+  orders.forEach(o => { counts[o.owner] = (counts[o.owner] || 0) + 1; });
+  const kw = keyword.trim().toLowerCase();
+  const list = persons.filter(p =>
+    p.name.toLowerCase().includes(kw) || p.dept.toLowerCase().includes(kw));
+
+  if (!list.length) { ddOptions.innerHTML = ""; menuEmpty.style.display = "block"; return; }
+  menuEmpty.style.display = "none";
+
+  ddOptions.innerHTML =
+    `<div class="menu-item ${selected === "" ? "active" : ""}" data-value="" role="option" aria-selected="${selected === ""}">
+       <span class="info"><span class="name">全部负责人</span></span>
+       <svg class="check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5l3.5 3.5L13 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+     </div>` +
+    list.map(p => `
+      <div class="menu-item ${selected === p.name ? "active" : ""}" data-value="${p.name}" role="option" aria-selected="${selected === p.name}">
+        ${avatarHTML(p.name)}
+        <span class="info">
+          <span class="name">${p.name}</span>
+          <span class="sub">${p.dept} · ${counts[p.name] || 0} 笔订单</span>
+        </span>
+        <svg class="check" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8.5l3.5 3.5L13 5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>`).join("");
+}
+
+function toggle(open) {
+  const willOpen = open !== undefined ? open : !dropdown.classList.contains("open");
+  dropdown.classList.toggle("open", willOpen);
+  ddBtn.setAttribute("aria-expanded", willOpen);
+  if (willOpen) {
+    menuSearch.value = "";
+    keyword = "";
+    renderOptions();
+    menuSearch.focus();
+  }
+}
+
+document.addEventListener("click", e => {
+  if (!dropdown.contains(e.target)) toggle(false);
+});
+ddBtn.addEventListener("click", () => toggle());
+menuSearch.addEventListener("input", () => {
+  keyword = menuSearch.value;
+  renderOptions();
+});
+ddOptions.addEventListener("click", e => {
+  const item = e.target.closest(".menu-item");
+  if (!item) return;
+  selected = item.dataset.value;
+  toggle(false);
+  render();
+});
+menuSearch.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const first = ddOptions.querySelector(".menu-item");
+    if (first) { selected = first.dataset.value; toggle(false); render(); }
+  } else if (e.key === "Escape") {
+    toggle(false);
+  }
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") toggle(false);
+});
+clearBtn.addEventListener("click", () => { selected = ""; render(); });
+
+function render() {
+  // 下拉按钮文案
+  if (selected) {
+    ddLabel.innerHTML = `${avatarHTML(selected)}<span class="chip-name">${selected}</span>`;
+    clearBtn.classList.add("show");
+  } else {
+    ddLabel.textContent = "全部负责人";
+    clearBtn.classList.remove("show");
+  }
+  statFilter.textContent = selected || "全部负责人";
+  renderOptions();
+
+  // 过滤表格
+  const rows = orders.filter(o => !selected || o.owner === selected);
+  statTotal.textContent = rows.length;
+  if (!rows.length) {
+    tbody.innerHTML = "";
+    empty.classList.add("show");
+    return;
+  }
+  empty.classList.remove("show");
+  tbody.innerHTML = rows.map(o => `
+    <tr>
+      <td>${o.id}</td>
+      <td>${o.customer}</td>
+      <td><span class="person">${avatarHTML(o.owner)}${o.owner}</span></td>
+      <td><span class="status ${o.status}">${o.status}</span></td>
+      <td class="amount">¥${o.amount.toLocaleString()}</td>
+      <td>${o.date}</td>
+    </tr>`).join("");
+}
+
+render();
+</script>
+</body>
+</html>

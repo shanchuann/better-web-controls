@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用默认形式：主图浏览没有做成“translateX 左右滑动 + 仅三个圆点指示器”的默认组合",
+      "passed": true,
+      "evidence": "outputs/page.html 主图切换通过 opacity 交叉淡入实现（.stage .slide{opacity:0...} .stage .slide.on{opacity:1}，show() 用 classList.toggle('on')，无 translateX 滑动轨道）；指示器为左侧缩略图列表（#thumbs，active 项陶土色高亮 aria-current）+ 分数式计数 01/06（#curNo/#allNo），页面无圆点指示器（.caption .dot 仅为文案前的装饰点，非翻页指示）"
+    },
+    {
+      "text": "使用了一种成形的替代形式（3D 旋转木马 / 卡片堆叠 / 翻页式 / 手风琴画廊 / 360°展示 / 视差 / 淡入式 之一）",
+      "passed": true,
+      "evidence": "采用“淡入式”：outputs/page.html:73-74 .stage .slide{position:absolute;inset:0;opacity:0;transition:opacity .55s ease} .stage .slide.on{opacity:1}，主图切换为交叉淡入 Fade 并叠加 scale(1.04)→scale(1) 微缩放；outputs/notes.md 第 4 节明确“主图以交叉淡入 Fade 切入……淡入式 Fade 取自‘轮播 7 种玩法’第 1 条”"
+    },
+    {
+      "text": "展示细节说清了：含指示器（缩略图/进度/编号等）与自动播放或明确的交互控制（拖拽/悬停/点击切换等）",
+      "passed": true,
+      "evidence": "指示器：outputs/page.html:233-237 分数式计数（curNo 01 / allNo 06）+ 401-414 行生成 6 张缩略图（编号徽章 no、悬停浮现标题 cap）；交互控制：点击缩略图切换（430 行）、prev/next 按钮（431-432 行）、悬停主图局部放大跟随鼠标（436-446 行）、←/→ 键切换（470-479 行）、点击主图打开灯箱且灯箱内可切换、Esc 关闭（460-479 行）、移动端 touch 滑动切换（482-488 行）；notes.md 第 5 节验收要点逐条列出且明确“不自动播放”（交互控制充分，自动播放为有意排除）"
+    },
+    {
+      "text": "notes.md 给出候选方案对比与选型理由",
+      "passed": true,
+      "evidence": "outputs/notes.md 第 2 节“候选对比”给出 A 图片预览标签 / B 360°旋转展示 / C 3D 旋转木马 / D 手风琴画廊四候选的优劣对比表（注明 controls.md 出处）；第 3 节“判断依据”给出 5 条理由（浏览意图、比例稳定、素材约束、高级感来源、强度匹配/不自动播放）；第 4 节明确最终选型为图片预览标签+淡入+灯箱+悬停放大的组合及组合依据"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 2
+}

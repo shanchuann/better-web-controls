@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月度经营报告 · 2026年10月</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#ffffff; --ink:#17233b; --sub:#6b7583; --line:#e6e9ef;
+    --accent:#2456d6; --accent-soft:#eaf0fd;
+    --up:#0a9968; --down:#d64545;
+    --p1:#2456d6; --p2:#3fb6a8; --p3:#e0a43c; --p4:#9a7bd6;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"Segoe UI","Microsoft YaHei","PingFang SC","Noto Sans SC",sans-serif;
+    font-size:14px; line-height:1.6;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 48px}
+
+  header.topbar{
+    max-width:1180px;margin:0 auto;padding:32px 24px 20px;
+    display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px;justify-content:space-between;
+  }
+  .tb-title h1{font-size:24px;font-weight:700;letter-spacing:.02em}
+  .tb-title .en{font-size:12px;color:var(--sub);letter-spacing:.22em;text-transform:uppercase;margin-top:2px}
+  .tb-meta{display:flex;gap:24px;flex-wrap:wrap}
+  .tb-meta div{text-align:right}
+  .tb-meta .k{font-size:12px;color:var(--sub)}
+  .tb-meta .v{font-size:14px;font-weight:600;margin-top:2px}
+
+  .kpis{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;box-shadow:0 1px 2px rgba(23,35,59,.04);
+  }
+  .kpi .k{font-size:12px;color:var(--sub)}
+  .kpi .v{font-size:30px;font-weight:700;margin-top:6px;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+  .kpi .v small{font-size:15px;font-weight:600;color:var(--ink);margin-left:2px}
+  .kpi .badge{
+    display:inline-flex;align-items:center;gap:4px;margin-left:10px;
+    font-size:12px;font-weight:600;border-radius:999px;padding:2px 9px;vertical-align:6px;
+  }
+  .badge.up{color:var(--up);background:rgba(10,153,104,.1)}
+  .badge.down{color:var(--down);background:rgba(214,69,69,.1)}
+  .kpi .s{font-size:12px;color:var(--sub);margin-top:6px}
+  .kpi .spark{position:absolute;right:18px;bottom:16px;opacity:.9}
+  .kpi{position:relative}
+
+  .charts{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px}
+  .card h2{font-size:14px;font-weight:700;display:flex;align-items:baseline;gap:10px}
+  .card h2 .unit{font-size:12px;font-weight:400;color:var(--sub)}
+
+  .chart-box{position:relative;margin-top:12px}
+  .chart-box svg{display:block;width:100%;height:auto}
+  .chart-line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;
+    stroke-dasharray:1000;stroke-dashoffset:1000;animation:draw 1.3s .15s ease-out forwards}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .grid-l{stroke:var(--line);stroke-width:1}
+  .y-txt{fill:var(--sub);font-size:11px}
+  .x-txt{fill:var(--sub);font-size:11px;text-anchor:middle}
+  .pt{fill:#fff;stroke:var(--accent);stroke-width:2;opacity:0;transition:opacity .2s}
+  .hit{fill:transparent;cursor:pointer}
+  .area{fill:url(#areaG);opacity:0;animation:fade .8s .9s ease forwards}
+  @keyframes fade{to{opacity:1}}
+  .last-dot{fill:var(--accent)}
+  .last-label{fill:var(--ink);font-size:13px;font-weight:700;text-anchor:middle}
+  .last-pill{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+
+  .legend{margin-top:6px}
+  .lg-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:8px;cursor:pointer;transition:background .15s}
+  .lg-row:hover{background:#f3f6fc}
+  .lg-dot{width:10px;height:10px;border-radius:3px;flex:none}
+  .lg-name{flex:1;font-size:13px}
+  .lg-val{font-size:13px;font-weight:600;font-variant-numeric:tabular-nums}
+  .lg-pct{font-size:12px;color:var(--sub);width:52px;text-align:right;font-variant-numeric:tabular-nums}
+  .donut-center{fill:var(--ink)}
+  .dc-t{font-size:11px;fill:var(--sub)}
+  .dc-v{font-size:26px;font-weight:700}
+  .dc-p{font-size:12px;font-weight:700}
+  .slice{fill:none;stroke-width:26;transition:stroke-width .2s,opacity .2s;cursor:pointer}
+  .slice.wide{stroke-width:32}
+  .slice.dim{opacity:.3}
+  svg circle{transition:stroke-width .2s,opacity .2s}
+
+  .bottom{display:grid;grid-template-columns:1fr 1.2fr;gap:16px;align-items:stretch}
+  .funnel-body{margin-top:14px}
+  .frow{display:grid;grid-template-columns:64px 1fr 178px;gap:12px;align-items:center;padding:3px 0}
+  .frow:hover .fband{filter:brightness(1.06)}
+  .flabel{font-size:13px;color:var(--sub);text-align:right}
+  .fband-wrap{height:46px;position:relative}
+  .fband{
+    height:100%;margin:0 auto;
+    clip-path:polygon(calc(50% - var(--tw)*50%) 0,calc(50% + var(--tw)*50%) 0,
+                      calc(50% + var(--bw)*50%) 100%,calc(50% - var(--bw)*50%) 100%);
+    transition:filter .15s;
+  }
+  .fnum{text-align:left}
+  .fnum .n{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
+  .fnum .c{font-size:12px;color:var(--sub);margin-top:1px}
+  .fnum .c b{color:var(--up);font-weight:600}
+  .f-sum{margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px;color:var(--sub)}
+  .f-foot{margin-top:12px;font-size:12px;color:var(--sub)}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:9px 10px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  th{color:var(--sub);font-weight:600;border-bottom:1px solid var(--line);font-size:12px}
+  th:first-child,td:first-child{text-align:left}
+  tbody tr{border-bottom:1px solid #f0f2f5;transition:background .12s}
+  tbody tr:hover{background:#f3f6fc}
+  td.deal{font-weight:600}
+  .mini{display:inline-block;vertical-align:middle;height:6px;border-radius:3px;background:var(--accent-soft);
+    width:72px;margin-left:8px;overflow:hidden;position:relative}
+  .mini i{position:absolute;left:0;top:0;bottom:0;display:block;border-radius:3px;background:var(--accent)}
+  tfoot td{font-weight:700;border-top:2px solid var(--ink)}
+  .tbl-scroll{overflow-x:auto}
+
+  .insight{margin-top:10px;font-size:12px;color:var(--sub);background:var(--accent-soft);
+    border-radius:8px;padding:8px 12px}
+  .insight b{color:var(--accent)}
+
+  footer.note{margin-top:16px;font-size:12px;color:var(--sub)}
+
+  #tip{
+    position:fixed;z-index:50;pointer-events:none;opacity:0;transition:opacity .12s;
+    background:#1c2740;color:#fff;font-size:12px;border-radius:8px;padding:8px 11px;
+    box-shadow:0 6px 20px rgba(0,0,0,.18);max-width:240px;line-height:1.5;
+  }
+  #tip.on{opacity:1}
+  #tip .t{font-weight:700;margin-bottom:2px}
+  #tip .r{color:#c6cfe8}
+  #tip .r b{color:#fff}
+
+  @media (max-width:960px){
+    .kpis{grid-template-columns:1fr 1fr}
+    .charts,.bottom{grid-template-columns:1fr}
+    .tb-meta div{text-align:left}
+  }
+  @media (max-width:560px){
+    .kpis{grid-template-columns:1fr}
+    .frow{grid-template-columns:52px 1fr 118px}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="tb-title">
+    <h1>月度经营报告</h1>
+    <div class="en">MONTHLY BUSINESS REVIEW</div>
+  </div>
+  <div class="tb-meta">
+    <div><div class="k">报告期间</div><div class="v">2026 年 10 月</div></div>
+    <div><div class="k">趋势数据范围</div><div class="v">2025-11 至 2026-10</div></div>
+    <div><div class="k">面向对象</div><div class="v">管理层</div></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <section class="kpis" id="kpis"></section>
+
+  <section class="charts">
+    <div class="card">
+      <h2>营收走势（近 12 个月）<span class="unit">单位：万元</span></h2>
+      <div class="chart-box"><div id="line"></div></div>
+      <div class="insight" id="line-insight"></div>
+    </div>
+    <div class="card">
+      <h2>产品线营收构成（本月）<span class="unit">单位：万元</span></h2>
+      <div class="chart-box"><div id="donut"></div></div>
+      <div class="legend" id="donut-legend"></div>
+    </div>
+  </section>
+
+  <section class="bottom">
+    <div class="card">
+      <h2>获客转化漏斗（全渠道）<span class="unit">本月各环节人数与留存占比</span></h2>
+      <div class="funnel-body" id="funnel"></div>
+      <div class="f-foot">带宽按人数非线性缩放展示（视觉引导），转化比例见右侧数字，实际数值精确。</div>
+    </div>
+    <div class="card">
+      <h2>渠道转化明细<span class="unit">本月 · 按成交数排序</span></h2>
+      <div class="tbl-scroll" style="margin-top:6px">
+        <table id="tbl"></table>
+      </div>
+      <div class="f-sum" id="tbl-sum"></div>
+    </div>
+  </section>
+
+  <footer class="note">
+    单文件交付 · 无外部依赖 · 修改 &lt;script&gt; 中的 DATA 即可替换为真实数据，所有图表与结论自动更新。
+  </footer>
+</div>
+
+<div id="tip"><div class="t"></div><div class="r"></div></div>
+
+<script>
+const DATA = {
+  kpi: { cur: 480, prev: 429 },
+  months: ["2025-11","2025-12","2026-01","2026-02","2026-03","2026-04",
+           "2026-05","2026-06","2026-07","2026-08","2026-09","2026-10"],
+  revenue: [338,347,352,358,366,361,379,388,405,417,429,480],
+  products: [
+    {name:"智能硬件", v:182},
+    {name:"SaaS 订阅", v:130},
+    {name:"企业服务", v:96},
+    {name:"增值服务", v:72}
+  ],
+  funnel: [
+    {name:"曝光",  v:1250000},
+    {name:"点击",  v:386000},
+    {name:"留资",  v:42500},
+    {name:"成交",  v:3180}
+  ],
+  channels: [
+    {name:"搜索广告",   imp:520000, clk:168000, lead:14200, deal:1260},
+    {name:"短视频内容", imp:480000, clk:152000, lead:16800, deal:1150},
+    {name:"行业展会",   imp:120000, clk:36000,  lead:7400,  deal:480},
+    {name:"老客推荐",   imp:130000, clk:30000,  lead:4100,  deal:290}
+  ]
+};
+const PALETTE = ["#2456d6","#3fb6a8","#e0a43c","#9a7bd6"];
+const FPALETTE = ["#2456d6","#3d63c9","#5a7bd6","#8ba3e8"];
+
+const tip = document.getElementById("tip");
+function moveTip(e){ tip.style.left = (e.clientX+14)+"px"; tip.style.top = (e.clientY+14)+"px"; }
+function showTip(t,r){ tip.querySelector(".t").textContent=t; tip.querySelector(".r").innerHTML=r; tip.classList.add("on"); }
+function hideTip(){ tip.classList.remove("on"); }
+const fmtM = m => m + " 万";
+const pct = (a,b) => b ? ((a/b-1)*100) : 0;
+const fmtPct = v => (v>=0?"+":"") + v.toFixed(1) + "%";
+const fmtNum = v => v.toLocaleString("zh-CN");
+
+function el(id){ return document.getElementById(id); }
+
+(function renderKPIs(){
+  const d = DATA, sum = d.revenue.reduce((a,b)=>a+b,0), n = d.revenue.length;
+  const env = pct(d.kpi.cur, d.kpi.prev);
+  const deals = d.channels.reduce((a,c)=>a+c.deal,0);
+  const exp = d.funnel[0].v;
+  const price = d.kpi.cur*10000/deals;
+  el("kpis").innerHTML = `
+    <div class="card kpi">
+      <div class="k">本月营收</div>
+      <div class="v">${d.kpi.cur}<small>万</small>
+        <span class="badge ${env>=0?"up":"down"}">${env>=0?"▲":"▼"} ${fmtPct(env)} 环比</span></div>
+      <div class="s">上月 ${d.kpi.prev} 万 · 连续 12 个月披露</div>
+      <svg class="spark" width="120" height="30" id="spark"></svg>
+    </div>
+    <div class="card kpi"><div class="k">近 12 个月累计营收</div>
+      <div class="v">${fmtNum(sum)}<small>万</small></div><div class="s">月均 ${fmtNum(Math.round(sum/n))} 万</div></div>
+    <div class="card kpi"><div class="k">全渠道成交订单</div>
+      <div class="v">${fmtNum(deals)}<small>单</small></div>
+      <div class="s">曝光→成交 ${(deals/exp*100).toFixed(2)}%</div></div>
+    <div class="card kpi"><div class="k">成交客单价</div>
+      <div class="v">${fmtNum(Math.round(price))}<small>元</small></div>
+      <div class="s">本月营收 ÷ 成交订单</div></div>`;
+
+  const s = el("spark"), W=120,H=30,bw=7,gap=3,x0=(W-(12*bw+11*gap))/2;
+  const mx = Math.max(...d.revenue), mn = Math.min(...d.revenue);
+  s.innerHTML = d.revenue.map((v,i)=>{
+    const h = 6 + (v-mn)/(mx-mn)*22;
+    return `<rect x="${x0+i*(bw+gap)}" y="${H-h}" width="${bw}" height="${h}" rx="2"
+      fill="${i===11?"#2456d6":"#c9d6f2"}"/>`;
+  }).join("");
+})();
+
+(function renderLine(){
+  const d = DATA, W=740,H=300,L=58,R=24,T=30,B=38;
+  const y0=300,y1=500, N=d.revenue.length;
+  const xs=i=>L+i*(W-L-R)/(N-1);
+  const ys=v=>H-B-(v-y0)/(y1-y0)*(H-T-B);
+  let g="",xl="",pts="",hits="";
+  for(let v=y0;v<=y1;v+=50){
+    const y=ys(v).toFixed(1);
+    g+=`<line class="grid-l" x1="${L}" y1="${y}" x2="${W-R}" y2="${y}"/>
+        <text class="y-txt" x="${L-8}" y="${+y+4}" text-anchor="end">${v}</text>`;
+  }
+  d.months.forEach((m,i)=>{ xl+=`<text class="x-txt" x="${xs(i).toFixed(1)}" y="${H-B+20}">${m.slice(2).replace("-","/")}</text>`; });
+  const path = d.revenue.map((v,i)=>(i?"L":"M")+xs(i).toFixed(1)+" "+ys(v).toFixed(1)).join(" ");
+  const area = path + ` L ${xs(N-1).toFixed(1)} ${(H-B)} L ${L} ${(H-B)} Z`;
+  d.revenue.forEach((v,i)=>{
+    const env = i>0 ? pct(v,d.revenue[i-1]) : null;
+    hits+=`<circle class="pt" cx="${xs(i).toFixed(1)}" cy="${ys(v).toFixed(1)}" r="4" data-i="${i}"/>
+           <circle class="hit" cx="${xs(i).toFixed(1)}" cy="${ys(v).toFixed(1)}" r="16" data-i="${i}"/>`;
+  });
+  el("line").innerHTML = `
+  <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="近12个月营收走势折线图">
+    <defs><linearGradient id="areaG" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2456d6" stop-opacity=".16"/>
+      <stop offset="100%" stop-color="#2456d6" stop-opacity="0"/>
+    </linearGradient></defs>
+    ${g}${xl}
+    <path class="area" d="${area}"/>
+    <path class="chart-line" d="${path}" pathLength="1000"/>
+    <circle class="last-dot" cx="${xs(N-1)}" cy="${ys(d.revenue[N-1])}" r="5"/>
+    <circle class="last-dot" cx="${xs(N-1)}" cy="${ys(d.revenue[N-1])}" r="9" fill="none" stroke="#2456d6" stroke-opacity=".25" stroke-width="2"/>
+    <rect class="last-pill" x="${xs(N-1)-34}" y="${ys(d.revenue[N-1])-40}" width="68" height="24" rx="12"/>
+    <text class="last-label" x="${xs(N-1)}" y="${ys(d.revenue[N-1])-23}">${d.revenue[N-1]} 万</text>
+    ${pts}${hits}
+  </svg>`;
+
+  el("line").querySelectorAll(".hit").forEach(c=>{
+    const i=+c.dataset.i, v=DATA.revenue[i];
+    c.addEventListener("mouseenter",()=>{
+      el("line").querySelectorAll(".pt").forEach(p=>{ if(+p.dataset.i===i) p.style.opacity=1; });
+      const delta = i>0?`${fmtM(v)} · 环比 <b>${fmtPct(pct(v,DATA.revenue[i-1]))}</b>`:fmtM(v);
+      showTip(DATA.months[i]+" 营收", delta);
+    });
+    c.addEventListener("mousemove",moveTip);
+    c.addEventListener("mouseleave",()=>{
+      el("line").querySelectorAll(".pt").forEach(p=>p.style.opacity=0);
+      hideTip();
+    });
+  });
+
+  const envs = DATA.revenue.slice(1).map((v,i)=>pct(v,DATA.revenue[i]));
+  const ups = envs.filter(v=>v>=0).length;
+  el("line-insight").innerHTML =
+    `近 12 个月累计营收 <b>${fmtNum(DATA.revenue.reduce((a,b)=>a+b,0))} 万</b>，` +
+    `11 次环比中 <b>${ups} 次正增长</b>；本月 480 万，环比 <b>+12.0%</b>，为区间最高月份。`;
+})();
+
+(function renderDonut(){
+  const d = DATA.products, total = d.reduce((a,p)=>a+p.v,0);
+  const cx=105,cy=105,R=74,C=2*Math.PI*R;
+  let start=0, segs="", defs="";
+  d.forEach((p,i)=>{
+    const len=p.v/total*C, a0=start/C*360;
+    segs+=`<g transform="rotate(${a0-90} ${cx} ${cy})">
+      <circle class="slice" data-i="${i}" cx="${cx}" cy="${cy}" r="${R}"
+        stroke="${PALETTE[i]}" stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="0"/></g>`;
+    start+=len;
+  });
+  el("donut").innerHTML=`
+  <svg viewBox="0 0 210 210" role="img" aria-label="产品线营收占比环形图">
+    <defs></defs>${segs}
+    <text class="donut-center dc-t" x="${cx}" y="${cy-16}" text-anchor="middle" id="dc-t">本月营收</text>
+    <text class="donut-center dc-v" x="${cx}" y="${cy+10}" text-anchor="middle" id="dc-v">${total} 万</text>
+    <text class="donut-center dc-p" x="${cx}" y="${cy+32}" text-anchor="middle" id="dc-p" fill="#2456d6"></text>
+  </svg>`;
+
+  el("donut-legend").innerHTML = d.map((p,i)=>`
+    <div class="lg-row" data-i="${i}">
+      <span class="lg-dot" style="background:${PALETTE[i]}"></span>
+      <span class="lg-name">${p.name}</span>
+      <span class="lg-val">${p.v} 万</span>
+      <span class="lg-pct">${(p.v/total*100).toFixed(1)}%</span>
+    </div>`).join("");
+
+  function focus(i){
+    el("donut").querySelectorAll(".slice").forEach(s=>{
+      s.classList.toggle("wide", s.dataset.i==i);
+      s.classList.toggle("dim", i!==null && s.dataset.i!=i);
+    });
+    if(i===null){
+      document.getElementById("dc-t").textContent="本月营收";
+      document.getElementById("dc-v").textContent=total+" 万";
+      document.getElementById("dc-p").textContent="";
+    }else{
+      const p=d[i];
+      document.getElementById("dc-t").textContent=p.name;
+      document.getElementById("dc-v").textContent=fmtM(p.v);
+      document.getElementById("dc-p").textContent=(p.v/total*100).toFixed(1)+"%";
+    }
+  }
+  function bind(node){
+    const i=node.dataset.i===undefined?null:+node.dataset.i;
+    node.addEventListener("mouseenter",()=>focus(i));
+    node.addEventListener("mouseleave",()=>focus(null));
+    node.addEventListener("mousemove",moveTip);
+    node.addEventListener("mouseenter",e=>{
+      if(node.dataset.i!==undefined){
+        const p=d[+node.dataset.i];
+        showTip(p.name,`营收 <b>${p.v} 万</b> · 占比 ${(p.v/total*100).toFixed(1)}%`);
+      }
+    });
+    node.addEventListener("mouseleave",hideTip);
+  }
+  el("donut").querySelectorAll(".slice").forEach(bind);
+  el("donut-legend").querySelectorAll(".lg-row").forEach(bind);
+})();
+
+(function renderFunnel(){
+  const d = DATA.funnel, max = d[0].v, f=0.4, minR=0.06;
+  const w = d.map(s=>Math.max(Math.pow(s.v/max,f),minR));
+  let html="";
+  d.forEach((s,i)=>{
+    const tw = w[i], bw = (i<d.length-1)?w[i+1]:w[i];
+    const conv = i>0 ? pct(s.v,d[i-1].v) : null;
+    html+=`<div class="frow" data-i="${i}">
+      <div class="flabel">${s.name}</div>
+      <div class="fband-wrap"><div class="fband" style="--tw:${tw};--bw:${bw};
+        background:linear-gradient(180deg,${FPALETTE[i]} 0%,${FPALETTE[i]}dd 100%)"></div></div>
+      <div class="fnum"><div class="n">${fmtNum(s.v)}</div>
+        <div class="c">${i>0?`较上环节 <b>${fmtPct(conv-100)}</b>`:"全渠道入口"}</div></div>
+    </div>`;
+  });
+  const deals=d[d.length-1].v;
+  el("funnel").innerHTML = html +
+    `<div class="f-sum">曝光 → 成交整体转化率 <b>${(deals/max*100).toFixed(2)}%</b>；最大流失发生在“点击 → 留资”（留存 ${(d[2].v/d[1].v*100).toFixed(1)}%）。</div>`;
+
+  el("funnel").querySelectorAll(".frow").forEach(r=>{
+    const i=+r.dataset.i;
+    r.addEventListener("mouseenter",()=>{
+      showTip(d[i].name,`${fmtNum(d[i].v)} ${i>0?`· 环节留存 <b>${fmtPct(pct(d[i].v,d[i-1].v)-100)}</b>`:"· 获客入口"}`);
+    });
+    r.addEventListener("mousemove",moveTip);
+    r.addEventListener("mouseleave",hideTip);
+  });
+})();
+
+(function renderTable(){
+  const d = [...DATA.channels].sort((a,b)=>b.deal-a.deal);
+  const maxRate = Math.max(...d.map(c=>c.deal/c.clk));
+  const sum = k => d.reduce((a,c)=>a+c[k],0);
+  let rows = d.map((c,i)=>{
+    const rate=c.deal/c.clk;
+    return `<tr>
+      <td>${c.name}<span class="mini"><i style="width:${(c.imp/sum("imp")*100).toFixed(1)}%"></i></span></td>
+      <td>${fmtNum(c.imp)}</td><td>${fmtNum(c.clk)}</td>
+      <td>${fmtNum(c.lead)}</td><td class="deal">${fmtNum(c.deal)}</td>
+      <td>${(rate*100).toFixed(2)}%<span class="mini"><i style="width:${(rate/maxRate*100).toFixed(0)}%"></i></span></td>
+    </tr>`;
+  }).join("");
+  el("tbl").innerHTML = `
+    <thead><tr><th>渠道</th><th>曝光</th><th>点击</th><th>留资</th><th>成交</th><th>点击→成交</th></tr></thead>
+    <tbody>${rows}</tbody>
+    <tfoot><tr><td>合计</td><td>${fmtNum(sum("imp"))}</td><td>${fmtNum(sum("clk"))}</td>
+      <td>${fmtNum(sum("lead"))}</td><td>${fmtNum(sum("deal"))}</td>
+      <td>${(sum("deal")/sum("clk")*100).toFixed(2)}%</td></tr></tfoot>`;
+  el("tbl-sum").innerHTML =
+    `首列数字条为曝光量占比，末列数字条为转化率相对水平：短视频内容留资量最高（16,800），行业展会点击→成交转化率最高（1.33%），老客推荐规模小但成交质量稳定。`;
+})();
+</script>
+</body>
+</html>

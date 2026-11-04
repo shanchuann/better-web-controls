@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有按默认模板瞎猜：使用了具体成形的登录页样式（居中卡片式 Centered Card / 左右分屏 Split Screen / 沉浸背景 Immersive Background / 多角色Tab Role-based Tabs / 分步登录 Step-by-step 之一）",
+      "passed": true,
+      "evidence": "notes.md:42 明确选型“B. Split Screen 左右分屏式登录页，做 6:4 左右分屏，左边讲品牌，右边放无卡片表单”；page.html:32 `grid-template-columns:3fr 2fr` 实现左侧品牌区+右侧登录区的分屏结构，page.html:6 meta 描述也写明“Split Screen 左右分屏式”；notes.md:26-27 还明确排除了 Role-based Tabs 与 Step-by-step，并有第1节的候选对比而非默认模板直接生成"
+    },
+    {
+      "text": "说清了布局要素：布局类型 + 背景 + 卡片（或无卡片）+ 品牌气质",
+      "passed": true,
+      "evidence": "notes.md:48-51“页面三要素（布局、背景、卡片）”逐项写明：布局=6:4 Split Screen 左侧品牌区右侧登录区；背景=左侧陶橙渐变(#DE6845→#9C3D22)+噪点+大圆环，右侧暖白纸感底(#FBF8F5)；卡片=右侧不使用卡片（无卡片表单）；品牌气质，notes.md:22/32“符合 SaaS 企业用户的预期气质”“场景是企业 SaaS 登录…表单应清爽不花哨，视觉重点放在品牌一侧”"
+    },
+    {
+      "text": "陶橙色品牌色落实到了具体设计（背景渐变/按钮/主色而非仅文字提及）",
+      "passed": true,
+      "evidence": "page.html:39 左侧品牌区背景 `linear-gradient(160deg,#DE6845 0%,#C05130 46%,#9C3D22 100%)` 陶橙渐变铺满半屏；page.html:150 主按钮 `background:linear-gradient(180deg,#C2542F 0%,var(--brand) 55%,#B04726 100%)`（--brand:#BB4E2E，page.html:12）；page.html:114/139/142 聚焦描边光圈、复选框选中态均使用 --brand 陶橙色"
+    },
+    {
+      "text": "notes.md 给出候选样式对比与选型理由",
+      "passed": true,
+      "evidence": "notes.md:17-27 第1节“候选对比”表格列出 A 居中卡片式/B Split Screen/C 沉浸背景式三个候选的各自优劣评价，并给出排除 Role-based Tabs 与 Step-by-step 的理由；notes.md:29-33 第2节“判断依据”与 notes.md:44“三种候选里只有 B 同时满足品牌色成为页面主角与表单保持最佳可读性两个条件；C 的对比度风险无法稳妥通过；A 无法表达品牌”给出最终选型理由"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 8
+}

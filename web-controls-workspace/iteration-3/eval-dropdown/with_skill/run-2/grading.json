@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用浏览器原生 <select> 默认样式直接糊弄（自绘了下拉组件或对 select 做了成形样式）",
+      "passed": true,
+      "evidence": "outputs/page.html 使用自绘下拉组件：JS 中 document.getElementById(\"ownerSelect\") 构建 .select-trigger/.select-panel 结构，触发器为 div[role=combobox]，面板为 ul[role=listbox]，全部由 renderPanel() 在 line 311-321 以 <li class=\"option\" role=\"option\" data-index=...> 动态生成，整个文件未出现任何 <select> 标签；样式部分（.select-trigger、.select-panel、.option 等）均为自定义成形样式。"
+    },
+    {
+      "text": "负责人筛选场景用了合适的下拉形态：单选用 Select；若体现多选则用 Multi-select 且选中项显示为可单独移除的标签",
+      "passed": true,
+      "evidence": "outputs/notes.md 选型为单选 Select：\"做一个负责人 Select 单选下拉：提供'全部负责人（默认）+ 王强、李娜、周杰、吴敏、赵磊、陈晨、孙悦'七个固定选项，只能选择一个\"，并说明多选候选被排除的理由（\"用户明确'选负责人'（单数）…多选会引入跨人合计的歧义\"）。outputs/page.html 印证单选形态：state = { owner: \"全部\", ... }（单值状态），panel 点击后 choose(name) 即 closePanel()（line 344-350）选中即收起，选中项用 aria-selected=\"true\" 单选高亮，无任何多选标签/移除标签的实现，形态与单选 Select 一致。"
+    },
+    {
+      "text": "下拉说清了操作规则：选项来源、单选/多选、清空或重选方式",
+      "passed": true,
+      "evidence": "outputs/notes.md 第四节与 Prompt 段逐条写明：选项来源——\"提供'全部负责人（默认）+ 王强、李娜、周杰、吴敏、赵磊、陈晨、孙悦'七个固定选项\"且\"每个选项右侧显示各自订单条数\"；单选——\"只能选择一个（选择后姓名显示在触发框内）\"；清空/重选——\"支持一键清空（回到'全部负责人'，即重选）\"、\"支持一键清空重选\"；另写明收起规则\"点击外部/Esc/Tab 收起；支持键盘 ↑↓ 选择、Enter 确认\"。outputs/page.html 对应实现：clearBtn（aria-label=\"清空筛选，查看全部负责人\"，line 189）、clearFilter()/choose(\"全部\")（line 352-355）、keydown 处理 ArrowUp/ArrowDown/Enter/Escape（line 425-438）、document 级点击收起（line 442-444）。"
+    },
+    {
+      "text": "notes.md 给出候选方案（Select / Multi-select / Combobox 等）对比与选型理由",
+      "passed": true,
+      "evidence": "outputs/notes.md 第三节\"候选对比（2~3 个）\"给出表格：候选 A \"Select 单选下拉——★★★ 负责人少、单选、切换即筛选，最简最准\"；候选 B \"Combobox 可搜索选择框——★★ 6 人以内无需搜索，多一层输入成本\"；候选 C \"Multi-select 多选下拉——★★ 用户明确'选负责人'（单数）…多选会引入跨人合计的歧义\"；并在第四节\"最终选型\"确定\"做一个负责人 Select 单选下拉\"，说明未答复关键信息时按最小常见后台理解并留出升级路径（超过 20 人换 Combobox、需多人对比换 Multi-select）。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 3
+}

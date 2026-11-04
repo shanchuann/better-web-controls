@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "使用了轻提示 Toast（出现几秒自动消失），而不是 alert()/弹窗 Modal 这类打断式反馈",
+      "passed": true,
+      "evidence": "page.html:238-270 定义 showToast()，创建 .toast 元素并 setTimeout(dismiss, DURATION) 自动消失（DURATION=3000，line 236）；notes.md:29 选型为'轻提示 Toast（右上角出现，数秒自动消失）'，notes.md:19 明确排除弹窗 Modal（'如果这里用弹窗 Modal……违反强度匹配'）；全程无 alert() 调用"
+    },
+    {
+      "text": "Toast 说清了位置（如右上角/底部居中）与消失时机（约 2-3 秒自动消失）",
+      "passed": true,
+      "evidence": "page.html:105-115 .toast-region 为 position:fixed; top:20px; right:20px（右上角）；page.html:236 DURATION=3000 即 3 秒自动消失；notes.md:33-34 写明'位置：固定右上角……消失规则：约 3 秒自动消失'"
+    },
+    {
+      "text": "没有用阻塞式交互（保存后页面仍可继续操作）",
+      "passed": true,
+      "evidence": "page.html:275-288 表单 submit 处理中 e.preventDefault() 后 600ms 即恢复按钮并 showToast('设置已保存，继续操作即可，无需等待。')，未禁用任何输入或遮罩；.toast-region 设 pointer-events:none（line 114）不挡页面，toast 本身 pointer-events:auto 仅在其自身区域；保存后输入框、单选、还原按钮均可继续操作"
+    },
+    {
+      "text": "若选了带操作的轻提示 Snackbar，附带可立即执行的按钮（如'查看'）也视为合格",
+      "passed": true,
+      "evidence": "notes.md:25 '不需要附带操作按钮……因此 03 级 SNACKBAR 过度设计'，最终选型为纯 Toast（notes.md:29），page.html 的 toast 仅含 '×' 关闭兜底（line 244）而非带操作 Snackbar，该断言为条件性放宽条款，未选 Snackbar 亦不违反，综合前三条已合格"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 5
+}

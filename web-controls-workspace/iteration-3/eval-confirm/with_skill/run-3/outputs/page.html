@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目确认删除交互 · 后台管理演示</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --line: #e5e7eb;
+    --text: #1f2937;
+    --text-2: #6b7280;
+    --danger: #dc2626;
+    --danger-hover: #b91c1c;
+    --danger-bg: #fef2f2;
+    --danger-line: #fecaca;
+    --radius: 12px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+    padding: 16px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  header h1 { font-size: 16px; font-weight: 600; }
+  header .user { font-size: 13px; color: var(--text-2); }
+
+  .main { max-width: 920px; margin: 32px auto; padding: 0 24px; }
+
+  .page-title { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .page-desc { font-size: 14px; color: var(--text-2); margin-bottom: 24px; }
+
+  .project-list { display: flex; flex-direction: column; gap: 12px; }
+  .project {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .project .info { flex: 1; min-width: 0; }
+  .project .name { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .project .meta { font-size: 13px; color: var(--text-2); }
+  .project .meta span { margin-right: 16px; }
+
+  .del-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    background: var(--danger);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background .15s;
+    font-family: inherit;
+  }
+  .del-btn:hover { background: var(--danger-hover); }
+  .del-btn svg { width: 14px; height: 14px; }
+
+  .empty {
+    display: none;
+    text-align: center;
+    padding: 64px 0;
+    color: var(--text-2);
+    font-size: 14px;
+    background: var(--surface);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius);
+  }
+
+  /* ===== Modal 居中弹窗 + 输入文字确认 ===== */
+  .modal-mask {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, .55);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-mask.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border-radius: 16px;
+    width: 100%;
+    max-width: 480px;
+    padding: 32px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.25);
+    animation: pop .2s ease-out;
+  }
+  @keyframes pop {
+    from { transform: scale(.94) translateY(8px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .modal-head { display: flex; gap: 14px; align-items: flex-start; margin-bottom: 16px; }
+  .warn-icon {
+    flex: none;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--danger-bg);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--danger);
+  }
+  .warn-icon svg { width: 22px; height: 22px; }
+  .modal h2 { font-size: 17px; font-weight: 700; line-height: 44px; }
+  .modal .consequence {
+    background: var(--danger-bg);
+    border: 1px solid var(--danger-line);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13.5px;
+    line-height: 1.8;
+    color: #7f1d1d;
+    margin-bottom: 20px;
+  }
+  .modal .consequence strong { font-weight: 700; }
+  .confirm-label { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+  .confirm-label b { color: var(--text); }
+  #confirm-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .15s;
+  }
+  #confirm-input:focus { border-color: var(--danger); }
+  #confirm-input.ok { border-color: #16a34a; }
+  .hint {
+    font-size: 12px;
+    color: var(--text-2);
+    margin-top: 8px;
+    min-height: 16px;
+  }
+  .hint.fail { color: var(--danger); }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 24px;
+  }
+  .btn {
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .15s;
+  }
+  .btn-ghost {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+  }
+  .btn-ghost:hover { background: var(--bg); }
+  .btn-danger {
+    background: var(--danger);
+    border: none;
+    color: #fff;
+    opacity: .4;
+    cursor: not-allowed;
+  }
+  .btn-danger.enabled {
+    opacity: 1;
+    cursor: pointer;
+  }
+  .btn-danger.enabled:hover { background: var(--danger-hover); }
+
+  /* Toast 轻提示 */
+  .toast {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-80px);
+    background: #1f2937;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 999px;
+    font-size: 14px;
+    z-index: 200;
+    opacity: 0;
+    transition: transform .3s ease, opacity .3s ease;
+    pointer-events: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+  @media (max-width: 640px) {
+    .project { flex-direction: column; align-items: stretch; }
+    .del-btn { width: 100%; justify-content: center; padding: 12px; }
+    .modal { padding: 24px 20px; }
+    .modal-actions .btn { flex: 1; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>研发协作平台</h1>
+  <span class="user">管理员 · wang@company.com</span>
+</header>
+
+<div class="main">
+  <div class="page-title">项目管理</div>
+  <div class="page-desc">共 3 个项目 · 删除项目会同时清除其全部任务与文件，且不可恢复</div>
+
+  <div class="project-list" id="list">
+    <div class="project" data-name="官网 3.0 改版">
+      <div class="info">
+        <div class="name">官网 3.0 改版</div>
+        <div class="meta"><span>42 个任务</span><span>156 个文件</span><span>12 名成员</span></div>
+      </div>
+      <button class="del-btn" onclick="openModal(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        删除项目
+      </button>
+    </div>
+    <div class="project" data-name="数据分析看板">
+      <div class="info">
+        <div class="name">数据分析看板</div>
+        <div class="meta"><span>27 个任务</span><span>89 个文件</span><span>6 名成员</span></div>
+      </div>
+      <button class="del-btn" onclick="openModal(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        删除项目
+      </button>
+    </div>
+    <div class="project" data-name="移动端 App 内测">
+      <div class="info">
+        <div class="name">移动端 App 内测</div>
+        <div class="meta"><span>18 个任务</span><span>34 个文件</span><span>9 名成员</span></div>
+      </div>
+      <button class="del-btn" onclick="openModal(this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+        删除项目
+      </button>
+    </div>
+  </div>
+
+  <div class="empty" id="empty">所有项目均已删除，这里空空如也</div>
+</div>
+
+<!-- Modal + Type to Confirm -->
+<div class="modal-mask" id="mask">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="m-title">
+    <div class="modal-head">
+      <div class="warn-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <h2 id="m-title">确认删除项目？</h2>
+    </div>
+
+    <div class="consequence">
+      你正在删除 <strong id="m-name"></strong>。删除后，该项目下的
+      <strong>全部任务、全部文件与全部成员记录将被永久清除</strong>，<strong>此操作不可恢复</strong>。
+    </div>
+
+    <div class="confirm-label">请输入项目名称 <b id="m-echo"></b> 以确认：</div>
+    <input id="confirm-input" type="text" placeholder="输入项目名称" autocomplete="off">
+    <div class="hint" id="m-hint"></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">取消</button>
+      <button class="btn btn-danger" id="btn-confirm" disabled onclick="doDelete()">永久删除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentCard = null;
+  let toastTimer = null;
+
+  function openModal(btn) {
+    currentCard = btn.closest('.project');
+    const name = currentCard.dataset.name;
+    document.getElementById('m-name').textContent = '“' + name + '”';
+    document.getElementById('m-echo').textContent = '“' + name + '”';
+    const mask = document.getElementById('mask');
+    const input = document.getElementById('confirm-input');
+    hint.textContent = '';
+    input.value = '';
+    input.classList.remove('ok');
+    updateBtn();
+    mask.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => input.focus(), 50);
+  }
+
+  function closeModal() {
+    document.getElementById('mask').classList.remove('open');
+    document.body.style.overflow = '';
+    currentCard = null;
+  }
+
+  document.getElementById('confirm-input').addEventListener('input', function () {
+    const target = currentCard ? currentCard.dataset.name : '';
+    const typed = this.value.trim();
+    if (!typed) {
+      hint.textContent = '';
+      hint.classList.remove('fail');
+      this.classList.remove('ok');
+    } else if (typed === target) {
+      hint.textContent = '✓ 已确认，按钮已启用';
+      hint.classList.remove('fail');
+      this.classList.add('ok');
+    } else {
+      hint.textContent = '输入与项目名称不一致，请完整输入';
+      hint.classList.add('fail');
+      this.classList.remove('ok');
+    }
+    updateBtn();
+  });
+
+  document.getElementById('confirm-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !document.getElementById('btn-confirm').disabled) doDelete();
+  });
+
+  document.getElementById('mask').addEventListener('mousedown', function (e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && document.getElementById('mask').classList.contains('open')) closeModal();
+  });
+
+  function updateBtn() {
+    const target = currentCard ? currentCard.dataset.name : '';
+    const ok = document.getElementById('confirm-input').value.trim() === target;
+    const btn = document.getElementById('btn-confirm');
+    btn.disabled = !ok;
+    btn.classList.toggle('enabled', ok);
+  }
+
+  function doDelete() {
+    const name = currentCard.dataset.name;
+    currentCard.remove();
+    closeModal();
+    if (!document.getElementById('list').children.length) {
+      document.getElementById('empty').style.display = 'block';
+    }
+    showToast('已永久删除“' + name + '”，该项目下的任务与文件已清除');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+  }
+</script>
+</body>
+</html>

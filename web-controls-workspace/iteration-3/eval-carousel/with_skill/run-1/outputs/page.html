@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青屿 · 陶瓷蓝牙音箱 — 商品图片展示区</title>
+<style>
+  :root{
+    --paper:#efe9de;
+    --card:#faf7f1;
+    --ink:#2e2921;
+    --muted:#8d8274;
+    --line:#e3dbcc;
+    --accent:#43564b;
+    --brass:#b6904e;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:
+      radial-gradient(1200px 500px at 50% -100px, rgba(255,255,255,.55), rgba(255,255,255,0)),
+      var(--paper);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  body.locked{overflow:hidden}
+
+  .demo-head{
+    max-width:1180px;margin:0 auto;padding:30px 30px 4px;
+    font-size:13px;letter-spacing:.22em;color:var(--muted);
+    display:flex;justify-content:space-between;align-items:center;
+  }
+  .demo-head span{font-family:Georgia,"Songti SC",SimSun,serif}
+
+  .zone{
+    max-width:1180px;margin:14px auto 40px;background:var(--card);
+    border:1px solid var(--line);border-radius:22px;
+    box-shadow:0 28px 70px -34px rgba(84,68,44,.28);
+    padding:34px;
+    display:grid;grid-template-columns:88px minmax(0,1fr) 320px;gap:32px;align-items:start;
+  }
+
+  /* ---------- 缩略图轨道（指示器：缩略图，非圆点） ---------- */
+  .rail{display:flex;flex-direction:column;gap:12px}
+  .thumb{
+    width:82px;height:82px;border-radius:14px;border:1px solid var(--line);
+    padding:0;cursor:pointer;background:#f2ede3;overflow:hidden;position:relative;
+    transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease;
+  }
+  .thumb svg{width:100%;height:100%;display:block}
+  .thumb:hover{transform:translateY(-2px);box-shadow:0 10px 22px -12px rgba(84,68,44,.45)}
+  .thumb:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .thumb[aria-selected="true"]{
+    border-color:transparent;
+    box-shadow:0 0 0 2px var(--brass);
+    transform:translateY(-2px);
+  }
+  .thumb .spin-mini{position:absolute;right:4px;bottom:4px;background:rgba(46,41,33,.66);
+    color:#f4efe6;font-size:10px;padding:2px 6px;border-radius:999px;letter-spacing:.08em}
+
+  /* ---------- 主舞台 ---------- */
+  .stage{
+    position:relative;width:100%;aspect-ratio:1/1;max-width:680px;
+    border-radius:18px;overflow:hidden;border:1px solid var(--line);
+    background:#e9e2d4;
+  }
+  .stage:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+  .view{position:absolute;inset:0;width:100%;height:100%}
+  .view-drift{animation:viewIn .5s cubic-bezier(.22,.8,.3,1) both}
+  @keyframes viewIn{from{opacity:0;transform:scale(1.018)}to{opacity:1;transform:none}}
+  .stage.spin{cursor:grab;touch-action:none}
+  .stage.spin.dragging{cursor:grabbing}
+
+  .hud{position:absolute;inset:0;pointer-events:none}
+  .cap{
+    position:absolute;left:14px;top:14px;display:flex;align-items:center;gap:8px;
+    background:rgba(250,247,241,.85);backdrop-filter:blur(8px);
+    border:1px solid rgba(227,219,204,.9);
+    padding:8px 13px;border-radius:999px;font-size:12.5px;color:var(--ink);
+  }
+  .cap .dot{width:6px;height:6px;border-radius:50%;background:var(--brass);flex:none}
+  .cap b{font-weight:600}
+  .cap i{font-style:normal;color:var(--muted)}
+  .hud-right{position:absolute;top:12px;right:12px;display:flex;gap:8px;pointer-events:auto}
+  .icon-btn{
+    width:44px;height:44px;border-radius:12px;cursor:pointer;
+    background:rgba(250,247,241,.88);border:1px solid var(--line);
+    display:grid;place-items:center;color:var(--ink);
+    backdrop-filter:blur(8px);transition:background .2s, transform .2s;
+  }
+  .icon-btn:hover{background:#fff;transform:translateY(-1px)}
+  .icon-btn:active{transform:none}
+  .icon-btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .chip-btn{
+    height:44px;padding:0 16px;border-radius:12px;cursor:pointer;font-size:13px;
+    background:rgba(250,247,241,.88);border:1px solid var(--line);color:var(--ink);
+    backdrop-filter:blur(8px);transition:background .2s;
+  }
+  .chip-btn:hover{background:#fff}
+  .chip-btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .hint{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:16px;
+    background:rgba(46,41,33,.74);color:#f4efe6;
+    font-size:12.5px;letter-spacing:.05em;
+    padding:9px 16px;border-radius:999px;display:flex;align-items:center;gap:9px;
+    pointer-events:none;transition:opacity .6s;
+  }
+  .hint.gone{opacity:0}
+  .hint .ico{display:inline-block;animation:wig 2.6s ease-in-out infinite}
+  @keyframes wig{0%,100%{transform:rotate(-14deg)}50%{transform:rotate(14deg)}}
+
+  /* ---------- 侧栏商品信息（演示上下文） ---------- */
+  .info{padding-top:4px}
+  .kicker{font-size:12px;letter-spacing:.3em;color:var(--brass);margin-bottom:10px}
+  .info h1{
+    font-family:Georgia,"Songti SC",SimSun,serif;font-size:25px;line-height:1.35;
+    margin:0 0 14px;font-weight:600;
+  }
+  .price{display:flex;align-items:baseline;gap:12px;margin-bottom:16px}
+  .price b{font-size:30px;font-weight:650;letter-spacing:.02em}
+  .price .tag{font-size:12px;color:var(--accent);border:1px solid var(--accent);
+    border-radius:999px;padding:3px 10px;letter-spacing:.1em}
+  .desc{font-size:13.5px;line-height:1.8;color:var(--muted);margin:0 0 18px}
+  .specs{list-style:none;padding:0;margin:0 0 22px;display:flex;flex-wrap:wrap;gap:8px}
+  .specs li{
+    font-size:12px;color:var(--ink);background:#f2ede3;border:1px solid var(--line);
+    border-radius:999px;padding:5px 12px;
+  }
+  .cta{display:flex;gap:10px;margin-bottom:18px}
+  .btn-solid{
+    flex:1;height:50px;border:none;border-radius:12px;cursor:pointer;
+    background:var(--accent);color:#f7f3ea;font-size:15px;letter-spacing:.14em;
+    transition:background .2s, transform .15s;
+  }
+  .btn-solid:hover{background:#36473d}
+  .btn-solid:active{transform:scale(.985)}
+  .btn-solid:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .btn-line{
+    width:50px;height:50px;border-radius:12px;cursor:pointer;
+    background:transparent;border:1.5px solid var(--ink);color:var(--ink);
+    display:grid;place-items:center;transition:background .2s;
+  }
+  .btn-line:hover{background:#f2ede3}
+  .btn-line:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .btn-line.faved svg{fill:var(--accent);stroke:var(--accent)}
+  .zone-note{font-size:12px;line-height:1.9;color:var(--muted);border-top:1px solid var(--line);padding-top:14px}
+
+  /* ---------- 灯箱 Modal ---------- */
+  .lightbox{
+    position:fixed;inset:0;z-index:60;
+    background:rgba(30,25,18,.78);backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:4vmin;
+  }
+  .lightbox[hidden]{display:none}
+  .lb-panel{position:relative}
+  .lb-media{
+    position:relative;width:min(86vw,660px);height:min(86vw,660px);
+    border-radius:16px;overflow:hidden;background:#e9e2d4;
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:0 40px 90px -30px rgba(0,0,0,.55);
+  }
+  .lb-fit{width:100%;height:100%;transform-origin:center center}
+  .lb-fit svg,.lb-fit canvas{width:100%;height:100%;display:block}
+  .lb-cap{
+    position:absolute;left:12px;bottom:12px;z-index:2;
+    background:rgba(250,247,241,.85);backdrop-filter:blur(8px);
+    border:1px solid rgba(227,219,204,.9);border-radius:999px;
+    padding:8px 13px;font-size:12.5px;
+  }
+  .lb-tip{
+    position:absolute;right:12px;bottom:12px;z-index:2;
+    background:rgba(46,41,33,.62);color:#f4efe6;border-radius:999px;
+    padding:8px 13px;font-size:11.5px;letter-spacing:.05em;
+  }
+  .lb-close{
+    position:absolute;top:-52px;right:-6px;width:44px;height:44px;border-radius:50%;
+    border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.12);
+    color:#f4efe6;cursor:pointer;display:grid;place-items:center;
+    transition:background .2s;
+  }
+  .lb-close:hover{background:rgba(255,255,255,.24)}
+  .lb-close:focus-visible{outline:2px solid #d8b879;outline-offset:2px}
+
+  /* ---------- 移动端适配 ---------- */
+  @media (max-width:960px){
+    .zone{grid-template-columns:1fr;padding:18px;gap:20px;border-radius:18px}
+    .info{order:3;}
+    .rail{order:2;flex-direction:row;overflow-x:auto;padding-bottom:8px;scrollbar-width:thin}
+    .thumb{flex:none;width:64px;height:64px;border-radius:12px}
+    .stage{max-width:none}
+    .cap{font-size:11.5px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .view-drift,.hint .ico{animation:none}
+    .lb-fit{transition:none}
+  }
+</style>
+</head>
+<body>
+  <header class="demo-head">
+    <div>商品详情 · 图片展示区（演示页面）</div>
+    <span>青屿 QINGYU</span>
+  </header>
+
+  <main class="zone">
+    <!-- 缩略图轨道：指示器 -->
+    <nav class="rail" role="tablist" aria-label="商品视图切换" id="rail"></nav>
+
+    <!-- 主舞台 -->
+    <div class="stage" id="stage" tabindex="0"
+         role="tabpanel" aria-label="商品主图"
+         aria-live="off"></div>
+
+    <!-- 商品信息（演示上下文） -->
+    <aside class="info">
+      <div class="kicker">声学器物 · ACOUSTIC OBJECT</div>
+      <h1>陶瓷蓝牙音箱 · 雾灰釉</h1>
+      <div class="price"><b>¥ 1,299</b><span class="tag">新品尝鲜</span></div>
+      <p class="desc">1300℃ 还原焰烧制哑光釉面，手工缠绕黄麻织物声带腔体，黄铜铭牌手工錾刻。每一台的釉色纹理，都是窑火留下的唯一签名。</p>
+      <ul class="specs">
+        <li>双全频单元 · 35W</li>
+        <li>35 小时续航</li>
+        <li>IPX5 防泼溅</li>
+        <li>USB-C 快充</li>
+      </ul>
+      <div class="cta">
+        <button class="btn-solid" id="addBtn">加入购物袋</button>
+        <button class="btn-line" id="favBtn" aria-label="收藏" aria-pressed="false">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.35-9.3-8.6C1.2 8.6 2.5 5.5 5.6 5.1c1.9-.25 3.7.7 4.6 2.2l1.8 2.7 1.8-2.7c.9-1.5 2.7-2.45 4.6-2.2 3.1.4 4.4 3.5 2.9 6.3C19 15.65 12 20 12 20z"/></svg>
+        </button>
+      </div>
+      <div class="zone-note">图片区操作：按住主图左右拖动可 360° 旋转；点缩略图切换视图；← → 键切视图；点放大镜进入灯箱，滚轮缩放、双击复位、Esc 关闭。</div>
+    </aside>
+  </main>
+
+  <!-- 灯箱 Modal：类型=全屏查看 / 触发=放大镜按钮 / 关闭=× 或 Esc 或点背景 / 内容=视图大图 -->
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="商品大图" hidden>
+    <div class="lb-panel">
+      <div class="lb-media" id="lbMedia">
+        <div class="lb-fit" id="lbFit"></div>
+        <div class="lb-cap" id="lbCap"></div>
+        <div class="lb-tip" id="lbTip"></div>
+      </div>
+      <button class="lb-close" id="lbClose" aria-label="关闭大图">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+      </button>
+    </div>
+  </div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   0. 公共
+============================================================ */
+var rm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+var $ = function(id){ return document.getElementById(id); };
+
+/* ============================================================
+   1. 商品视图素材（全部内嵌 SVG，离线可用，无外部请求）
+============================================================ */
+var ART = {};
+
+ART.front = '<svg viewBox="0 0 800 800" role="img" aria-label="音箱正面视图">'
++'<defs>'
++'<radialGradient id="fr-bg" cx="50%" cy="34%" r="80%"><stop offset="0" stop-color="#f8f4ec"/><stop offset="1" stop-color="#e5ded0"/></radialGradient>'
++'<linearGradient id="fr-body" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a99f8e"/><stop offset="0.2" stop-color="#e5dfd3"/><stop offset="0.4" stop-color="#f9f5ee"/><stop offset="0.58" stop-color="#efe8dc"/><stop offset="0.82" stop-color="#c6bdae"/><stop offset="1" stop-color="#978c7a"/></linearGradient>'
++'<linearGradient id="fr-shade" x1="0" y1="0" x2="0" y2="1"><stop offset="0.5" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="rgba(88,76,58,0.15)"/></linearGradient>'
++'<linearGradient id="fr-spec" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(255,255,255,0)"/><stop offset="0.28" stop-color="rgba(255,255,255,0.5)"/><stop offset="0.45" stop-color="rgba(255,255,255,0)"/><stop offset="0.6" stop-color="rgba(255,255,255,0.18)"/><stop offset="0.8" stop-color="rgba(255,255,255,0)"/></linearGradient>'
++'<radialGradient id="fr-cap" cx="38%" cy="30%" r="92%"><stop offset="0" stop-color="#fdfaf3"/><stop offset="0.62" stop-color="#ece4d6"/><stop offset="1" stop-color="#d2c9ba"/></radialGradient>'
++'<pattern id="fr-weave" width="13" height="13" patternUnits="userSpaceOnUse"><rect width="13" height="13" fill="#5b5346"/><circle cx="3.2" cy="3.2" r="2.5" fill="#6f6555"/><circle cx="9.7" cy="9.7" r="2.5" fill="#3f382c"/></pattern>'
++'<linearGradient id="fr-bandshade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(34,29,20,0.42)"/><stop offset="0.2" stop-color="rgba(34,29,20,0.05)"/><stop offset="0.5" stop-color="rgba(255,255,255,0.05)"/><stop offset="0.8" stop-color="rgba(34,29,20,0.09)"/><stop offset="1" stop-color="rgba(34,29,20,0.42)"/></linearGradient>'
++'<filter id="fr-soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDev="15"/></filter>'
++'<filter id="fr-soft2" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDev="11"/></filter>'
++'</defs>'
++'<rect width="800" height="800" fill="url(#fr-bg)"/>'
++'<polygon points="120,0 330,0 120,800 0,800" fill="rgba(255,252,244,0.35)" filter="url(#fr-soft2)"/>'
++'<ellipse cx="400" cy="668" rx="235" ry="30" fill="rgba(74,63,47,0.4)" filter="url(#fr-soft)"/>'
++'<path d="M252,292 L252,608 A148,41 0 0 0 548,608 L548,292 Z" fill="url(#fr-body)"/>'
++'<path d="M252,292 L252,608 A148,41 0 0 0 548,608 L548,292 Z" fill="url(#fr-shade)"/>'
++'<path d="M252,292 L252,608 A148,41 0 0 0 548,608 L548,292 Z" fill="url(#fr-spec)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340 L548,470 A148,41 0 0 1 252,470 Z" fill="url(#fr-weave)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340 L548,470 A148,41 0 0 1 252,470 Z" fill="url(#fr-bandshade)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340" fill="none" stroke="#b6904e" stroke-width="2.6"/>'
++'<path d="M252,470 A148,41 0 0 0 548,470" fill="none" stroke="#b6904e" stroke-width="2.6"/>'
++'<path d="M252,608 A148,41 0 0 0 548,608" fill="none" stroke="#b6904e" stroke-width="2"/>'
++'<ellipse cx="400" cy="292" rx="148" ry="41" fill="url(#fr-cap)"/>'
++'<ellipse cx="400" cy="292" rx="116" ry="30" fill="none" stroke="rgba(124,112,94,0.16)" stroke-width="1.4"/>'
++'<circle cx="392" cy="313" r="9" fill="none" stroke="#b6904e" stroke-width="2.6"/>'
++'<circle cx="392" cy="313" r="3" fill="#b6904e"/>'
++'<path d="M252,292 L252,608 A148,41 0 0 0 548,608 L548,292 Z" fill="none" stroke="rgba(96,84,66,0.35)" stroke-width="1.6"/>'
++'<text x="400" y="582" text-anchor="middle" font-family="Georgia, serif" font-size="15" letter-spacing="9" fill="rgba(110,99,82,0.5)">QINGYU</text>'
++'</svg>';
+
+ART.top = '<svg viewBox="0 0 800 800" role="img" aria-label="顶面织物网罩特写">'
++'<defs>'
++'<radialGradient id="tp-cer" cx="44%" cy="38%" r="80%"><stop offset="0" stop-color="#fbf8f1"/><stop offset="0.6" stop-color="#ebe3d4"/><stop offset="1" stop-color="#c9c0af"/></radialGradient>'
++'<radialGradient id="tp-vig" cx="50%" cy="48%" r="72%"><stop offset="0.6" stop-color="rgba(70,60,44,0)"/><stop offset="1" stop-color="rgba(70,60,44,0.3)"/></radialGradient>'
++'<radialGradient id="tp-steel" cx="40%" cy="34%" r="85%"><stop offset="0" stop-color="#efe9df"/><stop offset="0.7" stop-color="#cfc7b9"/><stop offset="1" stop-color="#a89e8f"/></radialGradient>'
++'<radialGradient id="tp-fab" cx="42%" cy="34%" r="80%"><stop offset="0" stop-color="#6a6253"/><stop offset="0.65" stop-color="#585044"/><stop offset="1" stop-color="#453e32"/></radialGradient>'
++'</defs>'
++'<circle cx="400" cy="400" r="400" fill="url(#tp-cer)"/>'
++'<circle cx="400" cy="400" r="400" fill="url(#tp-vig)"/>'
++'<circle cx="400" cy="400" r="316" fill="none" stroke="#b6904e" stroke-width="4"/>'
++'<circle cx="400" cy="400" r="306" fill="url(#tp-fab)"/>'
++'<g fill="none">'
++'<circle cx="400" cy="400" r="292" stroke="rgba(58,51,40,0.55)" stroke-width="5" stroke-dasharray="3 2"/>'
++'<circle cx="400" cy="400" r="279" stroke="rgba(118,108,90,0.5)" stroke-width="4" stroke-dasharray="4 3"/>'
++'<circle cx="400" cy="400" r="266" stroke="rgba(58,51,40,0.55)" stroke-width="5" stroke-dasharray="3 2"/>'
++'<circle cx="400" cy="400" r="253" stroke="rgba(118,108,90,0.5)" stroke-width="4" stroke-dasharray="4 3"/>'
++'<circle cx="400" cy="400" r="240" stroke="rgba(58,51,40,0.55)" stroke-width="5" stroke-dasharray="3 2"/>'
++'<circle cx="400" cy="400" r="227" stroke="rgba(118,108,90,0.5)" stroke-width="4" stroke-dasharray="4 3"/>'
++'<circle cx="400" cy="400" r="214" stroke="rgba(58,51,40,0.55)" stroke-width="5" stroke-dasharray="3 2"/>'
++'<circle cx="400" cy="400" r="201" stroke="rgba(118,108,90,0.5)" stroke-width="4" stroke-dasharray="4 3"/>'
++'<circle cx="400" cy="400" r="188" stroke="rgba(58,51,40,0.55)" stroke-width="5" stroke-dasharray="3 2"/>'
++'<circle cx="400" cy="400" r="175" stroke="rgba(118,108,90,0.5)" stroke-width="4" stroke-dasharray="4 3"/>'
++'<circle cx="400" cy="400" r="162" stroke="rgba(58,51,40,0.55)" stroke-width="5" stroke-dasharray="3 2"/>'
++'<circle cx="400" cy="400" r="149" stroke="rgba(118,108,90,0.5)" stroke-width="4" stroke-dasharray="4 3"/>'
++'<circle cx="400" cy="400" r="136" stroke="rgba(58,51,40,0.55)" stroke-width="5" stroke-dasharray="3 2"/>'
++'<circle cx="400" cy="400" r="123" stroke="rgba(118,108,90,0.5)" stroke-width="4" stroke-dasharray="4 3"/>'
++'<circle cx="400" cy="400" r="110" stroke="rgba(58,51,40,0.55)" stroke-width="5" stroke-dasharray="3 2"/>'
++'</g>'
++'<circle cx="400" cy="400" r="102" fill="none" stroke="#b6904e" stroke-width="4"/>'
++'<circle cx="400" cy="400" r="98" fill="url(#tp-steel)"/>'
++'<circle cx="400" cy="400" r="88" fill="none" stroke="rgba(120,112,100,0.2)" stroke-width="1.5"/>'
++'<circle cx="400" cy="400" r="74" fill="none" stroke="rgba(120,112,100,0.2)" stroke-width="1.5"/>'
++'<circle cx="400" cy="400" r="60" fill="none" stroke="rgba(120,112,100,0.2)" stroke-width="1.5"/>'
++'<circle cx="400" cy="400" r="46" fill="none" stroke="rgba(120,112,100,0.2)" stroke-width="1.5"/>'
++'<path id="tp-arc" d="M 328,408 A 74,74 0 1 1 472,408" fill="none"/>'
++'<text font-family="Georgia, serif" font-size="15" letter-spacing="4" fill="rgba(84,76,62,0.62)"><textPath href="#tp-arc">QINGYU · BT 5.3</textPath></text>'
++'<circle cx="400" cy="400" r="11" fill="none" stroke="#b6904e" stroke-width="3"/>'
++'<circle cx="400" cy="400" r="3.5" fill="#b6904e"/>'
++'</svg>';
+
+ART.back = '<svg viewBox="0 0 800 800" role="img" aria-label="音箱背面接口视图">'
++'<defs>'
++'<radialGradient id="bk-bg" cx="50%" cy="34%" r="80%"><stop offset="0" stop-color="#f8f4ec"/><stop offset="1" stop-color="#e5ded0"/></radialGradient>'
++'<linearGradient id="bk-body" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#9b9282"/><stop offset="0.2" stop-color="#ddd6c9"/><stop offset="0.4" stop-color="#f1ebdf"/><stop offset="0.58" stop-color="#e6dfd2"/><stop offset="0.82" stop-color="#b8afa0"/><stop offset="1" stop-color="#8a8072"/></linearGradient>'
++'<radialGradient id="bk-cap" cx="38%" cy="30%" r="92%"><stop offset="0" stop-color="#f7f2e8"/><stop offset="0.62" stop-color="#e2dacb"/><stop offset="1" stop-color="#c5bcaf"/></radialGradient>'
++'<pattern id="bk-weave" width="13" height="13" patternUnits="userSpaceOnUse"><rect width="13" height="13" fill="#5b5346"/><circle cx="3.2" cy="3.2" r="2.5" fill="#6f6555"/><circle cx="9.7" cy="9.7" r="2.5" fill="#3f382c"/></pattern>'
++'<linearGradient id="bk-bandshade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(34,29,20,0.42)"/><stop offset="0.2" stop-color="rgba(34,29,20,0.05)"/><stop offset="0.5" stop-color="rgba(255,255,255,0.05)"/><stop offset="0.8" stop-color="rgba(34,29,20,0.09)"/><stop offset="1" stop-color="rgba(34,29,20,0.42)"/></linearGradient>'
++'<filter id="bk-soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDev="15"/></filter>'
++'</defs>'
++'<rect width="800" height="800" fill="url(#bk-bg)"/>'
++'<ellipse cx="400" cy="668" rx="235" ry="30" fill="rgba(74,63,47,0.4)" filter="url(#bk-soft)"/>'
++'<path d="M252,292 L252,608 A148,41 0 0 0 548,608 L548,292 Z" fill="url(#bk-body)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340 L548,470 A148,41 0 0 1 252,470 Z" fill="url(#bk-weave)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340 L548,470 A148,41 0 0 1 252,470 Z" fill="url(#bk-bandshade)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340" fill="none" stroke="#b6904e" stroke-width="2.6"/>'
++'<path d="M252,470 A148,41 0 0 0 548,470" fill="none" stroke="#b6904e" stroke-width="2.6"/>'
++'<path d="M252,608 A148,41 0 0 0 548,608" fill="none" stroke="#b6904e" stroke-width="2"/>'
++'<ellipse cx="400" cy="292" rx="148" ry="41" fill="url(#bk-cap)"/>'
++'<path d="M252,292 L252,608 A148,41 0 0 0 548,608 L548,292 Z" fill="none" stroke="rgba(96,84,66,0.35)" stroke-width="1.6"/>'
++'<rect x="384" y="552" width="32" height="12" rx="6" fill="#2b2720" stroke="#b6904e" stroke-width="1.4"/>'
++'<rect x="388" y="556" width="24" height="4" rx="2" fill="#453c30"/>'
++'<circle cx="346" cy="558" r="6" fill="#2b2720" stroke="#b6904e" stroke-width="1.4"/>'
++'<circle cx="452" cy="558" r="9" fill="#e8e1d3" stroke="rgba(120,108,90,0.55)" stroke-width="1.6"/>'
++'<circle cx="452" cy="558" r="2.5" fill="#8d8274"/>'
++'<circle cx="486" cy="556" r="3.5" fill="#7cb592"/>'
++'<text x="400" y="596" text-anchor="middle" font-family="Georgia, serif" font-size="12" letter-spacing="4" fill="rgba(110,99,82,0.5)">USB-C · 20W · BT 5.3</text>'
++'</svg>';
+
+ART.scene = '<svg viewBox="0 0 800 800" role="img" aria-label="客厅场景视图：木桌上的音箱">'
++'<defs>'
++'<linearGradient id="sc-wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3ecdf"/><stop offset="1" stop-color="#ded2bd"/></linearGradient>'
++'<linearGradient id="sc-wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a87a"/><stop offset="1" stop-color="#a5854f"/></linearGradient>'
++'<linearGradient id="sc-body" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a99f8e"/><stop offset="0.2" stop-color="#e5dfd3"/><stop offset="0.4" stop-color="#f9f5ee"/><stop offset="0.58" stop-color="#efe8dc"/><stop offset="0.82" stop-color="#c6bdae"/><stop offset="1" stop-color="#978c7a"/></linearGradient>'
++'<radialGradient id="sc-cap" cx="38%" cy="30%" r="92%"><stop offset="0" stop-color="#fdfaf3"/><stop offset="0.62" stop-color="#ece4d6"/><stop offset="1" stop-color="#d2c9ba"/></radialGradient>'
++'<pattern id="sc-weave" width="13" height="13" patternUnits="userSpaceOnUse"><rect width="13" height="13" fill="#5b5346"/><circle cx="3.2" cy="3.2" r="2.5" fill="#6f6555"/><circle cx="9.7" cy="9.7" r="2.5" fill="#3f382c"/></pattern>'
++'<linearGradient id="sc-bandshade" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="rgba(34,29,20,0.42)"/><stop offset="0.2" stop-color="rgba(34,29,20,0.05)"/><stop offset="0.5" stop-color="rgba(255,255,255,0.05)"/><stop offset="0.8" stop-color="rgba(34,29,20,0.09)"/><stop offset="1" stop-color="rgba(34,29,20,0.42)"/></linearGradient>'
++'<filter id="sc-soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDev="14"/></filter>'
++'<filter id="sc-soft3" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDev="9"/></filter>'
++'</defs>'
++'<rect width="800" height="800" fill="url(#sc-wall)"/>'
++'<polygon points="620,0 800,0 800,520 460,520" fill="rgba(255,252,240,0.4)" filter="url(#sc-soft3)"/>'
++'<rect y="560" width="800" height="240" fill="url(#sc-wood)"/>'
++'<rect y="560" width="800" height="10" fill="rgba(255,255,255,0.28)"/>'
++'<path d="M0,612 C200,604 420,622 800,610" fill="none" stroke="rgba(90,60,30,0.18)" stroke-width="3"/>'
++'<path d="M0,668 C240,660 500,678 800,664" fill="none" stroke="rgba(90,60,30,0.15)" stroke-width="3"/>'
++'<path d="M0,724 C260,716 480,734 800,722" fill="none" stroke="rgba(90,60,30,0.16)" stroke-width="3"/>'
++'<ellipse cx="492" cy="672" rx="205" ry="26" fill="rgba(60,42,24,0.4)" filter="url(#sc-soft)"/>'
++'<g transform="translate(190,134) scale(0.78)">'
++'<path d="M252,292 L252,608 A148,41 0 0 0 548,608 L548,292 Z" fill="url(#sc-body)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340 L548,470 A148,41 0 0 1 252,470 Z" fill="url(#sc-weave)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340 L548,470 A148,41 0 0 1 252,470 Z" fill="url(#sc-bandshade)"/>'
++'<path d="M252,340 A148,41 0 0 0 548,340" fill="none" stroke="#b6904e" stroke-width="2.6"/>'
++'<path d="M252,470 A148,41 0 0 0 548,470" fill="none" stroke="#b6904e" stroke-width="2.6"/>'
++'<path d="M252,608 A148,41 0 0 0 548,608" fill="none" stroke="#b6904e" stroke-width="2"/>'
++'<ellipse cx="400" cy="292" rx="148" ry="41" fill="url(#sc-cap)"/>'
++'<ellipse cx="400" cy="292" rx="116" ry="30" fill="none" stroke="rgba(124,112,94,0.16)" stroke-width="1.4"/>'
++'<circle cx="392" cy="313" r="9" fill="none" stroke="#b6904e" stroke-width="2.6"/>'
++'<circle cx="392" cy="313" r="3" fill="#b6904e"/>'
++'<path d="M252,292 L252,608 A148,41 0 0 0 548,608 L548,292 Z" fill="none" stroke="rgba(96,84,66,0.35)" stroke-width="1.6"/>'
++'</g>'
++'</svg>';
+
+ART.spinMini =
+'<svg viewBox="0 0 100 100">'
++'<rect width="100" height="100" fill="#efe9dc"/>'
++'<path d="M50 14 A36 36 0 0 1 86 50" fill="none" stroke="#b6904e" stroke-width="6" stroke-linecap="round"/>'
++'<polygon points="78,46 94,46 86,62" fill="#b6904e"/>'
++'<path d="M50 86 A36 36 0 0 1 14 50" fill="none" stroke="#b6904e" stroke-width="6" stroke-linecap="round"/>'
++'<polygon points="22,54 6,54 14,38" fill="#b6904e"/>'
++'<circle cx="50" cy="50" r="19" fill="#5b5346"/>'
++'<circle cx="50" cy="50" r="19" fill="none" stroke="#b6904e" stroke-width="2.5"/>'
++'<circle cx="45" cy="46" r="2" fill="#6f6555"/><circle cx="55" cy="54" r="2" fill="#3f382c"/>'
++'<circle cx="55" cy="45" r="2" fill="#6f6555"/><circle cx="45" cy="54" r="2" fill="#3f382c"/>'
++'</svg>';
+
+/* ============================================================
+   2. 视图清单（360° 旋转 + 图片预览标签 混合画廊）
+============================================================ */
+var VIEWS = [
+  { id:"spin",  name:"360° 全景",  sub:"按住拖动 · 全角度", type:"spin" },
+  { id:"front", name:"正面视图",  sub:"釉面 · 织物声带",   type:"art", art:"front" },
+  { id:"top",   name:"顶面特写",  sub:"网罩 · 黄铜铭牌",   type:"art", art:"top" },
+  { id:"back",  name:"背面接口",  sub:"USB-C · 配对键",    type:"art", art:"back" },
+  { id:"scene", name:"场景视图",  sub:"晨光 · 木桌",       type:"art", art:"scene" }
+];
+var cur = 0;
+
+/* ============================================================
+   3. 缩略图轨道
+============================================================ */
+var rail = $("rail"), stage = $("stage");
+var thumbs = [];
+
+VIEWS.forEach(function(v, i){
+  var b = document.createElement("button");
+  b.className = "thumb";
+  b.type = "button";
+  b.setAttribute("role","tab");
+  b.setAttribute("aria-selected", i===0 ? "true" : "false");
+  b.setAttribute("aria-label", v.name + "：" + v.sub);
+  b.title = v.name + " · " + v.sub;
+  if(v.type==="spin"){
+    b.innerHTML = ART.spinMini + '<span class="spin-mini">360°</span>';
+  }else{
+    b.innerHTML = ART[v.art];
+  }
+  b.addEventListener("click", function(){ switchView(i, true); });
+  rail.appendChild(b);
+  thumbs.push(b);
+});
+rail.addEventListener("keydown", function(e){
+  var d = 0;
+  if(e.key==="ArrowRight" || e.key==="ArrowDown") d = 1;
+  if(e.key==="ArrowLeft"  || e.key==="ArrowUp")   d = -1;
+  if(!d) return;
+  e.preventDefault();
+  var n = (cur + d + VIEWS.length) % VIEWS.length;
+  switchView(n, true);
+  thumbs[n].focus();
+});
+
+/* ============================================================
+   4. 主舞台渲染
+============================================================ */
+function buildStage(){
+  var v = VIEWS[cur];
+  if(v.type==="art"){
+    stage.className = "stage";
+    stage.innerHTML =
+      '<div class="view view-drift">' + ART[v.art] + '</div>' +
+      '<div class="hud">' +
+        '<span class="cap"><span class="dot"></span><b>' + v.name + '</b><i>· ' + v.sub + '</i></span>' +
+        '<div class="hud-right">' +
+          '<button class="icon-btn" id="btnZoom" aria-label="全屏查看大图">' +
+            '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9V5a2 2 0 0 1 2-2h4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4"/></svg>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+    $("btnZoom").addEventListener("click", function(){ openLightbox(cur); });
+  }else{
+    stage.className = "stage spin";
+    dragging = false; omega = 0;
+    stage.innerHTML =
+      '<canvas class="view" id="spinCanvas" aria-label="360° 旋转视图，按住左右拖动旋转"></canvas>' +
+      '<div class="hud">' +
+        '<span class="cap"><span class="dot"></span><b>' + v.name + '</b><i>· ' + v.sub + '</i></span>' +
+        '<div class="hud-right">' +
+          '<button class="chip-btn" id="btnReset" aria-label="回正到正面">回正</button>' +
+          '<button class="icon-btn" id="btnZoom" aria-label="全屏查看大图">' +
+            '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9V5a2 2 0 0 1 2-2h4M15 3h4a2 2 0 0 1 2 2v4M21 15v4a2 2 0 0 1-2 2h-4M9 21H5a2 2 0 0 1-2-2v-4"/></svg>' +
+          '</button>' +
+        '</div>' +
+        '<span class="hint" id="spinHint"><span class="ico">⟲</span>按住拖动 · 360° 观察釉面与织物细节</span>' +
+      '</div>';
+    $("btnZoom").addEventListener("click", function(){ openLightbox(cur); });
+    $("btnReset").addEventListener("click", function(){
+      mark(); recenterTarget = Math.round(theta/(2*Math.PI))*2*Math.PI;
+    });
+    bindSpin(stage);
+  }
+  stage.setAttribute("aria-label", "商品主图：" + v.name + "，" + v.sub);
+}
+
+function switchView(i, fromUser){
+  if(i===cur) return;
+  cur = i;
+  thumbs.forEach(function(t, j){ t.setAttribute("aria-selected", j===i ? "true":"false"); });
+  buildStage();
+}
+
+/* 键盘：← → 切换视图 */
+stage.addEventListener("keydown", function(e){
+  if(e.key!=="ArrowLeft" && e.key!=="ArrowRight") return;
+  e.preventDefault();
+  var d = e.key==="ArrowRight" ? 1 : -1;
+  switchView((cur + d + VIEWS.length) % VIEWS.length, true);
+});
+
+/* ============================================================
+   5. Canvas 360° 旋转展示（程序化绘制，任意角度连续可拖）
+============================================================ */
+var TAU = Math.PI*2;
+var theta = -0.55, omega = 0, dragging = false, lastX = 0, accD = 0, accT = 0;
+var lastInter = performance.now(), recenterTarget = null;
+
+function norm(a){ a = ((a % TAU) + TAU) % TAU; if(a > Math.PI) a -= TAU; return a; }
+function mark(){ lastInter = performance.now(); recenterTarget = null; }
+
+function liveCanvases(){
+  var out = [];
+  var sc = $("spinCanvas");
+  if(sc) out.push(sc);
+  var lc = $("lbSpin");
+  if(lc) out.push(lc);
+  return out;
+}
+function sizeCanvas(c){
+  var dpr = Math.min(window.devicePixelRatio || 1, 2);
+  var w = c.clientWidth || 600, h = c.clientHeight || 600;
+  if(c.width !== Math.round(w*dpr) || c.height !== Math.round(h*dpr)){
+    c.width = Math.round(w*dpr); c.height = Math.round(h*dpr);
+  }
+  return dpr;
+}
+
+function drawFrame(ctx, W, H, th){
+  var S = Math.min(W, H), cx = W/2;
+  var r = S*0.185, ry = r*0.28;
+  var bh = r*2.3;
+  var topY = H*0.52 - bh/2, botY = H*0.52 + bh/2;
+
+  ctx.clearRect(0, 0, W, H);
+
+  /* 背景 */
+  var g = ctx.createRadialGradient(cx, H*0.42, S*0.08, cx, H*0.5, S*0.78);
+  g.addColorStop(0, "#f8f4ec"); g.addColorStop(1, "#e4dccd");
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+
+  /* 地面阴影 */
+  ctx.save();
+  ctx.translate(cx, botY + ry + S*0.05);
+  ctx.scale(1, 0.18);
+  var sg = ctx.createRadialGradient(0, 0, 0, 0, 0, r*1.8);
+  sg.addColorStop(0, "rgba(72,60,44,0.38)"); sg.addColorStop(1, "rgba(72,60,44,0)");
+  ctx.fillStyle = sg; ctx.beginPath(); ctx.arc(0, 0, r*1.8, 0, TAU); ctx.fill();
+  ctx.restore();
+
+  /* 机身轮廓 */
+  var bodyP = new Path2D();
+  bodyP.moveTo(cx-r, topY);
+  bodyP.lineTo(cx-r, botY);
+  bodyP.ellipse(cx, botY, r, ry, 0, Math.PI, 0, true);
+  bodyP.lineTo(cx + r, topY);
+  bodyP.closePath();
+
+  var gb = ctx.createLinearGradient(cx-r, 0, cx+r, 0);
+  gb.addColorStop(0, "#a99f8e"); gb.addColorStop(0.2, "#e5dfd3"); gb.addColorStop(0.4, "#f9f5ee");
+  gb.addColorStop(0.58, "#efe8dc"); gb.addColorStop(0.82, "#c6bdae"); gb.addColorStop(1, "#978c7a");
+  ctx.fillStyle = gb; ctx.fill(bodyP);
+
+  var gv = ctx.createLinearGradient(0, topY, 0, botY + ry);
+  gv.addColorStop(0, "rgba(0,0,0,0)"); gv.addColorStop(1, "rgba(88,76,58,0.15)");
+  ctx.fillStyle = gv; ctx.fill(bodyP);
+
+  var yB1 = topY + r*0.40, yB2 = topY + r*1.24, ryR = ry*1.05;
+
+  /* 织物声带：环形弧面 + 随角度转动的织纹 */
+  var bandP = new Path2D();
+  bandP.moveTo(cx-r, yB1);
+  bandP.ellipse(cx, yB1, r, ryR, 0, Math.PI, 0, true);
+  bandP.lineTo(cx + r, yB2);
+  bandP.ellipse(cx, yB2, r, ryR, 0, 0, Math.PI, false);
+  bandP.closePath();
+
+  ctx.save(); ctx.clip(bandP);
+  ctx.fillStyle = "#5b5346";
+  ctx.fillRect(cx-r, yB1 - ryR*1.2, r*2, (yB2 - yB1) + ryR*2.4);
+
+  var rows = 8, stepPhi = Math.PI/24, colIdx = 0, j, phi, rel, fw, x, col, yy, dr, ar;
+  for(phi = 0; phi < TAU; phi += stepPhi){
+    rel = norm(phi - th); fw = Math.cos(rel);
+    if(fw <= 0.045) continue;
+    colIdx++; col = (colIdx % 2 === 0);
+    x = cx + r*Math.sin(rel);
+    var yTopE = yB1 + ryR*fw, yBotE = yB2 + ryR*fw;
+    dr = S*0.0072*(0.35 + 0.65*fw);
+    ar = 0.28 + 0.62*fw;
+    ctx.fillStyle = col ? "#6f6555" : "#3f382c";
+    for(j = 0; j < rows; j++){
+      yy = yTopE + (yBotE - yTopE)*(j + 0.5)/rows + (j%2 ? 1.5 : -1.5)*S*0.0018;
+      ctx.globalAlpha = ar;
+      ctx.beginPath(); ctx.arc(x, yy, dr, 0, TAU); ctx.fill();
+    }
+  }
+  ctx.globalAlpha = 1;
+
+  var gs = ctx.createLinearGradient(cx-r, 0, cx+r, 0);
+  gs.addColorStop(0, "rgba(30,25,17,0.38)"); gs.addColorStop(0.16, "rgba(30,25,17,0.03)");
+  gs.addColorStop(0.52, "rgba(255,255,255,0.09)"); gs.addColorStop(0.84, "rgba(30,25,17,0.1)");
+  gs.addColorStop(1, "rgba(30,25,17,0.38)");
+  ctx.fillStyle = gs; ctx.fillRect(cx-r, yB1 - ryR*1.2, r*2, (yB2 - yB1) + ryR*2.4);
+  ctx.restore();
+
+  /* 声带金线 */
+  ctx.beginPath();
+  ctx.ellipse(cx, yB1, r, ryR, 0, Math.PI, 0, true);
+  ctx.strokeStyle = "rgba(182,144,78,0.9)"; ctx.lineWidth = S*0.0032; ctx.stroke();
+  ctx.beginPath();
+  ctx.ellipse(cx, yB2, r, ryR, 0, 0, Math.PI, false);
+  ctx.stroke();
+
+  /* 顶面釉盖 + 旋转拾音孔 */
+  var capP = new Path2D();
+  capP.ellipse(cx, topY, r, ry, 0, 0, TAU);
+  var gc = ctx.createRadialGradient(cx - r*0.24, topY - ry*0.55, ry*0.2, cx, topY, r*1.05);
+  gc.addColorStop(0, "#fdfaf3"); gc.addColorStop(0.6, "#ece4d6"); gc.addColorStop(1, "#d1c8b9");
+  ctx.fillStyle = gc; ctx.fill(capP);
+
+  ctx.save(); ctx.clip(capP);
+  ctx.beginPath(); ctx.ellipse(cx, topY, r*0.82, ry*0.82, 0, 0, TAU);
+  ctx.strokeStyle = "rgba(124,112,94,0.3)"; ctx.lineWidth = S*0.0018; ctx.stroke();
+  var pi, pr, px, py;
+  for(pi = 0; pi < 6; pi++){
+    pr = norm(pi*Math.PI/3 - th);
+    px = cx + r*0.72*Math.sin(pr);
+    py = topY + ry*0.72*Math.cos(pr);
+    ctx.globalAlpha = 0.42;
+    ctx.fillStyle = "#3c352a";
+    ctx.beginPath(); ctx.arc(px, py, S*0.0058, 0, TAU); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  ctx.restore();
+
+  /* 背面接口（转到背面时出现） */
+  var feats = [
+    { phi:Math.PI - 0.30, type:"aux"  },
+    { phi:Math.PI,        type:"port" },
+    { phi:Math.PI + 0.30, type:"btn"  }
+  ];
+  var fh = S*0.012;
+  ctx.save(); ctx.clip(bodyP);
+  feats.forEach(function(f){
+    var fr = norm(f.phi - th), fc = Math.cos(fr);
+    if(fc <= 0.06) return;
+    var scale = (fc - 0.06)/0.94;
+    var fx = cx + r*Math.sin(fr);
+    var fy = botY - r*0.26 - fh/2;
+    ctx.globalAlpha = Math.min(1, 0.25 + 0.75*scale);
+    if(f.type==="port"){
+      var w = Math.max(2, S*0.038*fc), h = fh;
+      ctx.fillStyle = "#2b2720";
+      ctx.beginPath();
+      if(ctx.roundRect){ ctx.roundRect(fx - w/2, fy, w, h, h/2); } else { ctx.rect(fx - w/2, fy, w, h); }
+      ctx.fill();
+      ctx.strokeStyle = "#b6904e"; ctx.lineWidth = Math.max(0.8, S*0.0014); ctx.stroke();
+    }else if(f.type==="aux"){
+      ctx.fillStyle = "#2b2720";
+      ctx.beginPath(); ctx.arc(fx, fy, S*0.0075, 0, TAU); ctx.fill();
+      ctx.strokeStyle = "#b6904e"; ctx.stroke();
+    }else{
+      ctx.fillStyle = "#e8e1d3";
+      ctx.beginPath(); ctx.arc(fx, fy, S*0.0105, 0, TAU); ctx.fill();
+      ctx.strokeStyle = "rgba(120,108,90,0.6)"; ctx.lineWidth = Math.max(0.8, S*0.0014); ctx.stroke();
+    }
+  });
+  ctx.globalAlpha = 1; ctx.restore();
+
+  /* 固定光源的高光与环境遮蔽 */
+  ctx.save(); ctx.clip(bodyP);
+  var gsp = ctx.createLinearGradient(cx-r, 0, cx+r, 0);
+  gsp.addColorStop(0, "rgba(255,255,255,0)"); gsp.addColorStop(0.28, "rgba(255,255,255,0.42)");
+  gsp.addColorStop(0.45, "rgba(255,255,255,0)"); gsp.addColorStop(0.6, "rgba(255,255,255,0.16)");
+  gsp.addColorStop(0.8, "rgba(255,255,255,0)");
+  ctx.fillStyle = gsp; ctx.fillRect(cx-r, topY - ry, r*2, bh + ry*2);
+
+  var gao = ctx.createLinearGradient(0, botY - r*0.55, 0, botY + ry);
+  gao.addColorStop(0, "rgba(74,62,44,0)"); gao.addColorStop(1, "rgba(74,62,44,0.18)");
+  ctx.fillStyle = gao; ctx.fillRect(cx-r, botY - r*0.55, r*2, bh*0.35 + ry);
+  ctx.restore();
+
+  /* 轮廓线 */
+  ctx.strokeStyle = "rgba(96,84,66,0.32)"; ctx.lineWidth = S*0.002; ctx.stroke(bodyP);
+  ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = S*0.0014;
+  ctx.beginPath(); ctx.ellipse(cx, topY, r, ry, 0, 0, TAU); ctx.stroke();
+}
+
+/* 拖动 / 惯性 / 怠速自转 */
+function bindSpin(el){
+  if(el.dataset.spinBound) return;
+  el.dataset.spinBound = "1";
+  el.addEventListener("pointerdown", function(e){
+    if(e.target.closest && e.target.closest("button")) return;
+    dragging = true; recenterTarget = null; omega = 0;
+    lastX = e.clientX; accD = 0; accT = performance.now();
+    mark(); stage.classList.add("dragging");
+    var hint = $("spinHint"); if(hint) hint.classList.add("gone");
+    try{ el.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  el.addEventListener("pointermove", function(e){
+    if(!dragging) return;
+    var now = performance.now();
+    var d = (e.clientX - lastX) * 0.014;
+    theta += d; lastX = e.clientX; mark();
+    accD += d;
+    var dt = (now - accT)/1000;
+    if(dt > 0.08){
+      var inst = accD/dt;
+      omega = omega*0.25 + inst*0.75;
+      accD = 0; accT = now;
+    }
+  });
+  function end(){ if(!dragging) return; dragging = false; stage.classList.remove("dragging"); mark(); }
+  el.addEventListener("pointerup", end);
+  el.addEventListener("pointercancel", end);
+  el.addEventListener("lostpointercapture", end);
+}
+
+/* 主循环 */
+var pt = performance.now();
+function loop(t){
+  var dt = Math.min(0.05, (t - pt)/1000); pt = t;
+  var spinOn = VIEWS[cur].type === "spin" || !!$("lbSpin");
+  if(spinOn && !dragging && !rm){
+    if(recenterTarget !== null){
+      var d = recenterTarget - theta;
+      theta += d*Math.min(1, dt*7);
+      if(Math.abs(d) < 0.003 && !dragging){ theta = recenterTarget; recenterTarget = null; omega = 0; }
+    }else if(t - lastInter > 2400){
+      omega += (0.28 - omega)*Math.min(1, dt*1.1);
+      theta += omega*dt;
+    }else{
+      theta += omega*dt;
+      omega *= Math.exp(-2.4*dt);
+      if(Math.abs(omega) < 0.004) omega = 0;
+    }
+  }
+  if(spinOn){
+    liveCanvases().forEach(function(c){
+      var dpr = sizeCanvas(c);
+      var ctx = c.getContext("2d");
+      drawFrame(ctx, c.width, c.height, theta);
+    });
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ============================================================
+   6. 灯箱 Modal（类型/触发/关闭/内容 四要素）
+============================================================ */
+var lb = $("lightbox"), lbFit = $("lbFit"), lbCap = $("lbCap"), lbTip = $("lbTip");
+var zoomS = 1, panX = 0, panY = 0, lbFrom = null, lbCur = -1;
+
+function applyZoom(){
+  lbFit.style.transform = "translate(" + panX + "px," + panY + "px) scale(" + zoomS + ")";
+}
+function zoomReset(){ zoomS = 1; panX = 0; panY = 0; applyZoom(); }
+
+function openLightbox(i){
+  lbCur = i; lbFrom = document.activeElement;
+  var v = VIEWS[i];
+  zoomReset();
+  lbTip.textContent = v.type==="spin" ? "松手后缓慢自转 · Esc 关闭" : "滚轮缩放 · 拖动平移 · 双击复位 · Esc 关闭";
+  lbCap.innerHTML = "<b>" + v.name + "</b> · " + v.sub;
+  if(v.type==="spin"){
+    lbFit.innerHTML = "";
+    var c = document.createElement("canvas");
+    c.id = "lbSpin"; c.style.touchAction = "none";
+    lbFit.appendChild(c);
+    bindSpin(c);
+  }else{
+    lbFit.innerHTML = ART[v.art];
+  }
+  lb.hidden = false;
+  document.body.classList.add("locked");
+  $("lbClose").focus();
+}
+
+function closeLightbox(){
+  lb.hidden = true;
+  document.body.classList.remove("locked");
+  lbFit.innerHTML = "";
+  lbCur = -1; zoomReset();
+  if(lbFrom && lbFrom.focus) lbFrom.focus();
+}
+
+$("lbClose").addEventListener("click", closeLightbox);
+lb.addEventListener("pointerdown", function(e){ if(e.target===lb) closeLightbox(); });
+document.addEventListener("keydown", function(e){
+  if(e.key==="Escape" && !lb.hidden) closeLightbox();
+  if(e.key==="Tab" && !lb.hidden){ e.preventDefault(); $("lbClose").focus(); }
+});
+
+/* 静态大图：滚轮缩放 + 拖动平移 */
+lbFit.addEventListener("wheel", function(e){
+  if(lbCur < 0 || VIEWS[lbCur].type==="spin") return;
+  e.preventDefault();
+  zoomS = Math.max(1, Math.min(5, zoomS * (e.deltaY < 0 ? 1.12 : 0.89)));
+  if(zoomS === 1){ panX = 0; panY = 0; }
+  applyZoom();
+}, { passive:false });
+lbFit.addEventListener("dblclick", function(){ zoomReset(); });
+(function(){
+  var pan = false, sx = 0, sy = 0;
+  function panLimit(){ return ($("lbMedia").clientWidth * (zoomS-1))/2; }
+  lbFit.addEventListener("pointerdown", function(e){
+    if(lbCur < 0 || VIEWS[lbCur].type==="spin" || zoomS<=1) return;
+    pan = true; sx = e.clientX - panX; sy = e.clientY - panY;
+    try{ lbFit.setPointerCapture(e.pointerId); }catch(err){}
+  });
+  lbFit.addEventListener("pointermove", function(e){
+    if(!pan) return;
+    var m = panLimit();
+    panX = Math.max(-m, Math.min(m, e.clientX - sx));
+    panY = Math.max(-m, Math.min(m, e.clientY - sy));
+    applyZoom();
+  });
+  function stop(){ pan = false; }
+  lbFit.addEventListener("pointerup", stop);
+  lbFit.addEventListener("pointercancel", stop);
+  lbFit.addEventListener("lostpointercapture", stop);
+})();
+
+/* ============================================================
+   7. 信息区按钮（轻反馈，不做弹窗）
+============================================================ */
+$("addBtn").addEventListener("click", function(){
+  var b = this, t = b.textContent;
+  b.textContent = "已加入 ✓"; b.disabled = true;
+  setTimeout(function(){ b.textContent = t; b.disabled = false; }, 1500);
+});
+$("favBtn").addEventListener("click", function(){
+  var on = this.getAttribute("aria-pressed")==="true";
+  this.setAttribute("aria-pressed", on ? "false" : "true");
+  this.classList.toggle("faved", !on);
+});
+
+/* ============================================================
+   8. 启动
+============================================================ */
+buildStage();
+requestAnimationFrame(function(t){ pt = t; requestAnimationFrame(loop); });
+
+})();
+</script>
+</body>
+</html>

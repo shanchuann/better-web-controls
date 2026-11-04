@@ -1,5 +1,5 @@
 // 汇总某次迭代的全部 grading.json 为 benchmark.json 与 benchmark.md
-// 用法：node summarize.mjs --iteration iteration-3 [--title "Claude 跨模型全量"]
+// 用法：node summarize.mjs --iteration iteration-3 [--title "同模型 3 次运行"] [--cli "headless opencode CLI（opencode/glm-5.3-flash-free）"] [--note "……"]
 import { readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -10,6 +10,8 @@ function opt(name, def) {
 }
 const iteration = opt("iteration", "iteration-3");
 const title = opt("title", "");
+const cliLabel = opt("cli", "headless opencode CLI（opencode/glm-5.3-flash-free），自动评分");
+const note = opt("note", "");
 
 const WORKSPACE = join(process.cwd(), "web-controls-workspace");
 const iterDir = join(WORKSPACE, iteration);
@@ -79,8 +81,9 @@ writeFileSync(join(iterDir, "benchmark.json"), JSON.stringify(out, null, 2) + "\
 const md = [
   `# Skill Benchmark${title ? `: ${title}` : ""}`,
   ``,
-  `**Iteration**: ${iteration}　**Date**: ${out.date}　**Runner**: web-controls-workspace/run-eval.mjs（headless claude CLI，自动评分）`,
+  `**Iteration**: ${iteration}　**Date**: ${out.date}　**Runner**: web-controls-workspace/run-eval.mjs（${cliLabel}）`,
   ``,
+  ...(note ? [note, ``] : []),
   `## Summary`,
   ``,
   `| 指标 | 带技能 | 不带技能 | 差值 |`,

@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有按默认模板瞎猜：使用了具体成形的登录页样式（居中卡片式 Centered Card / 左右分屏 Split Screen / 沉浸背景 Immersive Background / 多角色Tab Role-based Tabs / 分步登录 Step-by-step 之一）",
+      "passed": true,
+      "evidence": "notes.md明确记录\"最终选型：B · Split Screen 左右分屏式\"；page.html:31-32注释\"/* ========== 左右分屏 SPLIT SCREEN（6:4） ========== */\"且实现为.split{display:grid;grid-template-columns:6fr 4fr;min-height:100vh}，左侧品牌展示区（.brand）、右侧登录表单（.form-side）完整落地。"
+    },
+    {
+      "text": "说清了布局要素：布局类型 + 背景 + 卡片（或无卡片）+ 品牌气质",
+      "passed": true,
+      "evidence": "notes.md:23 \"做 6:4 左右分屏，左边讲品牌，右边放无卡片表单；移动端折叠单栏布局\"；notes.md:49-53 布局\"6:4 网格分屏\"、背景\"左区渐变：158° #E8794A → #C24A26，加白色高光与暗角 radial\"与右侧\"暖白底 #FAF7F3\"、卡片\"右侧无卡片（留白建立层级），卡片仅左侧 quote 使用\"、品牌气质\"左右分区天然形成留白与栅格秩序……更高级\"且上文明示排除\"喧闹感\"追求\"专业感\"。"
+    },
+    {
+      "text": "陶橙色品牌色落实到了具体设计（背景渐变/按钮/主色而非仅文字提及）",
+      "passed": true,
+      "evidence": "page.html:9定义--brand:#E0693C陶橙主色；左侧品牌背景为线性渐变linear-gradient(158deg,#E8794A 0%, #DE6438 42%, #C24A26 100%)（page.html:40）；主按钮.submit-btn{background:var(--brand);…box-shadow:0 10px 24px rgba(224,105,60,.28)}（page.html:159-166），input focus 边框为var(--brand)（page.html:118），demo 提示底--brand-tint:#FDF1EA（page.html:11,202-205），说明陶橙落实于背景渐变、主按钮与焦点态而非仅文字提及。"
+    },
+    {
+      "text": "notes.md 给出候选样式对比与选型理由",
+      "passed": true,
+      "evidence": "notes.md:9-23 以表格列出 3 个候选（A 居中卡片式、B Split Screen、C 沉浸背景式）及其适用场景与问题，并给出 4 条判断依据（品牌色诉求、B 端用户、专业感拆解、排除 Role-based Tabs 与 Step-by-step 的理由），最后写明\"最终选型：B · Split Screen 左右分屏式\"及理由\"唯一能同时满足'品牌色被充分使用'与'表单可读性、填写效率'两端的方案\"。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 8
+}

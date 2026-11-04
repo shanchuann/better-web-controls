@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>山雾 · 手工施釉陶瓷蓝牙音箱 — 商品详情</title>
+<style>
+  :root{
+    --bg:#f4f1ea; --ink:#211d17; --muted:#8a8177; --faint:#b4aa9c;
+    --line:#e4ddd1; --card:#fffdf9; --accent:#b4562e;
+    --serif:"Songti SC","Noto Serif SC","STSong",Georgia,"Times New Roman",serif;
+    --sans:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,sans-serif;
+    --mono:ui-monospace,"SF Mono",Consolas,Menlo,monospace;
+    --r-lg:26px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:var(--sans); color:var(--ink); background:var(--bg);
+    -webkit-font-smoothing:antialiased; line-height:1.65;
+    background-image:radial-gradient(1200px 500px at 85% -10%, rgba(255,255,255,.7), transparent 60%);
+  }
+  button{font-family:inherit; color:inherit; background:none; border:0; cursor:pointer}
+  a{color:inherit; text-decoration:none}
+  ::selection{background:#e8ddc9}
+
+  /* ---------- top bar ---------- */
+  .site{
+    max-width:1220px; margin:0 auto; padding:20px 32px;
+    display:flex; align-items:center; gap:24px; border-bottom:1px solid var(--line);
+  }
+  .site .brand{font-family:var(--serif); font-size:19px; letter-spacing:2px; white-space:nowrap}
+  .site .brand i{font-style:normal; color:var(--muted); font-size:12px; letter-spacing:3px; margin-left:8px}
+  .site .crumb{font-size:13px; color:var(--muted); margin-left:auto}
+  .site .crumb em{font-style:normal; color:var(--ink)}
+  .site .crumb span{margin:0 6px; color:var(--faint)}
+
+  /* ---------- layout ---------- */
+  .wrap{max-width:1220px; margin:0 auto; padding:0 32px}
+  .pdp{
+    display:grid; grid-template-columns:minmax(0,54%) minmax(0,46%);
+    gap:64px; padding:44px 0 72px; align-items:start;
+  }
+
+  /* ---------- gallery (left, sticky) ---------- */
+  .gallery{position:sticky; top:28px; min-width:0}
+  .stage{
+    position:relative; aspect-ratio:4/4.9; border-radius:var(--r-lg); overflow:hidden;
+    background:linear-gradient(180deg,#f2ede2,#e9e1d1);
+    box-shadow:0 1px 2px rgba(33,29,23,.05), 0 24px 60px -24px rgba(63,54,40,.28);
+    cursor:grab; touch-action:pan-y; outline:none;
+  }
+  .stage:active{cursor:grabbing}
+  .stage:focus-visible{box-shadow:0 0 0 3px #fff, 0 0 0 5px var(--ink)}
+  .layers{position:absolute; inset:0}
+  .layer{position:absolute; inset:0; opacity:0; pointer-events:none;
+    transition:opacity .5s ease, transform .68s cubic-bezier(.22,.8,.24,1);
+    will-change:transform,opacity;}
+  .layer.enter-r{transform:translateX(4.5%) scale(1.02)}
+  .layer.enter-l{transform:translateX(-4.5%) scale(1.02)}
+  .layer.live{opacity:1; transform:none; z-index:2}
+  .layer.out{opacity:0; transform:scale(1.035); z-index:1}
+  .layer.drag{transition:none}
+  .layer svg{width:100%; height:100%; display:block}
+
+  .badge{
+    position:absolute; top:18px; left:18px; z-index:5;
+    font-size:12px; letter-spacing:2px; color:#6d6353;
+    background:rgba(255,253,249,.82); backdrop-filter:blur(6px);
+    border:1px solid rgba(120,108,88,.18); padding:7px 14px; border-radius:999px;
+  }
+  .counter{
+    position:absolute; top:18px; right:18px; z-index:5;
+    font-family:var(--mono); font-size:13px; letter-spacing:2px;
+    color:#6d6353; background:rgba(255,253,249,.82); backdrop-filter:blur(6px);
+    border:1px solid rgba(120,108,88,.18); padding:7px 14px; border-radius:999px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .counter b{font-weight:600; color:var(--ink)}
+  .counter .sep{color:var(--faint); font-style:normal}
+  .counter b.tick{animation:rise .38s cubic-bezier(.2,.7,.2,1)}
+  @keyframes rise{from{opacity:0; transform:translateY(9px)} to{opacity:1; transform:none}}
+
+  .nav{
+    position:absolute; top:50%; z-index:6; transform:translateY(-50%);
+    width:46px; height:46px; border-radius:50%;
+    background:rgba(255,253,249,.88); backdrop-filter:blur(8px);
+    border:1px solid rgba(120,108,88,.2); color:#4c4437; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity .25s ease, transform .25s ease, background .25s ease;
+    box-shadow:0 6px 18px rgba(63,54,40,.14);
+  }
+  .stage:hover .nav, .stage:focus-within .nav{opacity:1}
+  .nav:hover{background:#fffdf9; transform:translateY(-50%) scale(1.06)}
+  .nav.prev{left:16px} .nav.next{right:16px}
+  .nav:active{transform:translateY(-50%) scale(.94)}
+
+  .hint{
+    position:absolute; left:50%; bottom:18px; z-index:5; transform:translateX(-50%);
+    font-size:12px; letter-spacing:1.5px; color:#6d6353; white-space:nowrap;
+    background:rgba(255,253,249,.8); backdrop-filter:blur(6px);
+    border:1px solid rgba(120,108,88,.16); padding:7px 16px; border-radius:999px;
+    opacity:0; transition:opacity .3s ease .15s;
+  }
+  .stage:hover .hint, .stage:focus-within .hint{opacity:1}
+  .stage.quiet .hint{opacity:0 !important; pointer-events:none}
+
+  /* thumbs */
+  .strip{display:flex; gap:12px; margin-top:18px; overflow-x:auto; padding-bottom:6px;
+    scrollbar-width:none; -ms-overflow-style:none}
+  .strip::-webkit-scrollbar{display:none}
+  .thumb{
+    position:relative; width:66px; height:66px; flex:0 0 auto;
+    border-radius:17px; overflow:hidden; padding:0;
+    border:1.5px solid var(--line); background:#efe9dc;
+    opacity:.82; transition:transform .3s cubic-bezier(.2,.7,.2,1), border-color .25s, opacity .25s, box-shadow .25s;
+  }
+  .thumb svg{width:100%; height:100%; display:block}
+  .thumb:hover{opacity:1; transform:translateY(-2px)}
+  .thumb.active{border-color:var(--ink); opacity:1; transform:translateY(-2px);
+    box-shadow:0 8px 18px -6px rgba(63,54,40,.3)}
+  .thumb .no{
+    position:absolute; right:5px; bottom:4px; font-family:var(--mono);
+    font-size:9.5px; letter-spacing:1px; color:#fdfcf8; background:rgba(33,29,23,.55);
+    border-radius:6px; padding:1.5px 5px; line-height:1.3;
+  }
+  .caption{
+    display:flex; align-items:baseline; gap:14px; margin-top:16px;
+    color:var(--muted); font-size:13px;
+  }
+  .caption .name{font-family:var(--serif); font-size:15px; color:var(--ink); letter-spacing:1px}
+  .caption .name::before{content:"◦ "; color:var(--accent)}
+  .caption .tips{margin-left:auto; font-size:12px; letter-spacing:.5px; color:var(--faint)}
+
+  /* ---------- info (right) ---------- */
+  .info{padding-top:6px}
+  .eyebrow{display:flex; align-items:center; gap:10px; color:var(--muted); font-size:13px; letter-spacing:2px}
+  .eyebrow .mark{width:26px; height:1px; background:var(--faint)}
+  .info h1{
+    font-family:var(--serif); font-weight:600; font-size:clamp(26px,2.6vw,36px);
+    line-height:1.35; margin:14px 0 10px; letter-spacing:.5px;
+  }
+  .desc{color:var(--muted); font-size:14.5px; max-width:44ch}
+  .priceRow{display:flex; align-items:baseline; gap:12px; margin:22px 0 4px}
+  .price{font-family:var(--serif); font-size:34px; letter-spacing:1px}
+  .price small{font-size:16px; margin-right:2px}
+  .was{color:var(--faint); text-decoration:line-through; font-size:15px}
+  .tag{
+    font-size:12px; color:#9c3f14; letter-spacing:2px;
+    background:#f7e7db; border:1px solid #eccdb4; padding:4px 10px; border-radius:999px;
+  }
+  .rate{font-size:13px; color:var(--muted); margin-bottom:24px}
+  .rate b{color:var(--ink)}
+  .rule{height:1px; background:var(--line); margin:22px 0}
+
+  .optTitle{font-size:13px; letter-spacing:2px; color:var(--muted); margin-bottom:12px}
+  .swatches{display:flex; gap:14px; margin-bottom:6px}
+  .sw{display:flex; align-items:center; gap:9px; padding:8px 14px 8px 9px; border-radius:14px;
+    border:1.5px solid var(--line); background:var(--card); transition:border-color .2s, box-shadow .2s}
+  .sw .dot{width:22px; height:22px; border-radius:50%; box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+  .sw span{font-size:13px}
+  .sw small{display:block; font-size:11px; color:var(--faint); letter-spacing:1px}
+  .sw.active{border-color:var(--ink); box-shadow:0 4px 12px -4px rgba(63,54,40,.25)}
+
+  .chips{display:flex; flex-wrap:wrap; gap:10px; margin:20px 0}
+  .chip{
+    font-size:12.5px; color:#5d554a; letter-spacing:1px;
+    background:var(--card); border:1px solid var(--line); padding:7px 13px; border-radius:999px;
+  }
+  .chip::before{content:"— "; color:var(--accent)}
+
+  .buy{display:flex; gap:14px; align-items:stretch; margin:26px 0 8px}
+  .qty{display:flex; align-items:center; border:1.5px solid var(--ink); border-radius:999px; overflow:hidden}
+  .qty button{width:44px; font-size:18px; transition:background .2s}
+  .qty button:hover{background:#efe9db}
+  .qty .q{width:34px; text-align:center; font-family:var(--mono); font-size:15px}
+  .cta{
+    flex:1; border-radius:999px; background:var(--ink); color:#fdfbf4; font-size:15px;
+    letter-spacing:4px; padding:15px 10px; transition:background .25s, transform .15s;
+  }
+  .cta:hover{background:#3a3227}
+  .cta:active{transform:scale(.985)}
+  .ghost{border:1.5px solid var(--line); border-radius:999px; padding:0 22px; font-size:14px; letter-spacing:2px;
+    background:var(--card); transition:border-color .2s}
+  .ghost:hover{border-color:var(--ink)}
+  .service{display:flex; flex-wrap:wrap; gap:16px; color:var(--muted); font-size:12.5px; letter-spacing:1px}
+  .service span::before{content:"✓ "; color:var(--accent)}
+
+  /* ---------- detail sections ---------- */
+  .detail{border-top:1px solid var(--line); padding:56px 0 20px; display:grid;
+    grid-template-columns:1fr 1fr; gap:48px}
+  .detail h2{font-family:var(--serif); font-size:21px; letter-spacing:2px; margin-bottom:16px}
+  .detail h2::after{content:""; display:block; width:36px; height:2px; background:var(--accent); margin-top:10px}
+  .detail p{color:#5d564b; font-size:14.5px; margin-bottom:12px}
+  table{width:100%; border-collapse:collapse; font-size:14px}
+  th,td{padding:11px 6px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top}
+  th{color:var(--faint); font-weight:400; letter-spacing:2px; white-space:nowrap; width:8em}
+  td{color:#403a30}
+
+  footer{border-top:1px solid var(--line); padding:28px 0 40px; text-align:center;
+    color:var(--faint); font-size:12px; letter-spacing:3px}
+
+  /* ---------- toast ---------- */
+  .toast{
+    position:fixed; left:50%; bottom:34px; transform:translate(-50%,16px); z-index:120;
+    background:var(--ink); color:#fdfbf4; font-size:13.5px; letter-spacing:1.5px;
+    padding:12px 22px; border-radius:999px; opacity:0; pointer-events:none;
+    transition:opacity .3s ease, transform .3s cubic-bezier(.2,.7,.2,1);
+    box-shadow:0 14px 40px rgba(33,29,23,.35);
+  }
+  .toast.show{opacity:1; transform:translate(-50%,0)}
+
+  /* ---------- lightbox ---------- */
+  .lightbox{position:fixed; inset:0; z-index:90; opacity:0; pointer-events:none; transition:opacity .3s ease}
+  .lightbox.open{opacity:1; pointer-events:auto}
+  .lightbox .veil{position:absolute; inset:0; background:rgba(23,20,16,.94)}
+  .lb-stage{position:absolute; left:calc(7% + 58px); right:calc(7% + 58px); top:8%; bottom:12%;
+    overflow:hidden; border-radius:18px}
+  .lb-layer{position:absolute; left:50%; top:50%; width:200%; height:200%;
+    transform:translate(-50%,-50%); border-radius:16px; background:#15120e;
+    box-shadow:0 40px 110px rgba(0,0,0,.6); overflow:hidden; touch-action:none; cursor:grab}
+  .lb-layer.grabbing{cursor:grabbing}
+  .lb-layer.zoomed{cursor:grab}
+  .lb-layer svg{width:100%; height:100%; display:block}
+  .lb-ui{
+    position:absolute; z-index:5; color:#e9e2d4; font-family:var(--mono);
+    font-size:12.5px; letter-spacing:2px;
+  }
+  .lb-count{top:26px; left:calc(7% + 58px)}
+  .lb-cap{top:26px; left:calc(16% + 58px); font-family:var(--serif); letter-spacing:2px; font-size:15px}
+  .lb-close{
+    position:absolute; top:18px; right:calc(7% + 3px); z-index:6;
+    width:46px; height:46px; border-radius:50%; color:#e9e2d4;
+    background:rgba(255,253,249,.08); border:1px solid rgba(255,253,249,.2);
+    display:flex; align-items:center; justify-content:center; font-size:20px;
+    transition:background .2s, transform .2s;
+  }
+  .lb-close:hover{background:rgba(255,253,249,.2); transform:rotate(90deg)}
+  .lb-nav{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:6;
+    width:46px; height:46px; border-radius:50%; color:#e9e2d4;
+    background:rgba(255,253,249,.08); border:1px solid rgba(255,253,249,.2);
+    display:flex; align-items:center; justify-content:center;
+    transition:background .2s;
+  }
+  .lb-nav:hover{background:rgba(255,253,249,.2)}
+  .lb-nav.prev{left:7%} .lb-nav.next{right:7%}
+  .lb-foot{
+    position:absolute; bottom:26px; left:50%; transform:translateX(-50%); z-index:5;
+    color:#9a917f; font-size:12px; letter-spacing:1.5px; white-space:nowrap;
+  }
+  .lb-foot b{color:#d9d0bf; font-weight:400; margin:0 2px}
+
+  /* ---------- responsive ---------- */
+  @media (max-width:980px){
+    .pdp{grid-template-columns:1fr; gap:36px; padding-top:20px}
+    .gallery{position:static}
+    .stage{aspect-ratio:4/4.2}
+    .detail{grid-template-columns:1fr}
+    .site{padding:16px 20px} .site .crumb{display:none}
+    .wrap{padding:0 20px}
+    .lb-stage{left:6%; right:6%}
+    .lb-count{left:6%}
+    .lb-cap{left:calc(6% + 60px)}
+    .lb-nav.prev{left:2%} .lb-nav.next{right:2%}
+    .lb-foot{white-space:normal; text-align:center; width:86%; line-height:1.8}
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="brand">器物集 <i>QIWUJI</i></div>
+  <div class="crumb">首页 <span>/</span> 声学与影音 <span>/</span> <em>陶瓷蓝牙音箱</em></div>
+</header>
+
+<div class="wrap">
+  <main class="pdp">
+    <!-- ============ 图片展示区 ============ -->
+    <section class="gallery" aria-label="商品图片展示">
+      <div class="stage" id="stage" tabindex="0" aria-label="商品主图：拖动或方向键浏览，点击放大，回车打开大图">
+        <div class="layers" id="layers"></div>
+        <span class="badge">限量窑烧 · 500 件</span>
+        <div class="counter"><b id="cCur">01</b><i class="sep">/</i><span id="cTot">06</span></div>
+        <button class="nav prev" id="navPrev" aria-label="上一张">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.5 2.5 5 8l5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="nav next" id="navNext" aria-label="下一张">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5.5 2.5 11 8l-5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <span class="hint">拖动浏览 · 点击查看大图</span>
+      </div>
+      <div class="strip" id="strip" role="tablist" aria-label="缩略图"></div>
+      <div class="caption">
+        <span class="name" id="capName"></span>
+        <span id="capSub"></span>
+        <span class="tips">拖动 / ← → 浏览 · 回车放大</span>
+      </div>
+    </section>
+
+    <!-- ============ 商品信息 ============ -->
+    <aside class="info">
+      <div class="eyebrow"><span class="mark"></span>SHANWU 山雾声学</div>
+      <h1>“山雾”手工施釉<br>陶瓷蓝牙音箱</h1>
+      <p class="desc">高白泥胎体经还原焰柴窑烧制，釉面随温位窑变，每一件的纹理都不可复制。360° 环绕声藏在釉面之下。</p>
+
+      <div class="priceRow">
+        <span class="price"><small>¥</small>688</span>
+        <span class="was">¥828</span>
+        <span class="tag">限量 500 件</span>
+      </div>
+      <p class="rate">浏览量最高 · <b>4.9</b> 分 · 1,284 条评价</p>
+
+      <div class="rule"></div>
+
+      <div class="optTitle">釉色 · 点击切换主图</div>
+      <div class="swatches" id="swatches">
+        <button class="sw active" data-view="0" role="tab" aria-selected="true">
+          <span class="dot" style="background:#efe8d9"></span>
+          <span>月影米白<br><small>SHANWU · CREAM</small></span>
+        </button>
+        <button class="sw" data-view="5" role="tab" aria-selected="false">
+          <span class="dot" style="background:#c2d2c0"></span>
+          <span>雨过天青<br><small>SHANWU · CELADON</small></span>
+        </button>
+      </div>
+
+      <div class="chips">
+        <span class="chip">蓝牙 5.3</span>
+        <span class="chip">18h 续航</span>
+        <span class="chip">双单元 360° 声场</span>
+        <span class="chip">IP54 生活防泼溅</span>
+      </div>
+
+      <div class="buy">
+        <div class="qty" aria-label="购买数量">
+          <button id="qMinus" aria-label="减少数量">−</button>
+          <span class="q" id="qVal">1</span>
+          <button id="qPlus" aria-label="增加数量">＋</button>
+        </div>
+        <button class="cta" id="buy">加入购物袋</button>
+        <button class="ghost" id="fav">收藏</button>
+      </div>
+
+      <div class="service">
+        <span>顺丰包邮</span><span>七天无理由</span><span>两年质保</span><span>断裂破损包赔</span>
+      </div>
+    </aside>
+  </main>
+
+  <!-- ============ 详情 ============ -->
+  <section class="detail">
+    <div>
+      <h2>窑火与手作</h2>
+      <p>每一只“山雾”都取高白泥手工拉坯成型，阴干三十天后入柴窑，经 1310℃ 还原焰烧足七十一小时。釉色在窑内的温位与火路里自然窑变，成品纹理无一重复。</p>
+      <p>声学腔体与陶瓷壳一体设计，釉面既是外观也是振声结构的阻尼层。声音如雾：低频温润不轰头，高频细腻带陶瓷特有的清透。</p>
+      <p>随附手织棉蜡编织线与同釉色陶瓷挂坠，出街上班，它更像一件案头器物。</p>
+    </div>
+    <div>
+      <h2>规格参数</h2>
+      <table>
+        <tr><th>尺寸</th><td>φ 112 × 146 mm（含雾钮）</td></tr>
+        <tr><th>重量</th><td>约 1.2 kg</td></tr>
+        <tr><th>材质</th><td>高白泥胎 · 长石釉 · 手织棉蜡线</td></tr>
+        <tr><th>连接</th><td>蓝牙 5.3，有效距离 15 m</td></tr>
+        <tr><th>续航</th><td>中等音量约 18 小时，USB-C 18W 快充</td></tr>
+        <tr><th>防护</th><td>IP54 生活防泼溅</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <footer>器物集 QIWUJI · 温 润 之 物 ，藏 于 日 常</footer>
+</div>
+
+<!-- ============ 大图查看 ============ -->
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="商品大图预览">
+  <div class="veil" id="lbVeil"></div>
+  <div class="lb-stage" id="lbStage"><div class="lb-layer" id="lbLayer"></div></div>
+  <div class="lb-ui lb-count" id="lbCount"></div>
+  <div class="lb-ui lb-cap" id="lbCap"></div>
+  <button class="lb-close" id="lbClose" aria-label="关闭大图">✕</button>
+  <button class="lb-nav prev" id="lbPrev" aria-label="上一张">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10.5 2.5 5 8l5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <button class="lb-nav next" id="lbNext" aria-label="下一张">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M5.5 2.5 11 8l-5.5 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </button>
+  <div class="lb-foot">滚轮缩放 · 拖动平移 · 双击 <b>2.4×</b> / 复位 · <b>← →</b> 切换 · <b>Esc</b> 关闭</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s){ return document.querySelector(s); };
+
+  /* ================== 主图（层叠过渡 + 拖拽 + 键盘，六张图由 SVG 现场生成，离线可用） ================== */
+  var PAL_CREAM = {bg1:"#f6f1e8", bg2:"#e6dccb", arch:"#e4dac6", gl0:"#fdfbf6", gl1:"#f0e9db", gl2:"#dbd0ba",
+                   dot:"#494438", line:"#c5b89d", text:"#8b8175", kn0:"#dcb47c", kn1:"#a5773c"};
+  var PAL_CELA  = {bg1:"#eff3ec", bg2:"#dbe5d7", arch:"#d8e2d2", gl0:"#f5f9f2", gl1:"#dce7d9", gl2:"#b3c8b4",
+                   dot:"#3c493e", line:"#a0b4a0", text:"#75856f", kn0:"#cfc08e", kn1:"#8b7c46"};
+
+  /* —— 01 / 06 正面全景（米白釉） —— */
+  function front(u, P){
+    return '<svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="陶瓷音箱正面">'
+      +'<defs>'
+      +'<linearGradient id="'+u+'bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+P.bg1+'"/><stop offset="1" stop-color="'+P.bg2+'"/></linearGradient>'
+      +'<radialGradient id="'+u+'gl" cx="0.4" cy="0.3" r="1.05"><stop offset="0" stop-color="'+P.gl0+'"/><stop offset="0.55" stop-color="'+P.gl1+'"/><stop offset="1" stop-color="'+P.gl2+'"/></radialGradient>'
+      +'<linearGradient id="'+u+'kn" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+P.kn0+'"/><stop offset="1" stop-color="'+P.kn1+'"/></linearGradient>'
+      +'<pattern id="'+u+'gr" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="6" cy="6" r="2.7" fill="'+P.dot+'" opacity="0.55"/><circle cx="15" cy="15" r="2.7" fill="'+P.dot+'" opacity="0.55"/></pattern>'
+      +'<pattern id="'+u+'sp" width="30" height="30" patternUnits="userSpaceOnUse"><circle cx="5" cy="7" r="1.1" fill="'+P.line+'" opacity="0.8"/><circle cx="19" cy="21" r="1" fill="'+P.line+'" opacity="0.7"/><circle cx="26" cy="9" r="0.9" fill="'+P.line+'" opacity="0.6"/></pattern>'
+      +'</defs>'
+      +'<rect width="800" height="800" fill="url(#'+u+'bg)"/>'
+      +'<path d="M195,742 L195,335 A205,205 0 0 1 605,335 L605,742 Z" fill="'+P.arch+'"/>'
+      +'<ellipse cx="400" cy="712" rx="168" ry="26" fill="#57503e" opacity="0.16"/>'
+      +'<rect x="386" y="246" width="28" height="24" rx="9" fill="'+P.gl2+'"/>'
+      +'<circle cx="400" cy="243" r="21" fill="url(#'+u+'kn)"/>'
+      +'<circle cx="400" cy="239" r="9" fill="#3a3428" opacity="0.5"/>'
+      +'<rect x="288" y="262" width="224" height="428" rx="112" fill="url(#'+u+'gl)" stroke="'+P.line+'" stroke-opacity="0.45"/>'
+      +'<rect x="288" y="262" width="224" height="428" rx="112" fill="url(#'+u+'sp)" opacity="0.55"/>'
+      +'<circle cx="400" cy="474" r="100" fill="none" stroke="'+P.line+'" stroke-opacity="0.7" stroke-width="2"/>'
+      +'<circle cx="400" cy="474" r="86" fill="url(#'+u+'gr)"/>'
+      +'<circle cx="400" cy="474" r="86" fill="none" stroke="'+P.line+'" stroke-opacity="0.35" stroke-width="1.5"/>'
+      +'<ellipse cx="344" cy="378" rx="30" ry="118" fill="#ffffff" opacity="0.28" transform="rotate(-7 344 376)"/>'
+      +'<text x="400" y="628" text-anchor="middle" font-family="Georgia,\'Times New Roman\',serif" font-size="20" letter-spacing="7" fill="'+P.text+'">SHANWU</text>'
+      +'<text x="400" y="654" text-anchor="middle" font-size="12" letter-spacing="4" fill="'+P.text+'" opacity="0.8">山雾声学 · 手工施釉</text>'
+      +'</svg>';
+  }
+
+  /* —— 02 / 06 编织线与充电口 —— */
+  function charge(u){
+    return '<svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="编织线与充电口细节">'
+      +'<defs>'
+      +'<linearGradient id="'+u+'bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1ebde"/><stop offset="1" stop-color="#e0d5c0"/></linearGradient>'
+      +'<radialGradient id="'+u+'gl" cx="0.42" cy="0.18" r="1.1"><stop offset="0" stop-color="#fdfbf6"/><stop offset="0.5" stop-color="#f0e9db"/><stop offset="1" stop-color="#d9cdb6"/></radialGradient>'
+      +'<linearGradient id="'+u+'sh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4b4334" stop-opacity="0"/><stop offset="1" stop-color="#4b4334" stop-opacity="0.22"/></linearGradient>'
+      +'</defs>'
+      +'<rect width="800" height="800" fill="url(#'+u+'bg)"/>'
+      +'<rect x="90" y="300" width="620" height="520" rx="95" fill="url(#'+u+'gl)" stroke="#c5b89d" stroke-opacity="0.4"/>'
+      +'<rect x="90" y="560" width="620" height="260" fill="url(#'+u+'sh)"/>'
+      +'<path d="M400,448 C400,556 322,592 252,588 C168,582 128,536 130,478" fill="none" stroke="#6d5a45" stroke-width="12" stroke-linecap="round"/>'
+      +'<path d="M400,448 C400,556 322,592 252,588 C168,582 128,536 130,478" fill="none" stroke="#d9cfbc" stroke-width="12" stroke-dasharray="2.5 7.5" opacity="0.9" stroke-linecap="round"/>'
+      +'<circle cx="130" cy="478" r="14" fill="#6d5a45"/>'
+      +'<circle cx="400" cy="428" r="32" fill="#2f2a23"/>'
+      +'<circle cx="400" cy="428" r="32" fill="none" stroke="#8a7c62" stroke-width="2" opacity="0.7"/>'
+      +'<rect x="384" y="421" width="32" height="14" rx="7" fill="#171410"/>'
+      +'<circle cx="393" cy="428" r="1.6" fill="#a9987a"/><circle cx="407" cy="428" r="1.6" fill="#a9987a"/>'
+      +'<text x="400" y="492" text-anchor="middle" font-size="13" letter-spacing="5" fill="#8b8170">USB-C · 18W 快充</text>'
+      +'<text x="150" y="120" font-family="Georgia,serif" font-size="17" letter-spacing="5" fill="#9a8f79">DETAIL</text>'
+      +'<text x="150" y="146" font-size="12" letter-spacing="3" fill="#9a8f79" opacity="0.85">手织棉蜡编织线 · 柔软耐折</text>'
+      +'</svg>';
+  }
+
+  /* —— 03 / 06 点阵网罩 —— */
+  function mesh(u){
+    return '<svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="点阵网罩工艺细节">'
+      +'<defs>'
+      +'<linearGradient id="'+u+'bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2ecdf"/><stop offset="1" stop-color="#e2d7c2"/></linearGradient>'
+      +'<radialGradient id="'+u+'gl" cx="0.38" cy="0.3" r="1.05"><stop offset="0" stop-color="#fdfaf4"/><stop offset="0.6" stop-color="#f0e8d9"/><stop offset="1" stop-color="#dbcfb8"/></radialGradient>'
+      +'<pattern id="'+u+'dt" width="44" height="44" patternUnits="userSpaceOnUse"><circle cx="13" cy="13" r="7" fill="#443d31" opacity="0.85"/><circle cx="35" cy="35" r="7" fill="#443d31" opacity="0.85"/></pattern>'
+      +'<radialGradient id="'+u+'vg" cx="0.4" cy="0.35" r="0.9"><stop offset="0.5" stop-color="#4b4030" stop-opacity="0"/><stop offset="1" stop-color="#4b4030" stop-opacity="0.3"/></radialGradient>'
+      +'</defs>'
+      +'<rect width="800" height="800" fill="url(#'+u+'bg)"/>'
+      +'<circle cx="400" cy="416" r="306" fill="url(#'+u+'gl)" stroke="#c5b89d" stroke-opacity="0.5" stroke-width="3"/>'
+      +'<circle cx="400" cy="416" r="268" fill="url(#'+u+'dt)"/>'
+      +'<circle cx="400" cy="416" r="268" fill="url(#'+u+'vg)"/>'
+      +'<circle cx="400" cy="416" r="288" fill="none" stroke="#c5b89d" stroke-opacity="0.6" stroke-width="2"/>'
+      +'<path d="M196,268 A270,270 0 0 1 340,190" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity="0.55"/>'
+      +'<text x="118" y="116" font-family="Georgia,serif" font-size="17" letter-spacing="5" fill="#9a8f79">MESH</text>'
+      +'<text x="118" y="142" font-size="12" letter-spacing="3" fill="#9a8f79" opacity="0.85">点阵冲孔 · 声透率 92%</text>'
+      +'</svg>';
+  }
+
+  /* —— 04 / 06 顶部操控 —— */
+  function topView(u){
+    var ticks = '', a, r1, r2, x1, y1, x2, y2;
+    for (a = 0; a < 48; a++){
+      var rad = a * Math.PI / 24;
+      var major = (a % 6 === 0);
+      r1 = major ? 146 : 154; r2 = major ? 172 : 165;
+      x1 = 400 + Math.cos(rad)*r1; y1 = 400 + Math.sin(rad)*r1;
+      x2 = 400 + Math.cos(rad)*r2; y2 = 400 + Math.sin(rad)*r2;
+      ticks += '<line x1="'+x1.toFixed(1)+'" y1="'+y1.toFixed(1)+'" x2="'+x2.toFixed(1)+'" y2="'+y2.toFixed(1)
+        +'" stroke="#e6ddcc" stroke-opacity="'+(major?0.85:0.35)+'" stroke-width="'+(major?3:1.5)+'"/>';
+    }
+    return '<svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="顶部操控面板俯视">'
+      +'<defs>'
+      +'<radialGradient id="'+u+'bg" cx="0.5" cy="0.4" r="0.9"><stop offset="0" stop-color="#f6f1e6"/><stop offset="1" stop-color="#e2d8c4"/></radialGradient>'
+      +'<radialGradient id="'+u+'gl" cx="0.36" cy="0.3" r="1"><stop offset="0" stop-color="#e9eef0"/><stop offset="0.6" stop-color="#c2ccce"/><stop offset="1" stop-color="#93a3a7"/></radialGradient>'
+      +'<radialGradient id="'+u+'kn" cx="0.35" cy="0.28" r="1"><stop offset="0" stop-color="#e8c48c"/><stop offset="0.55" stop-color="#c3914f"/><stop offset="1" stop-color="#8f6428"/></radialGradient>'
+      +'<radialGradient id="'+u+'vg" cx="0.5" cy="0.5" r="0.72"><stop offset="0.55" stop-color="#4b4030" stop-opacity="0"/><stop offset="1" stop-color="#4b4030" stop-opacity="0.22"/></radialGradient>'
+      +'</defs>'
+      +'<rect width="800" height="800" fill="url(#'+u+'bg)"/>'
+      +'<circle cx="400" cy="400" r="272" fill="url(#'+u+'gl)" stroke="#9aa8ab" stroke-opacity="0.5" stroke-width="2"/>'
+      +'<circle cx="400" cy="400" r="188" fill="#2c2823"/>'
+      +ticks
+      +'<circle cx="400" cy="400" r="122" fill="url(#'+u+'kn)"/>'
+      +'<circle cx="400" cy="400" r="122" fill="none" stroke="#6a4c1e" stroke-opacity="0.5" stroke-width="2"/>'
+      +'<line x1="400" y1="292" x2="400" y2="342" stroke="#4a3616" stroke-width="5" stroke-linecap="round"/>'
+      +'<text x="400" y="412" text-anchor="middle" font-family="Georgia,serif" font-size="34" fill="#5f471d" opacity="0.85">山雾</text>'
+      +'<text x="243" y="407" text-anchor="end" font-size="13" letter-spacing="3" fill="#b7ab90">MIN</text>'
+      +'<text x="557" y="407" font-size="13" letter-spacing="3" fill="#b7ab90">MAX</text>'
+      +'<circle cx="519" cy="258" r="7.5" fill="#e0683f"/>'
+      +'<circle cx="519" cy="258" r="15" fill="#e0683f" opacity="0.35"/>'
+      +'<text x="532" y="240" font-size="11" letter-spacing="2" fill="#8d8165">POWER</text>'
+      +'<circle cx="400" cy="400" r="272" fill="url(#'+u+'vg)"/>'
+      +'<text x="118" y="116" font-family="Georgia,serif" font-size="17" letter-spacing="5" fill="#9a8f79">CONTROL</text>'
+      +'<text x="118" y="142" font-size="12" letter-spacing="3" fill="#9a8f79" opacity="0.85">全向雾钮 · 静音回转手感</text>'
+      +'</svg>';
+  }
+
+  /* —— 05 / 06 居家一角 —— */
+  function scene(u){
+    return '<svg viewBox="0 0 800 800" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="居家摆设场景">'
+      +'<defs>'
+      +'<linearGradient id="'+u+'bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4efe3"/><stop offset="1" stop-color="#eae0cb"/></linearGradient>'
+      +'<linearGradient id="'+u+'wl" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="#ffffff" stop-opacity="0.42"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></linearGradient>'
+      +'<radialGradient id="'+u+'gl" cx="0.4" cy="0.28" r="1.05"><stop offset="0" stop-color="#fdfbf6"/><stop offset="0.6" stop-color="#f1e9db"/><stop offset="1" stop-color="#dcd1bb"/></radialGradient>'
+      +'<pattern id="'+u+'gr" width="14" height="14" patternUnits="userSpaceOnUse"><circle cx="5" cy="5" r="2.1" fill="#494438" opacity="0.55"/><circle cx="12" cy="12" r="2.1" fill="#494438" opacity="0.55"/></pattern>'
+      +'</defs>'
+      +'<rect width="800" height="800" fill="url(#'+u+'bg)"/>'
+      +'<polygon points="96,0 400,0 268,544 -64,544" fill="url(#'+u+'wl)"/>'
+      +'<rect y="540" width="800" height="260" fill="#e6dbc2"/>'
+      +'<line x1="0" y1="540" x2="800" y2="540" stroke="#cfc2a5" stroke-width="2"/>'
+      +'<g>'
+      +'<path d="M96,592 L282,584 C296,584 306,596 306,610 L306,676 C306,706 282,716 262,716 L98,716 C80,716 68,704 68,686 L68,606 C68,596 82,592 96,592 Z" fill="#b9d0c8"/>'
+      +'<path d="M110,586 C116,540 130,510 112,470" fill="none" stroke="#5d6b52" stroke-width="5" stroke-linecap="round"/>'
+      +'<path d="M170,584 C176,540 168,508 190,472" fill="none" stroke="#5d6b52" stroke-width="5" stroke-linecap="round"/>'
+      +'<path d="M236,584 C234,546 246,522 238,494" fill="none" stroke="#5d6b52" stroke-width="5" stroke-linecap="round"/>'
+      +'<ellipse cx="104" cy="458" rx="15" ry="52" fill="#71805f" transform="rotate(16 104 458)"/>'
+      +'<ellipse cx="206" cy="460" rx="15" ry="56" fill="#66745a" transform="rotate(-12 206 460)"/>'
+      +'<ellipse cx="246" cy="486" rx="13" ry="42" fill="#7d8b6b" transform="rotate(14 246 486)"/>'
+      +'<ellipse cx="150" cy="440" rx="14" ry="48" fill="#8a987a" transform="rotate(4 150 440)"/>'
+      +'</g>'
+      +'<g>'
+      +'<rect x="428" y="648" width="252" height="26" rx="6" fill="#7c705f"/>'
+      +'<rect x="444" y="674" width="222" height="24" rx="6" fill="#8f816b"/>'
+      +'<rect x="428" y="644" width="252" height="26" rx="6" fill="#79634a"/>'
+      +'<rect x="446" y="670" width="216" height="24" rx="6" fill="#8a7358"/>'
+      +'<ellipse cx="528" cy="706" rx="150" ry="16" fill="#57503e" opacity="0.16"/>'
+      +'<rect x="446" y="404" width="164" height="244" rx="82" fill="url(#'+u+'gl)" stroke="#c5b89d" stroke-opacity="0.5" stroke-width="2"/>'
+      +'<circle cx="528" cy="530" r="44" fill="url(#'+u+'gr)"/>'
+      +'<circle cx="528" cy="530" r="52" fill="none" stroke="#c5b89d" stroke-opacity="0.7" stroke-width="1.6"/>'
+      +'<circle cx="528" cy="372" r="13" fill="#c3914f"/>'
+      +'<text x="528" y="600" text-anchor="middle" font-size="10" letter-spacing="4" fill="#9a8f79">SHANWU</text>'
+      +'</g>'
+      +'<text x="118" y="116" font-family="Georgia,serif" font-size="17" letter-spacing="5" fill="#9a8f79">AT HOME</text>'
+      +'<text x="118" y="142" font-size="12" letter-spacing="3" fill="#9a8f79" opacity="0.85">案头 · 书架 · 一杯茶的距离</text>'
+      +'</svg>';
+  }
+
+  var VIEWS = [
+    { name:"正面全景 · 月影米白", en:"01 / FRONT", svg: function(u){ return front(u, PAL_CREAM); } },
+    { name:"编织线与充电口",       en:"02 / CABLE",  svg: charge },
+    { name:"点阵网罩工艺",         en:"03 / MESH",   svg: mesh },
+    { name:"顶部操控 · 全向雾钮",  en:"04 / DIAL",   svg: topView },
+    { name:"居家一角",             en:"05 / HOME",   svg: scene },
+    { name:"正面全景 · 雨过天青",  en:"06 / CELADON",svg: function(u){ return front(u, PAL_CELA); } }
+  ];
+
+  /* ================================ 主图（层叠过渡 + 拖拽 + 键盘） ================================ */
+  var stage = $("#stage"), layersEl = $("#layers");
+  var cur = 0, live = null, busy = 0;
+
+  function pad(n){ return (n < 9 ? "0" : "") + (n + 1); }
+
+  function updateMeta(){
+    $("#cCur").textContent = pad(cur);
+    $("#capName").textContent = VIEWS[cur].name;
+    $("#capSub").textContent = VIEWS[cur].en;
+    var b = $("#cCur");
+    b.classList.remove("tick"); void b.offsetWidth; b.classList.add("tick");
+    var thumbs = stripEl.children;
+    for (var i = 0; i < thumbs.length; i++){
+      var on = (i === cur);
+      thumbs[i].classList.toggle("active", on);
+      thumbs[i].setAttribute("aria-selected", on ? "true" : "false");
+      if (on) thumbs[i].scrollIntoView({block:"nearest", inline:"nearest"});
+    }
+    var sws = $("#swatches").children;
+    for (var j = 0; j < sws.length; j++){
+      var on2 = (parseInt(sws[j].getAttribute("data-view"), 10) === cur);
+      sws[j].classList.toggle("active", on2);
+      sws[j].setAttribute("aria-selected", on2 ? "true" : "false");
+    }
+  }
+
+  function show(i, dir){
+    if (i === cur || i < 0 || i >= VIEWS.length) return;
+    var d = (i > cur) ? "r" : "l";
+    if (dir) d = dir;
+    var prev = live;
+    var el = document.createElement("div");
+    el.className = "layer " + (d === "r" ? "enter-r" : "enter-l");
+    el.dataset.i = i;
+    el.innerHTML = VIEWS[i].svg("g" + i + "m");
+    layersEl.appendChild(el);
+    void el.offsetWidth;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ el.classList.add("live"); }); });
+    if (prev){
+      prev.classList.remove("live"); prev.classList.add("out");
+      (function(p){
+        setTimeout(function(){ if (p.parentNode) p.parentNode.removeChild(p); }, 640);
+      })(prev);
+    }
+    live = el; cur = i;
+    updateMeta();
+  }
+
+  /* —— 缩略图 —— */
+  var stripEl = $("#strip");
+  VIEWS.forEach(function(v, i){
+    var b = document.createElement("button");
+    b.className = "thumb" + (i === 0 ? " active" : "");
+    b.setAttribute("role", "tab");
+    b.setAttribute("aria-label", (i+1) + " / " + VIEWS.length + " · " + v.name);
+    b.innerHTML = v.svg("t" + i) + '<span class="no">' + pad(i) + '</span>';
+    b.addEventListener("click", function(){ show(i); resetDragHint(); });
+    stripEl.appendChild(b);
+  });
+  $("#cTot").textContent = pad(VIEWS.length - 1);
+
+  /* —— 按钮 / 键盘 / 釉色联动 —— */
+  $("#navPrev").addEventListener("click", function(){ show(cur - 1); });
+  $("#navNext").addEventListener("click", function(){ show(cur + 1); });
+
+  document.addEventListener("keydown", function(e){
+    if (lbOpen){
+      if (e.key === "Escape") lbClose(false);
+      else if (e.key === "ArrowLeft") lbGo(-1);
+      else if (e.key === "ArrowRight") lbGo(1);
+      return;
+    }
+    if (e.key === "ArrowLeft"){ show(cur - 1); resetDragHint(); }
+    else if (e.key === "ArrowRight"){ show(cur + 1); resetDragHint(); }
+    else if ((e.key === "Enter" || e.key === " ") && document.activeElement === stage){
+      e.preventDefault(); lbOpenFn();
+    }
+  });
+
+  $("#swatches").addEventListener("click", function(e){
+    var b = e.target.closest(".sw");
+    if (b) show(parseInt(b.getAttribute("data-view"), 10));
+  });
+
+  /* —— 主图拖拽（图像随手移动，松手判定切换或弹回） —— */
+  var drag = null, dragMoved = false;
+  stage.addEventListener("pointerdown", function(e){
+    if (e.button !== 0) return;
+    if (e.target.closest(".nav")) return;
+    drag = { x0: e.clientX, dx: 0, moved: false, id: e.pointerId };
+    dragMoved = false;
+    resetDragHint();
+    stage.setPointerCapture(e.pointerId);
+  });
+  stage.addEventListener("pointermove", function(e){
+    if (!drag) return;
+    drag.dx = e.clientX - drag.x0;
+    if (Math.abs(drag.dx) > 6){ drag.moved = true; dragMoved = true; }
+    if (live && drag.moved){
+      live.classList.add("drag");
+      live.style.transform = "translateX(" + (drag.dx * 0.6).toFixed(1) + "px)";
+    }
+  });
+  function endDrag(){
+    if (!drag) return;
+    var dx = drag.dx, moved = drag.moved;
+    drag = null;
+    if (live){
+      live.classList.remove("drag");
+      live.style.transform = "";
+    }
+    if (moved && Math.abs(dx) > 70){
+      var d = dx < 0 ? 1 : -1;
+      if (cur + d >= 0 && cur + d < VIEWS.length) show(cur + d);
+    }
+  }
+  stage.addEventListener("pointerup", endDrag);
+  stage.addEventListener("pointercancel", endDrag);
+  stage.addEventListener("click", function(e){
+    if (e.target.closest(".nav")) return;
+    if (!dragMoved) lbOpenFn();
+  });
+
+  /* —— 滚轮换图（轻阻尼，边界让路给页面滚动） —— */
+  var wheelCd = 0;
+  stage.addEventListener("wheel", function(e){
+    var now = performance.now();
+    var coast = now < wheelCd;
+    var atMin = (cur === 0 && e.deltaY < 0);
+    var atMax = (cur === VIEWS.length - 1 && e.deltaY > 0);
+    if (!coast && (atMin || atMax)) return;
+    e.preventDefault();
+    wheelCd = now + 720;
+    show(e.deltaY > 0 ? cur + 1 : cur - 1);
+  }, { passive:false });
+
+  /* —— 交互过一次后，悬停提示不再打扰 —— */
+  function resetDragHint(){ stage.classList.add("quiet"); }
+  updateMeta();
+
+  /* ================================ 大图查看器：滚轮缩放 + 拖动平移 ================================ */
+  var lb = $("#lightbox"), lbStage = $("#lbStage"), lbLayer = $("#lbLayer");
+  var lbOpen = false, lz = 1, ltx = 0, lty = 0, lView = 0;
+
+  function lbApply(){
+    lbLayer.style.transform = "translate(" + (-50 + ltx).toFixed(2) + "%, " + (-50 + lty).toFixed(2) + "%) scale(" + lz.toFixed(3) + ")";
+    lbLayer.classList.toggle("zoomed", lz > 1);
+  }
+  function setLb(z, tx, ty){ lz = z; ltx = tx; lty = ty; lbApply(); }
+  function clampZ(z){ return Math.min(4, Math.max(1, z)); }
+
+  function lbShow(i){
+    lView = i;
+    lbLayer.innerHTML = VIEWS[i].svg("l" + i);
+    $("#lbCount").textContent = pad(i) + " / " + pad(VIEWS.length - 1);
+    $("#lbCap").textContent = VIEWS[i].name;
+    setLb(1, 0, 0);
+  }
+  function lbGo(d){
+    var n = Math.min(VIEWS.length - 1, Math.max(0, lView + d));
+    if (n !== lView) lbShow(n);
+  }
+  function lbOpenFn(){
+    lbOpen = true;
+    lb.hidden = false;
+    document.body.style.overflow = "hidden";
+    lbShow(cur);
+    requestAnimationFrame(function(){ lb.classList.add("open"); });
+    $("#lbClose").focus({ preventScroll:true });
+  }
+  function lbClose(){
+    lbOpen = false;
+    lb.classList.remove("open");
+    document.body.style.overflow = "";
+    setTimeout(function(){ if (!lbOpen) lb.hidden = true; }, 320);
+    stage.focus({ preventScroll:true });
+  }
+
+  stage.addEventListener("keydown", function(e){
+    if ((e.key === "Enter" || e.key === " ") && !lbOpen){
+      e.preventDefault(); lbOpenFn();
+    }
+  });
+  stage.addEventListener("dblclick", function(){ if (!lbOpen) lbOpenFn(); });
+
+  $("#lbClose").addEventListener("click", lbClose);
+  $("#lbVeil").addEventListener("click", lbClose);
+  $("#lbPrev").addEventListener("click", function(){ lbGo(-1); });
+  $("#lbNext").addEventListener("click", function(){ lbGo(1); });
+
+  /* 滚轮缩放（输入点锚定） */
+  lbStage.addEventListener("wheel", function(e){
+    if (!lbOpen) return;
+    e.preventDefault();
+    var r = lbStage.getBoundingClientRect();
+    var fx = (e.clientX - r.left) / r.width;
+    var fy = (e.clientY - r.top) / r.height;
+    var nz = clampZ(lz * (e.deltaY < 0 ? 1.15 : 0.87));
+    if (nz === 1){ setLb(1, 0, 0); return; }
+    var sOld = fx * 50 - 25 - 2 * ltx;   /* 以层宽 200% 推导的锚点偏移 */
+    var tOld = fy * 50 - 25 - 2 * lty;
+    var px = sOld / (2 * lz), py = tOld / (2 * lz);
+    var ntx = (fx * 50 - 25 - 2 * nz * px) / 2;
+    var nty = (fy * 50 - 25 - 2 * nz * py) / 2;
+    setLb(nz, ntx, nty);
+  }, { passive:false });
+
+  /* 双击：1x ↔ 2.4x */
+  lbLayer.addEventListener("dblclick", function(){
+    if (lz < 1.5) setLb(2.4, 0, 0); else setLb(1, 0, 0);
+  });
+
+  /* 放大后拖动平移 */
+  var panning = null;
+  lbLayer.addEventListener("pointerdown", function(e){
+    if (!lbOpen || lz <= 1) return;
+    panning = { x: e.clientX, y: e.clientY, tx: ltx, ty: lty };
+    lbLayer.classList.add("grabbing");
+    lbLayer.setPointerCapture(e.pointerId);
+  });
+  lbLayer.addEventListener("pointermove", function(e){
+    if (!panning) return;
+    var r = lbLayer.getBoundingClientRect();
+    var dx = (e.clientX - panning.x) / r.width * 100;
+    var dy = (e.clientY - panning.y) / r.height * 100;
+    var lim = 50 * lz - 25;
+    setLb(lz, Math.min(lim, Math.max(-lim, panning.tx + dx)), Math.min(lim, Math.max(-lim, panning.ty + dy)));
+  });
+  function panEnd(){ panning = null; lbLayer.classList.remove("grabbing"); }
+  lbLayer.addEventListener("pointerup", panEnd);
+  lbLayer.addEventListener("pointercancel", panEnd);
+
+  /* ================================ 小装饰：数量 / 加购 toast ================================ */
+  var q = 1;
+  $("#qMinus").addEventListener("click", function(){ if (q > 1) q--; $("#qVal").textContent = q; });
+  $("#qPlus").addEventListener("click", function(){ if (q < 9) q++; $("#qVal").textContent = q; });
+
+  var toast = $("#toast"), toastT = null;
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    if (toastT) clearTimeout(toastT);
+    toastT = setTimeout(function(){ toast.classList.remove("show"); }, 1800);
+  }
+  $("#buy").addEventListener("click", function(){
+    var name = (cur === 5) ? "雨过天青" : "月影米白";
+    showToast("已加入购物袋 · " + name + " × " + q);
+  });
+  $("#fav").addEventListener("click", function(){ showToast("已收藏 · 窑变新釉上架时提醒你"); });
+})();
+</script>
+</body>
+</html>

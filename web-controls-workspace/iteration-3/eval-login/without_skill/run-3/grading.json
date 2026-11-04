@@ -1,0 +1,32 @@
+{
+  "run": "without_skill",
+  "eval_id": 8,
+  "expectations": [
+    {
+      "text": "没有按默认模板瞎猜：使用了具体成形的登录页样式（居中卡片式 Centered Card / 左右分屏 Split Screen / 沉浸背景 Immersive Background / 多角色Tab Role-based Tabs / 分步登录 Step-by-step 之一）",
+      "passed": true,
+      "evidence": "采用了左右分屏 Split Screen：page.html line 42 以 grid-template-columns: minmax(420px, 46%) 1fr 分出左右两栏，左侧 .brand（lines 47-58）为深色陶橙渐变品牌区，右侧为登录表单区；notes.md line 9 亦写明\u201c桌面端左右分栏：左侧为深色陶橙渐变品牌区（logo、标语、客户证言、网格纹理装饰），右侧为白色登录表单区\u201d。"
+    },
+    {
+      "text": "说清了布局要素：布局类型 + 背景 + 卡片（或无卡片）+ 品牌气质",
+      "passed": true,
+      "evidence": "notes.md lines 8-10 说明了布局类型（桌面端左右分栏）、背景（左侧深色陶橙渐变品牌区，含网格纹理装饰）、卡片（右侧为无卡片的白色登录表单区；page.html 中 --card 变量 line 21 仅用于输入控件背景 lines 165-168，页面无居中大卡片）与 ≤900px 的响应式退路；品牌气质通过陶橙暖色阶（notes.md line 5）与本站名\u201c炽薪云 SaaS 管理平台\u201d（page.html line 6）体现。"
+    },
+    {
+      "text": "陶橙色品牌色落实到了具体设计（背景渐变/按钮/主色而非仅文字提及）",
+      "passed": true,
+      "evidence": "陶橙落实到了多处具体设计：page.html line 12 定义 --clay-500: #d96c3f 即陶橙主色；lines 50-53 品牌区由三层渐变构成沉浸背景（含 rgba(217,108,63,.45) 的陶橙 radial 高光与 #7c3a1c → #9a4622 暖棕基调）；line 299 主按钮 .submit 采用 linear-gradient(135deg, #e07946, var(--clay-500) 55%, var(--clay-600)) 的陶橙渐变。"
+    },
+    {
+      "text": "notes.md 给出候选样式对比与选型理由",
+      "passed": false,
+      "evidence": "notes.md 为单一方案的实现说明（概览/布局/交互与细节/可替换点四节），全篇未出现候选样式对比，未比较居中卡片式、沉浸背景或多角色 Tab 等方案，也无选型理由陈述。"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  }
+}

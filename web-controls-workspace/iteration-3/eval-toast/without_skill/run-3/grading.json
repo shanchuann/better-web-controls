@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "使用了轻提示 Toast（出现几秒自动消失），而不是 alert()/弹窗 Modal 这类打断式反馈",
+      "passed": true,
+      "evidence": "page.html:130-181 定义非模态 Toast 组件（.toast 固定定位、pointer-events:none），line 250 `setTimeout(() => toast.classList.remove('show'), TOAST_DURATION)` 实现 3 秒自动消失；notes.md 明确“不使用 alert/confirm 等模态弹窗”，全文无 alert()/Modal 代码。"
+    },
+    {
+      "text": "Toast 说清了位置（如右上角/底部居中）与消失时机（约 2-3 秒自动消失）",
+      "passed": true,
+      "evidence": "notes.md 第7-8行写明“固定在页面顶部居中……toast 自动消失（3 秒）”；page.html:132-134 `position: fixed; left: 50%; top: 24px` 实现顶部居中，line 236 `TOAST_DURATION = 3000`、line 175 进度条动画 `shrink 3s linear` 与之一致。"
+    },
+    {
+      "text": "没有用阻塞式交互（保存后页面仍可继续操作）",
+      "passed": true,
+      "evidence": "notes.md 第8行“不打断操作……用户可继续编辑；也支持连续点击保存、重复触发”；page.html 保存流程（line 253-263）仅临时禁用按钮 500ms 模拟请求，采用 `aria-live=\"polite\"` 的 role=status（line 223）不抢焦点，页面其余输入框、开关始终可操作，无遮罩层。"
+    },
+    {
+      "text": "若选了带操作的轻提示 Snackbar，附带可立即执行的按钮（如\"查看\"）也视为合格",
+      "passed": true,
+      "evidence": "该断言为条件性判定：本产物选择的是不带操作的纯 Toast 而非 Snackbar（page.html:223-230 Toast 内容仅图标+“保存成功”+时长进度条，无按钮），且已满足前三条断言（notes.md 第6-10行、page.html Toast 实现完整合格），故该条件不影响合格结论。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "without_skill",
+  "eval_id": 5
+}

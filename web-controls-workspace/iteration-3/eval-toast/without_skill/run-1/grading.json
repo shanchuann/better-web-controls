@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "使用了轻提示 Toast（出现几秒自动消失），而不是 alert()/弹窗 Modal 这类打断式反馈",
+      "passed": true,
+      "evidence": "page.html 中 showToast() 创建 .toast 元素插入 #toast-region（第224-243行），setTimeout 2500ms 后移除（第238-242行），全程未使用 alert()/confirm()/Modal；notes.md 明确写'选择右上角滑入式的 Toast 通知（而非 alert/confirm/模态框）'"
+    },
+    {
+      "text": "Toast 说清了位置（如右上角/底部居中）与消失时机（约 2-3 秒自动消失）",
+      "passed": true,
+      "evidence": "page.html 第131行注释'/* ===== Toast：页面右上角滑入，2.5 秒后自动消失，不打断用户操作 ===== */'，CSS #toast-region 为 position:fixed; top:20px; right:20px（第133-135行），showToast 中 duration||2500（第242行）；notes.md 写'自动消失：2.5 秒后淡出并移除 DOM'"
+    },
+    {
+      "text": "没有用阻塞式交互（保存后页面仍可继续操作）",
+      "passed": true,
+      "evidence": "page.html #toast-region 为 pointer-events:none 不遮挡页面（第141行），Toast 不锁焦点不锁滚动，保存后 600ms 即恢复按钮可继续交互（第254-258行）；notes.md 写'不抢占焦点、不锁滚动，用户可继续编辑或点击其他内容'"
+    },
+    {
+      "text": "若选了带操作的轻提示 Snackbar，附带可立即执行的按钮（如\"查看\"）也视为合格",
+      "passed": true,
+      "evidence": "产物未选用带操作的 Snackbar，而是纯消息型 Toast（page.html 中 showToast 仅渲染成功图标+文案'设置已保存'，无操作按钮），本条为条件性断言，条件未触发即不构成不合格；且非 Snackbar 路线的 Toast 已满足断言1-3"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "without_skill",
+  "eval_id": 5
+}

@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "使用了轻提示 Toast（出现几秒自动消失），而不是 alert()/弹窗 Modal 这类打断式反馈",
+      "passed": true,
+      "evidence": "notes.md: '点击保存 → 顶部居中弹出\"设置已保存\"toast（成功图标 + 文案），约 2.5 秒后自动淡出消失'，'不使用 alert()、不弹模态框'。page.html 第132-163行定义 .toast-wrap/.toast 样式，第232-254行 showToast() 创建 role=\"status\" 的 toast 元素，setTimeout 2500ms 后移除（':page.html' 第250-253行），全程无 alert()/confirm() 调用。"
+    },
+    {
+      "text": "Toast 说清了位置（如右上角/底部居中）与消失时机（约 2-3 秒自动消失）",
+      "passed": true,
+      "evidence": "notes.md 明确说明：'顶部居中弹出\"设置已保存\"toast … 约 2.5 秒后自动淡出消失'。page.html 与实现一致：`position: fixed; top: 24px; left: 50%; transform: translateX(-50%)`（'page.html' 第133-136行，顶部居中），`setTimeout(..., 2500)`（'page.html' 第250-253行，2.5 秒自动消失）。"
+    },
+    {
+      "text": "没有用阻塞式交互（保存后页面仍可继续操作）",
+      "passed": true,
+      "evidence": "notes.md：'toast 容器 position: fixed，脱离文档流，不引起页面布局抖动；容器设置 pointer-events: none，toast 显示期间用户仍可正常点击/输入页面任何元素'。page.html 第141行 `.toast-wrap { pointer-events: none; /* 不挡住下方任何点击 */ }`，第225行容器 `aria-live=\"polite\"`，toast 不抢焦点、无需确认，页面其余表单元素不受任何遮罩或模态阻挡。"
+    },
+    {
+      "text": "若选了带操作的轻提示 Snackbar，附带可立即执行的按钮（如\"查看\"）也视为合格",
+      "passed": true,
+      "evidence": "产物选择的是无操作按钮的纯 Toast 而非 Snackbar（page.html 第241行 toast 内容仅为成功图标 + \"设置已保存\"文案，无按钮），该变通型条不适用；所选纯 Toast 方案本身已按断言1、2、3 合格（自动 2.5 秒消失、非阻塞、顶部居中）。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "without_skill",
+  "eval_id": 5
+}

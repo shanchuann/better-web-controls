@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有按默认模板瞎猜：使用了具体成形的登录页样式（居中卡片式 Centered Card / 左右分屏 Split Screen / 沉浸背景 Immersive Background / 多角色Tab Role-based Tabs / 分步登录 Step-by-step 之一）",
+      "passed": true,
+      "evidence": "notes.md:4 明确写明\"采用经典 SaaS'左品牌 + 右表单'分栏布局\"；page.html:233-251/254-315 实现为 <aside class=\"brand\">（flex: 1 1 48%，渐变品牌区）与 <main class=\"panel\">（flex: 1 1 52%，登录表单）的左右分屏 Split Screen 结构，非默认模板。"
+    },
+    {
+      "text": "说清了布局要素：布局类型 + 背景 + 卡片（或无卡片）+ 品牌气质",
+      "passed": false,
+      "evidence": "notes.md:4 说明了布局类型（\"左品牌 + 右表单\"分栏布局），notes.md:7-8 说明了背景（\"暖灰背景 #FAF7F4\"\"渐变背景 + 装饰圆环\"），品牌气质（\"SaaS 可信度\"\"深浅渐变营造高级感\"）也有涉及；但 notes.md 通篇未提及卡片要素——既未描述表单是否置于卡片中，也未声明\"无卡片\"设计（page.html 中右侧表单位于 --bg 背景上、输入框为白色，无卡片容器），该要素缺失。"
+    },
+    {
+      "text": "陶橙色品牌色落实到了具体设计（背景渐变/按钮/主色而非仅文字提及）",
+      "passed": true,
+      "evidence": "page.html:38 左侧品牌区背景为陶橙渐变 linear-gradient(160deg, #E07A52 0%, #C8553D 55%, #9E3F2B 100%)；page.html:153-163 主按钮 .btn-primary 使用 background: var(--brand)（#D96C47）并配陶橙投影 rgba(217,108,71,.28)；page.html:9-11 定义 --brand/--brand-deep/--brand-soft 陶橙令牌，并实际用于 focus 描边（page.html:120-123）、第三方按钮 hover（page.html:193）等。"
+    },
+    {
+      "text": "notes.md 给出候选样式对比与选型理由",
+      "passed": false,
+      "evidence": "notes.md 全文（18 行）仅包含\"方案概述/设计要点/交互实现/响应式\"四节，直接陈述所选方案（\"左品牌 + 右表单\"分栏布局），未列出 Centered Card、Immersive Background 等候选样式做对比，也未给出为何选择分屏布局的选型理由；陶橙色的说明仅是色彩令牌陈述（notes.md:7），无候选风格权衡内容。"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 2,
+    "total": 4,
+    "pass_rate": 0.5
+  },
+  "run": "without_skill",
+  "eval_id": 8
+}

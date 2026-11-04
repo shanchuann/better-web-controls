@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户列表 · 空状态</title>
+<style>
+  :root{
+    --bg:#f6f7f9;
+    --surface:#ffffff;
+    --border:#e4e7ec;
+    --border-strong:#d0d5dd;
+    --text:#1d2939;
+    --muted:#667085;
+    --faint:#98a2b3;
+    --primary:#2e6be6;
+    --primary-hover:#234fb4;
+    --primary-soft:#eaf1fd;
+    --danger:#d92d20;
+    --radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ── 顶栏 ── */
+  .topbar{
+    background:var(--surface);
+    border-bottom:1px solid var(--border);
+    padding:0 32px;
+    height:56px;
+    display:flex;
+    align-items:center;
+    gap:24px;
+  }
+  .brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px}
+  .brand .dot{width:22px;height:22px;border-radius:6px;background:var(--primary);color:#fff;display:grid;place-items:center;font-size:12px}
+  .topnav{display:flex;gap:20px;font-size:14px;color:var(--muted)}
+  .topnav span{cursor:pointer;padding:4px 2px}
+  .topnav .active{color:var(--text);font-weight:500;border-bottom:2px solid var(--primary)}
+
+  main{max-width:1040px;margin:0 auto;padding:32px 24px 120px}
+
+  /* ── 工具区 ── */
+  .page-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+  .page-head h1{font-size:20px;font-weight:600}
+  .page-head .count{font-size:13px;color:var(--muted);font-weight:400;margin-left:8px}
+  .btn-new{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--primary);color:#fff;border:none;
+    padding:9px 16px;border-radius:var(--radius);
+    font-size:14px;cursor:pointer;
+  }
+  .btn-new:hover{background:var(--primary-hover)}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  .search{
+    position:relative;flex:1;min-width:240px;max-width:400px;
+  }
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--faint)}
+  .search input{
+    width:100%;height:38px;
+    border:1px solid var(--border-strong);border-radius:var(--radius);
+    padding:0 12px 0 36px;font-size:14px;color:var(--text);
+    background:var(--surface);
+  }
+  .search input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+  .search input::placeholder{color:var(--faint)}
+
+  select{
+    height:38px;border:1px solid var(--border-strong);border-radius:var(--radius);
+    padding:0 30px 0 12px;font-size:14px;color:var(--text);background:var(--surface);
+    appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2398a2b3' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 10px center;
+  }
+  select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+
+  /* ── 条件标签（当前筛选保留在页面，可逐个移除） ── */
+  .chips{display:none;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .chips.show{display:flex}
+  .chip{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--primary-soft);color:var(--primary);
+    border:none;border-radius:999px;
+    padding:5px 6px 5px 12px;font-size:13px;cursor:default;
+  }
+  .chip b{font-weight:500}
+  .chip button{
+    width:18px;height:18px;border-radius:50%;border:none;cursor:pointer;
+    background:rgba(46,107,230,.16);color:inherit;
+    display:grid;place-items:center;font-size:11px;line-height:1;
+    padding:0;
+  }
+  .chip button:hover{background:rgba(46,107,230,.32)}
+  .chip-clear{
+    border:none;background:none;color:var(--primary);font-size:13px;cursor:pointer;
+    padding:5px 8px;border-radius:6px;
+  }
+  .chip-clear:hover{background:var(--primary-soft)}
+
+  /* ── 表格 ── */
+  .table-card{
+    background:var(--surface);border:1px solid var(--border);border-radius:14px;
+    overflow:hidden;
+  }
+  .table-scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px;min-width:720px}
+  thead th{
+    text-align:left;font-weight:500;color:var(--muted);font-size:13px;
+    padding:12px 20px;border-bottom:1px solid var(--border);background:#fafbfc;
+    white-space:nowrap;
+  }
+  tbody td{padding:14px 20px;border-bottom:1px solid var(--border);white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover td{background:#fafbfc}
+  .c-name{color:var(--text);font-weight:500;cursor:pointer}
+  .c-name:hover{color:var(--primary)}
+  .c-sub{display:block;font-size:12px;color:var(--faint);font-weight:400;margin-top:2px}
+  .badge{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px}
+  .badge.prospect{background:#eaf1fd;color:var(--primary)}
+  .badge.closed{background:#e8f7ee;color:#067647}
+  .badge.lost{background:#f2f4f7;color:var(--muted)}
+
+  /* ── 空状态（图标、短标题、按钮居中） ── */
+  .empty{padding:64px 24px;text-align:center}
+  .empty .art{margin-bottom:20px}
+  .empty h2{font-size:17px;font-weight:600;margin-bottom:8px}
+  .empty p{font-size:14px;color:var(--muted);line-height:1.7}
+  .empty .actions{margin-top:24px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;align-items:center}
+  .empty .hint{margin-top:18px;font-size:13px;color:var(--faint)}
+
+  .btn-solid{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--primary);color:#fff;border:none;
+    padding:10px 20px;border-radius:var(--radius);font-size:14px;cursor:pointer;
+  }
+  .btn-solid:hover{background:var(--primary-hover)}
+  .btn-outline{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--surface);color:var(--text);
+    border:1px solid var(--border-strong);
+    padding:10px 20px;border-radius:var(--radius);font-size:14px;cursor:pointer;
+  }
+  .btn-outline:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-soft)}
+  .btn-text{
+    background:none;border:none;color:var(--primary);font-size:14px;cursor:pointer;
+    padding:8px 12px;border-radius:6px;
+  }
+  .btn-text:hover{background:var(--primary-soft)}
+
+  [hidden]{display:none !important}
+
+  /* ── 场景预览条（演示用） ── */
+  .demo-bar{
+    position:fixed;left:50%;bottom:20px;transform:translateX(-50%);
+    background:#1d2939;color:#eaecf0;border-radius:999px;
+    padding:6px 8px;display:flex;gap:4px;align-items:center;
+    box-shadow:0 8px 24px rgba(16,24,40,.25);z-index:10;
+    font-size:12px;
+  }
+  .demo-bar .label{padding:0 10px;color:#98a2b3}
+  .demo-bar button{
+    background:none;border:none;color:#eaecf0;font-size:12px;cursor:pointer;
+    padding:6px 12px;border-radius:999px;white-space:nowrap;
+  }
+  .demo-bar button:hover{background:rgba(255,255,255,.12)}
+  .demo-bar button.on{background:var(--primary);color:#fff}
+
+  @media (max-width:640px){
+    .topbar{padding:0 16px}
+    main{padding:20px 14px 120px}
+    .empty{padding:44px 16px}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="dot">客</span>云客 CRM</div>
+  <nav class="topnav">
+    <span>工作台</span>
+    <span class="active">客户</span>
+    <span>商机</span>
+    <span>报表</span>
+  </nav>
+</header>
+
+<main>
+  <div class="page-head">
+    <h1>客户列表<span class="count" id="count">共 0 位客户</span></h1>
+    <button class="btn-new" id="topNewBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      新建客户
+    </button>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="searchInput" type="search" placeholder="搜索客户名称、公司或电话" aria-label="搜索客户">
+    </div>
+    <select id="statusSelect" aria-label="按客户状态筛选">
+      <option value="all">全部状态</option>
+      <option value="prospect">潜在客户</option>
+      <option value="closed">已成交</option>
+      <option value="lost">已流失</option>
+    </select>
+    <select id="ownerSelect" aria-label="按负责人筛选">
+      <option value="all">全部负责人</option>
+      <option value="limeng">李萌</option>
+      <option value="wanghao">王浩</option>
+      <option value="chenchen">陈晨</option>
+    </select>
+  </div>
+
+  <div class="chips" id="chips" aria-label="当前筛选条件"></div>
+
+  <div class="table-card">
+    <!-- ① 有数据：正常列表 -->
+    <div id="listView" class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>客户</th><th>电话</th><th>状态</th><th>负责人</th><th>最近跟进</th></tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ② 首次使用 First-use：提供创建与导入入口 -->
+    <div id="emptyFirst" class="empty" hidden>
+      <div class="art">
+        <svg width="112" height="96" viewBox="0 0 112 96" fill="none">
+          <rect x="18" y="26" width="76" height="54" rx="8" stroke="#d0d5dd" stroke-width="2"/>
+          <path d="M18 40h76" stroke="#d0d5dd" stroke-width="2"/>
+          <line x1="20.5" y1="30" x2="20.5" y2="36" stroke="#e4e7ec" stroke-width="3" stroke-linecap="round"/>
+          <line x1="27" y1="30" x2="27" y2="36" stroke="#e4e7ec" stroke-width="3" stroke-linecap="round"/>
+          <rect x="28" y="50" width="24" height="4" rx="2" fill="#e4e7ec"/>
+          <rect x="28" y="60" width="34" height="4" rx="2" fill="#f2f4f7"/>
+          <rect x="28" y="70" width="18" height="4" rx="2" fill="#f2f4f7"/>
+          <circle cx="86" cy="30" r="17" fill="#eaf1fd"/>
+          <circle cx="86" cy="30" r="10" fill="#2e6be6"/>
+          <path d="M86 25v10M81 30h10" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>还没有客户</h2>
+      <p>添加第一位客户，开始记录沟通与跟进，<br>也可以从 Excel 或其他系统批量导入。</p>
+      <div class="actions">
+        <button class="btn-solid" data-demo="新建客户">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          新建客户
+        </button>
+        <button class="btn-outline" data-demo="导入客户">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+          批量导入
+        </button>
+        <button class="btn-text" data-demo="使用引导">查看使用引导</button>
+      </div>
+      <div class="hint">客户可设置负责人标签与跟进计划，建立后再分配给团队成员</div>
+    </div>
+
+    <!-- ③ 搜索无果 No Search Results：关键词保留在搜索框，建议放在搜索框旁，不放主按钮 -->
+    <div id="emptySearch" class="empty" hidden>
+      <div class="art">
+        <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+          <circle cx="42" cy="40" r="20" stroke="#d0d5dd" stroke-width="3"/>
+          <path d="m58 56 14 14" stroke="#d0d5dd" stroke-width="3" stroke-linecap="round"/>
+          <path d="M33 40c2.5-3 5.5-3 8 0s5.5 3 8 0" stroke="#98a2b3" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>没有找到与“<span id="kwEcho"></span>”相关的客户</h2>
+      <p>试试更短的关键词，或检查是否有错别字；<br>也可以改用客户电话、公司全称搜索。</p>
+      <div class="actions">
+        <button class="btn-text" id="clearKwBtn">清除关键词，查看全部客户</button>
+      </div>
+      <div class="hint">搜索支持客户名称、公司名和电话号码，多个词用空格分隔</div>
+    </div>
+
+    <!-- ④ 筛选无果 No Filter Matches：条件保留在上方标签，可逐个移除，不放主按钮 -->
+    <div id="emptyFilter" class="empty" hidden>
+      <div class="art">
+        <svg width="96" height="96" viewBox="0 0 96 96" fill="none">
+          <path d="M18 22h60L58 46v22l-20 8V46L18 22Z" stroke="#d0d5dd" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M40 60h16" stroke="#f2f4f7" stroke-width="3"/>
+          <circle cx="72" cy="28" r="12" fill="#eaf1fd"/>
+          <path d="m67.5 23.5 9 9m0-9-9 9" stroke="#d92d20" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>当前筛选条件下没有匹配的客户</h2>
+      <p>客户数据是有的，只是没有同时满足全部条件的记录。<br>点击上方的条件标签 <b>×</b>，减少一个条件再试试。</p>
+      <div class="actions">
+        <button class="btn-text" id="clearAllBtn">清空全部筛选条件</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- 场景预览切换（演示用，非交付功能） -->
+<div class="demo-bar" role="group" aria-label="空状态场景预览">
+  <span class="label">预览场景</span>
+  <button data-scenario="new">新用户首次进入</button>
+  <button data-scenario="search">搜索无结果</button>
+  <button data-scenario="filter">筛选无结果</button>
+  <button data-scenario="normal">正常数据</button>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var CUSTOMERS = [
+    {name:"张伟",  company:"远洋律师事务所", phone:"138 1204 5566", status:"prospect", owner:"limeng",   ownerName:"李萌", last:"今天 10:24"},
+    {name:"李婷婷", company:"启明教育培训",   phone:"139 8871 0233", status:"prospect", owner:"wanghao",  ownerName:"王浩", last:"昨天 16:40"},
+    {name:"赵鹏",  company:"网格新能源",     phone:"137 5562 8890", status:"closed",  owner:"limeng",   ownerName:"李萌", last:"昨天 09:12"},
+    {name:"孙晓萌", company:"青柚咖啡连锁",   phone:"135 2290 4471", status:"closed",  owner:"chenchen", ownerName:"陈晨", last:"10-28"},
+    {name:"周浩然", company:"银河家具制造",   phone:"136 7701 3325", status:"prospect", owner:"wanghao",  ownerName:"王浩", last:"10-27"},
+    {name:"吴敏",  company:"恒星物流",       phone:"138 3392 6610", status:"lost",    owner:"chenchen", ownerName:"陈晨", last:"10-25"},
+    {name:"郑凯文", company:"木 Stern 零件",  phone:"139 1174 7782", status:"prospect", owner:"limeng",   ownerName:"李萌", last:"10-22"},
+    {name:"王菲",  company:"柏悦建筑设计",   phone:"137 6643 1120", status:"closed",  owner:"wanghao",  ownerName:"王浩", last:"10-18"}
+  ];
+
+  var STATUS_TEXT = {prospect:"潜在客户", closed:"已成交", lost:"已流失"};
+  var STATUS_BADGE = {prospect:"prospect", closed:"closed", lost:"lost"};
+
+  var state = {
+    scenario:"new",            // new | search | filter | normal
+    keyword:"",
+    status:"all",
+    owner:"all",
+    hasDataset:true            // 新用户场景下数据集视为空
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+  var searchInput = $("searchInput"), statusSelect = $("statusSelect"), ownerSelect = $("ownerSelect");
+  var chipsBox = $("chips"), tbody = $("tbody");
+  var listView = $("listView"), emptyFirst = $("emptyFirst"), emptySearch = $("emptySearch"), emptyFilter = $("emptyFilter");
+  var countEl = $("count"), kwEcho = $("kwEcho");
+
+  function filtered(){
+    var pool = state.hasDataset ? CUSTOMERS : [];
+    var kw = state.keyword.trim().toLowerCase();
+    return pool.filter(function(c){
+      if(state.status !== "all" && c.status !== state.status) return false;
+      if(state.owner !== "all" && c.owner !== state.owner) return false;
+      if(kw){
+        var hay = (c.name + c.company + c.phone).toLowerCase();
+        if(hay.indexOf(kw) === -1) return false;
+      }
+      return true;
+    });
+  }
+
+  function esc(s){
+    return s.replace(/[&<>"]/g, function(m){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]; });
+  }
+
+  function renderTable(rows){
+    $("listView").querySelector("table").style.display = rows.length ? "" : "none";
+    tbody.innerHTML = rows.map(function(c){
+      return "<tr>"
+        + '<td><span class="c-name">' + esc(c.name) + '</span><span class="c-sub">' + esc(c.company) + '</span></td>'
+        + "<td>" + esc(c.phone) + "</td>"
+        + '<td><span class="badge ' + STATUS_BADGE[c.status] + '">' + STATUS_TEXT[c.status] + "</span></td>"
+        + "<td>" + esc(c.ownerName) + "</td>"
+        + "<td>" + esc(c.last) + "</td>"
+        + "</tr>";
+    }).join("");
+  }
+
+  function renderChips(){
+    var items = [];
+    if(state.keyword.trim()) items.push({label:'关键词“' + state.keyword.trim() + '”', clear:"keyword"});
+    if(state.status !== "all") items.push({label:"状态：" + STATUS_TEXT[state.status], clear:"status"});
+    if(state.owner !== "all"){
+      var names = {limeng:"李萌", wanghao:"王浩", chenchen:"陈晨"};
+      items.push({label:"负责人：" + names[state.owner], clear:"owner"});
+    }
+    if(!items.length){
+      chipsBox.classList.remove("show");
+      return;
+    }
+    chipsBox.classList.add("show");
+    chipsBox.innerHTML = items.map(function(it, i){
+      return '<span class="chip"><b>' + esc(it.label) + '</b>'
+        + '<button data-clear="' + it.clear + '" aria-label="移除条件：' + esc(it.label) + '" title="移除该条件">×</button></span>';
+    }).join("") + '<button class="chip-clear" data-clear="all">清空</button>';
+  }
+
+  function render(){
+    var rows = filtered();
+    var hasFilters = state.status !== "all" || state.owner !== "all";
+    var hasKeyword = state.keyword.trim() !== "";
+
+    countEl.textContent = "共 " + rows.length + " 位客户";
+
+    listView.hidden = false;
+    emptyFirst.hidden = true;
+    emptySearch.hidden = true;
+    emptyFilter.hidden = true;
+
+    if(rows.length){
+      renderTable(rows);
+      renderChips();
+      return;
+    }
+
+    // 列表为空：按«为什么为空»分流
+    if(!state.hasDataset){
+      // ① 首次使用：给创建与导入入口
+      emptyFirst.hidden = false;
+      renderChips();
+      return;
+    }
+    if(hasFilters){
+      // ③ 筛选无果：条件保留在上方标签，可逐个移除
+      emptyFilter.hidden = false;
+      renderChips();
+      return;
+    }
+    if(hasKeyword){
+      // ② 搜索无果：关键词保留在搜索框，不放主按钮
+      kwEcho.textContent = state.keyword.trim();
+      emptySearch.hidden = false;
+      renderChips();
+      return;
+    }
+  }
+
+  function syncInputs(){
+    searchInput.value = state.keyword;
+    statusSelect.value = state.status;
+    ownerSelect.value = state.owner;
+  }
+
+  function applyScenario(s){
+    state.scenario = s;
+    if(s === "new"){
+      state.hasDataset = false; state.keyword = ""; state.status = "all"; state.owner = "all";
+    }else if(s === "search"){
+      state.hasDataset = true; state.keyword = "张伟技"; state.status = "all"; state.owner = "all";
+    }else if(s === "filter"){
+      state.hasDataset = true; state.keyword = ""; state.status = "closed"; state.owner = "chenchen";
+    }else{
+      state.hasDataset = true; state.keyword = ""; state.status = "all"; state.owner = "all";
+    }
+    syncInputs();
+    render();
+  }
+
+  // 场景预览按钮
+  var demoBtns = document.querySelectorAll(".demo-bar button[data-scenario]");
+  function markDemoBtn(){
+    demoBtns.forEach(function(b){ b.classList.toggle("on", b.dataset.scenario === state.scenario); });
+  }
+  demoBtns.forEach(function(b){
+    b.addEventListener("click", function(){ applyScenario(b.dataset.scenario); markDemoBtn(); });
+  });
+
+  // 预设场景下任何手动交互，视为真实使用，恢复完整数据集
+  function leaveScenario(){
+    if(state.scenario !== "normal"){
+      state.scenario = "normal";
+      state.hasDataset = true;
+      markDemoBtn();
+    }
+  }
+  searchInput.addEventListener("input", function(){
+    leaveScenario();
+    state.keyword = searchInput.value;
+    render();
+  });
+  statusSelect.addEventListener("change", function(){
+    leaveScenario();
+    state.status = statusSelect.value;
+    render();
+  });
+  ownerSelect.addEventListener("change", function(){
+    leaveScenario();
+    state.owner = ownerSelect.value;
+    render();
+  });
+  chipsBox.addEventListener("click", function(e){
+    var btn = e.target.closest("[data-clear]");
+    if(!btn) return;
+    leaveScenario();
+    var c = btn.dataset.clear;
+    if(c === "keyword") state.keyword = "";
+    if(c === "status")  state.status = "all";
+    if(c === "owner")   state.owner = "all";
+    if(c === "all"){ state.keyword = ""; state.status = "all"; state.owner = "all"; }
+    searchInput.value = state.keyword;
+    statusSelect.value = state.status;
+    ownerSelect.value = state.owner;
+    render();
+  });
+  $("clearKwBtn").addEventListener("click", function(){
+    leaveScenario();
+    state.keyword = "";
+    searchInput.value = "";
+    render();
+  });
+  $("clearAllBtn").addEventListener("click", function(){
+    leaveScenario();
+    state.keyword = ""; state.status = "all"; state.owner = "all";
+    searchInput.value = ""; statusSelect.value = "all"; ownerSelect.value = "all";
+    render();
+  });
+
+  // 演示动作按钮
+  document.querySelectorAll("[data-demo]").forEach(function(b){
+    b.addEventListener("click", function(){ applyScenario("normal"); markDemoBtn(); });
+  });
+  $("topNewBtn").addEventListener("click", function(){ applyScenario("normal"); markDemoBtn(); });
+
+  // 初始：新用户首次进入场景
+  applyScenario("new");
+  markDemoBtn();
+})();
+</script>
+</body>
+</html>

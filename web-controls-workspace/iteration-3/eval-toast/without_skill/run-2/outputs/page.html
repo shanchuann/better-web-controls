@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>设置</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1f2329;
+    --text-2: #646a73;
+    --border: #e5e7eb;
+    --line: #f0f1f3;
+    --primary: #3370ff;
+    --primary-hover: #2860e1;
+    --success: #34a853;
+  }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 760px; margin: 0 auto; padding: 48px 24px 80px; }
+
+  .page-header { margin-bottom: 28px; }
+  .page-header h1 { font-size: 22px; font-weight: 600; }
+  .page-header p { font-size: 13px; color: var(--text-2); margin-top: 6px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .card-title {
+    padding: 18px 24px 4px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .form-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .form-row:last-child { border-bottom: none; }
+  .form-row label {
+    width: 140px;
+    flex-shrink: 0;
+    font-size: 14px;
+    color: var(--text-2);
+  }
+  .form-row input[type="text"],
+  .form-row input[type="email"],
+  .form-row select {
+    flex: 1;
+    max-width: 320px;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: var(--text);
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .form-row input:focus, .form-row select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(51,112,255,.12);
+  }
+
+  .switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+  .switch input { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 1; }
+  .switch .track {
+    position: absolute; inset: 0;
+    background: #c9cdd4;
+    border-radius: 11px;
+    transition: background .2s;
+  }
+  .switch .track::after {
+    content: "";
+    position: absolute;
+    left: 2px; top: 2px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0,0,0,.2);
+    transition: transform .2s;
+  }
+  .switch input:checked + .track { background: var(--primary); }
+  .switch input:checked + .track::after { transform: translateX(18px); }
+  .switch-desc { flex: 1; font-size: 13px; color: var(--text-2); margin-right: 12px; }
+  .switch-desc strong { display: block; font-size: 14px; color: var(--text); font-weight: 500; margin-bottom: 2px; }
+
+  .sticky-bar {
+    position: sticky;
+    bottom: 0;
+    margin-top: 12px;
+    padding: 14px 0;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+  }
+  .dirty-hint {
+    font-size: 13px;
+    color: var(--text-2);
+    opacity: 0;
+    transition: opacity .2s;
+  }
+  .dirty-hint.show { opacity: 1; }
+  .btn {
+    padding: 9px 22px;
+    font-size: 14px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background .15s, transform .05s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-primary:active { transform: scale(.97); }
+  .btn-primary:disabled { opacity: .6; cursor: default; transform: none; }
+
+  /* ===== Toast：非阻塞保存成功反馈 ===== */
+  .toast-wrap {
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none; /* 不挡住下方任何点击 */
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px 10px 14px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,.10);
+    font-size: 14px;
+    color: var(--text);
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: opacity .25s ease, transform .25s ease;
+  }
+  .toast.visible { opacity: 1; transform: translateY(0); }
+  .toast .icon {
+    width: 18px; height: 18px; flex-shrink: 0;
+    color: var(--success);
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="page-header">
+    <h1>设置</h1>
+    <p>管理你的账户信息与偏好，修改后点击右下角“保存”生效。</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">基本信息</div>
+    <div class="form-row">
+      <label for="nickname">昵称</label>
+      <input type="text" id="nickname" value="王小明" placeholder="请输入昵称">
+    </div>
+    <div class="form-row">
+      <label for="email">邮箱</label>
+      <input type="email" id="email" value="xiaoming@example.com" placeholder="请输入邮箱">
+    </div>
+    <div class="form-row">
+      <label for="lang">界面语言</label>
+      <select id="lang">
+        <option selected>简体中文</option>
+        <option>English</option>
+        <option>日本語</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">通知与外观</div>
+    <div class="form-row">
+      <div class="switch-desc">
+        <strong>桌面通知</strong>
+        收到新消息时在系统通知栏提醒
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="notify" checked>
+        <span class="track"></span>
+      </label>
+    </div>
+    <div class="form-row">
+      <div class="switch-desc">
+        <strong>深色模式</strong>
+        在夜间使用更柔和的深色界面
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="darkmode">
+        <span class="track"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="sticky-bar">
+    <span class="dirty-hint" id="dirtyHint">有未保存的更改</span>
+    <button class="btn btn-primary" id="saveBtn">保存</button>
+  </div>
+</div>
+
+<!-- Toast 容器：fixed 定位，不打断用户操作 -->
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<script>
+(function () {
+  var saveBtn = document.getElementById("saveBtn");
+  var toastWrap = document.getElementById("toastWrap");
+
+  function showToast(message, type) {
+    var toast = document.createElement("div");
+    toast.className = "toast";
+    toast.setAttribute("role", "status");
+
+    var icon =
+      type === "success"
+        ? '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10" fill="currentColor" stroke="none" opacity="0.12"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>'
+        : "";
+    toast.innerHTML = icon + "<span>" + message + "</span>";
+    toastWrap.appendChild(toast);
+
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () {
+        toast.classList.add("visible");
+      });
+    });
+
+    setTimeout(function () {
+      toast.classList.remove("visible");
+      setTimeout(function () { toast.remove(); }, 300);
+    }, 2500);
+  }
+
+  saveBtn.addEventListener("click", function () {
+    if (saveBtn.disabled) return;
+    saveBtn.disabled = true;
+    saveBtn.textContent = "保存中…";
+
+    // 模拟保存请求
+    setTimeout(function () {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "保存";
+      hideDirtyHint();
+      showToast("设置已保存");
+    }, 500);
+  });
+
+  // 有更改时提示
+  var dirtyHint = document.getElementById("dirtyHint");
+  var HINT_CLASS = "show";
+  function showDirtyHint() { dirtyHint.classList.add(HINT_CLASS); }
+  function hideDirtyHint() { dirtyHint.classList.remove(HINT_CLASS); }
+
+  document.querySelectorAll("input, select").forEach(function (el) {
+    el.addEventListener("change", showDirtyHint);
+    el.addEventListener("input", showDirtyHint);
+  });
+})();
+</script>
+
+</body>
+</html>

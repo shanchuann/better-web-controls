@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "输出为可直接打开的单文件 HTML，包含 nav 导航元素和首屏区块",
+      "passed": true,
+      "evidence": "outputs/page.html 为完整单文件 HTML（<!DOCTYPE html> 开头、内嵌 <style> 与 <script>，无外部依赖）；第 250-267 行含 <header class=\"nav\"> 内嵌 <nav class=\"links\" aria-label=\"主导航\">；第 280-303 行含首屏区块 <section class=\"hero\" id=\"hero\">（标题、副文、CTA 按钮、stats、头像）。"
+    },
+    {
+      "text": "导航栏采用具体成形的形式（悬浮吸顶 Floating+Sticky / 抽屉 / 侧边栏等），而非普通的静态水平菜单拼装饰",
+      "passed": true,
+      "evidence": "outputs/page.html 第 34 行注释“悬浮吸顶导航 Floating · Sticky”，第 36 行 .nav{position:fixed;top:16px;...}，第 40-52 行 .nav-inner 为圆角胶囊浮卡（border-radius:999px、backdrop-filter:blur(14px)、box-shadow）；notes.md 第 11 行明确选型“① 悬浮吸顶 Floating · Sticky：浮起圆角卡，离顶留白带阴影，滚动固定”。"
+    },
+    {
+      "text": "导航在页面滚动时保持条理（吸顶/悬浮有阴影、留白、圆角等悬浮感处理，或做了移动端适配）",
+      "passed": true,
+      "evidence": "outputs/page.html 吸顶卡离顶 16px 留白、border-radius:999px、常态阴影 0 8px 24px rgba(27,25,18,.06)；第 53-56 行 .nav.scrolled 滚动后 padding 收缩且阴影加深（0 12px 32px rgba(27,25,18,.10)），由第 361 行 JS onScroll() 切换；移动端适配：第 231-233 行 @media (max-width:860px) 隐藏链接并显示汉堡按钮，第 110-132 行全屏遮罩菜单（Esc/点击关闭、body.locked 锁滚动），另有 Scrollspy 高亮（第 365-377 行）。"
+    },
+    {
+      "text": "notes.md 给出了 2 种以上候选方案对比并写明最终选型理由",
+      "passed": true,
+      "evidence": "outputs/notes.md 第 7-14 行导航候选对比表列出 3 个候选并逐个给出入选/排除理由（如悬浮吸顶“首屏大留白的展示型页面…✅ 桌面端选型”、滚动收缩“依赖首屏大图…❌ 排除”、全屏遮罩“移动端选型”）；第 18-26 行首屏候选 2 种对比；最终规格在第 46-56 行转写 Prompt 中写明导航形式为悬浮吸顶。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 0
+}

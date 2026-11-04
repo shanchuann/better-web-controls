@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "输出为可直接打开的单文件 HTML，包含 nav 导航元素和首屏区块",
+      "passed": true,
+      "evidence": "page.html 为单文件 HTML（内嵌 <style> 与 <script>，未引用任何外部图片/字体/CDN，double-click 可打开）；第 275-289 行包含 <header class=\"nav\"> 与 <nav class=\"nav-links\" aria-label=\"主导航\"> 导航元素；第 302-341 行有 <section class=\"hero\" id=\"top\"> 首屏区块（头像+姓名+大标题定位句+CTA+代表作卡）。"
+    },
+    {
+      "text": "导航栏采用具体成形的形式（悬浮吸顶 Floating+Sticky / 抽屉 / 侧边栏等），而非普通的静态水平菜单拼装饰",
+      "passed": true,
+      "evidence": "page.html:51 .nav{position:fixed;top:14px;...} 实现悬浮吸顶胶囊卡，52-64 行有圆角 999px、backdrop-filter:blur(16px) 磨砂、1px 描边、box-shadow 的悬浮卡；移动端另有全屏遮罩菜单（112-137 行 .overlay，fixed inset:0，SVG 汉堡按钮展开），notes.md 明确选型为'悬浮吸顶导航 Floating·Sticky + 移动端全屏遮罩菜单'。"
+    },
+    {
+      "text": "导航在页面滚动时保持条理（吸顶/悬浮有阴影、留白、圆角等悬浮感处理，或做了移动端适配）",
+      "passed": true,
+      "evidence": "page.html:65 .nav.scrolled .nav-card{background:rgba(253,251,247,.93);box-shadow:var(--shadow-nav-hover)}，433 行 JS onScroll 在 scrollY>10 时切换 scrolled 类，滚动后底色转实、阴影加深；--shadow-nav/--shadow-nav-hover（21-23 行）定义深浅两级阴影；离顶 14px 留白、圆角胶囊；250-264 行做了 ≤860px 收汉堡、≤560px 折单栏的移动端适配，且 #work/#contact 设 scroll-margin-top:110px 防锚点被遮挡。"
+    },
+    {
+      "text": "notes.md 给出了 2 种以上候选方案对比并写明最终选型理由",
+      "passed": true,
+      "evidence": "notes.md 第 2 节列出 5 种候选（悬浮吸顶 Floating·Sticky、锚点高亮 Scrollspy、全屏遮罩菜单 Full-screen Overlay、滚动收缩 Shrink on Scroll、巨型菜单/二级下拉）的'适用场景/结论/理由'对比表，并写明最终选型理由，如：悬浮吸顶'圆角悬浮卡离顶留白+滚动吸顶，是高级感最直接的载体'✅采用；Shrink on Scroll'前提是大图 hero，本页为浅色排版型，透明→实色对比弱'⛔未选；Mega Menu'顶层导航仅三项，无子内容，加面板是过度设计'⛔未选。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 0
+}

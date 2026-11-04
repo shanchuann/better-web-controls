@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月度经营报告 · 2026年10月</title>
+<style>
+  :root{
+    --ink:#1c2433;
+    --ink-2:#5a6577;
+    --ink-3:#8b95a6;
+    --bg:#f4f5f8;
+    --card:#ffffff;
+    --line:#e6e9ef;
+    --accent:#2f54eb;
+    --accent-soft:#eef2ff;
+    --up:#0d9b6e;
+    --down:#e5484d;
+    --warn:#f5a623;
+    --font:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    --num:"DIN Alternate","Segoe UI",system-ui,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--font);
+    color:var(--ink);
+    background:var(--bg);
+    line-height:1.5;
+  }
+  .wrap{max-width:1200px;margin:0 auto;padding:28px 24px 48px}
+
+  /* ===== 页头 ===== */
+  .masthead{
+    display:flex;align-items:flex-end;justify-content:space-between;
+    flex-wrap:wrap;gap:12px;
+    padding-bottom:20px;border-bottom:2px solid var(--ink);
+    margin-bottom:24px;
+  }
+  .masthead h1{font-size:26px;font-weight:700;letter-spacing:.5px}
+  .masthead .sub{color:var(--ink-2);font-size:13px;margin-top:4px}
+  .masthead .meta{text-align:right;font-size:12px;color:var(--ink-3)}
+  .masthead .meta b{display:block;font-size:14px;color:var(--ink-2)}
+  .badge{
+    display:inline-block;padding:2px 10px;border-radius:999px;
+    background:var(--accent-soft);color:var(--accent);
+    font-size:12px;font-weight:600;margin-left:10px;vertical-align:4px;
+  }
+
+  /* ===== KPI 卡 ===== */
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+  .kpi{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;position:relative;overflow:hidden;
+  }
+  .kpi .label{font-size:13px;color:var(--ink-2)}
+  .kpi .value{
+    font-family:var(--num);font-size:34px;font-weight:700;
+    letter-spacing:.5px;margin-top:6px;line-height:1.1;
+  }
+  .kpi .value small{font-size:16px;font-weight:600;color:var(--ink-2);margin-left:2px}
+  .kpi .delta{margin-top:8px;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+  .delta.up{color:var(--up)}
+  .delta.down{color:var(--down)}
+  .kpi .foot{margin-top:2px;font-size:12px;color:var(--ink-3)}
+  .spark{position:absolute;right:14px;bottom:12px;opacity:.9}
+
+  /* ===== 图表卡片 ===== */
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:20px 22px;
+  }
+  .card h2{font-size:15px;font-weight:700}
+  .card .desc{font-size:12px;color:var(--ink-3);margin-top:2px}
+  .card .head{margin-bottom:14px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .card.wide{grid-column:1 / -1}
+
+  /* 折线图 */
+  #trend-chart{width:100%;height:auto;display:block}
+  .axis-t{font-size:11px;fill:var(--ink-3)}
+  .axis-v{font-family:var(--num);font-size:11px;fill:var(--ink-3)}
+  .guide{stroke:var(--ink-3);stroke-dasharray:3 3;opacity:0;transition:opacity .15s}
+  .hover-dot{opacity:0;transition:opacity .15s}
+  .chart-tip{
+    position:absolute;pointer-events:none;background:rgba(28,36,51,.94);
+    color:#fff;border-radius:8px;padding:8px 12px;font-size:12px;
+    transform:translate(-50%,-115%);white-space:nowrap;display:none;z-index:5;
+    box-shadow:0 4px 14px rgba(0,0,0,.18);
+  }
+  .chart-tip b{font-family:var(--num);font-size:15px}
+  .chart-tip .m{color:#aab4c5}
+
+  /* 环形图 */
+  .donut-box{display:flex;flex-direction:column;align-items:center;gap:14px}
+  .donut-wrap{position:relative;width:200px;height:200px}
+  .donut-center{
+    position:absolute;inset:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;pointer-events:none;
+  }
+  .donut-center .pct{font-family:var(--num);font-size:26px;font-weight:700}
+  .donut-center .name{font-size:12px;color:var(--ink-2);max-width:110px}
+  .legend{width:100%;display:flex;flex-direction:column;gap:8px}
+  .legend-item{
+    display:flex;align-items:center;gap:8px;font-size:13px;
+    padding:6px 10px;border-radius:8px;cursor:default;transition:background .15s;
+  }
+  .legend-item.on{background:var(--accent-soft)}
+  .legend-item .dot{width:9px;height:9px;border-radius:3px;flex:none}
+  .legend-item .name{color:var(--ink-2);flex:1}
+  .legend-item .val{font-family:var(--num);font-weight:600}
+  .legend-item .pct{color:var(--ink-3);font-size:12px;width:48px;text-align:right}
+
+  /* 漏斗 */
+  .funnel{display:flex;flex-direction:column;gap:0;margin-top:6px}
+  .f-stage{display:grid;grid-template-columns:130px 1fr 190px;gap:16px;align-items:center;padding:9px 0}
+  .f-stage + .f-stage{border-top:1px dashed var(--line)}
+  .f-name{font-size:13px;color:var(--ink-2)}
+  .f-name b{display:block;color:var(--ink);font-size:13px}
+  .f-bartrack{position:relative;height:34px;background:#f1f3f7;border-radius:6px;overflow:hidden}
+  .f-bar{
+    position:absolute;left:0;top:0;bottom:0;border-radius:6px;
+    background:linear-gradient(90deg,#4c6ef5,#2f54eb);
+    display:flex;align-items:center;justify-content:flex-end;
+    padding-right:10px;min-width:56px;
+    font-family:var(--num);font-size:13px;font-weight:700;color:#fff;
+    transition:width .8s cubic-bezier(.2,.7,.2,1);
+  }
+  .f-side{font-size:12px;color:var(--ink-2);display:flex;flex-direction:column;gap:2px}
+  .f-side .conv{color:var(--ink);font-weight:600}
+  .f-side .lost{color:var(--down);font-weight:600}
+  .f-arrow{
+    grid-column:2 / 4;padding:0 0 6px 0;font-size:12px;color:var(--ink-3);
+    display:flex;align-items:center;gap:10px;height:22px;overflow:visible;
+  }
+  .f-arrow span b{color:var(--ink)}
+  .f-arrow .lost-tag{
+    display:inline-flex;align-items:center;gap:4px;
+    background:#fdecec;color:var(--down);border-radius:999px;
+    padding:1px 10px;font-weight:600;font-size:12px;
+  }
+  .funnel-summary{
+    margin-top:14px;padding-top:14px;border-top:1px solid var(--line);
+    display:flex;flex-wrap:wrap;gap:24px;font-size:13px;color:var(--ink-2);
+  }
+  .funnel-summary b{font-family:var(--num);font-size:18px;color:var(--ink);margin-left:4px}
+
+  /* 页脚 */
+  .footer{
+    margin-top:26px;padding-top:14px;border-top:1px solid var(--line);
+    font-size:12px;color:var(--ink-3);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;
+  }
+  .print-note{display:none}
+
+  @media (max-width:900px){
+    .grid{grid-template-columns:1fr}
+    .kpis{grid-template-columns:1fr}
+    .f-stage{grid-template-columns:96px 1fr;gap:10px}
+    .f-side{grid-column:2;flex-direction:row;gap:16px}
+    .f-arrow{grid-column:2 / 3}
+    .masthead .meta{text-align:left}
+  }
+  @media print{
+    body{background:#fff}
+    .card{break-inside:avoid}
+    .print-note{display:block;margin-top:6px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <div>
+      <h1>月度经营报告<span class="badge">2026年10月</span></h1>
+      <div class="sub">营收 · 产品结构 · 渠道转化 —— 管理层月度速览</div>
+    </div>
+    <div class="meta">
+      <b>数据截至 2026-10-31</b>
+      出报日期：2026-11-04 · 财务口径（含税）
+    </div>
+  </header>
+
+  <!-- KPI -->
+  <section class="kpis">
+    <div class="kpi">
+      <div class="label">本月营收</div>
+      <div class="value">480<small>万元</small></div>
+      <div class="delta up">▲ 环比 +12.0%</div>
+      <div class="foot">上月 429 万元</div>
+      <svg class="spark" width="96" height="34" viewBox="0 0 96 34">
+        <polyline points="2,27 10,25 18,26 26,21 34,19 42,17 50,14 58,15 66,12 74,10 82,11 94,3"
+          fill="none" stroke="#2f54eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="kpi">
+      <div class="label">近 12 个月累计营收</div>
+      <div class="value">4,865<small>万元</small></div>
+      <div class="delta up">▲ 月均 405 万元</div>
+      <div class="foot">呈持续上行趋势</div>
+    </div>
+    <div class="kpi">
+      <div class="label">全渠道付费转化率</div>
+      <div class="value">2.43<small>%</small></div>
+      <div class="delta up">▲ 付费 4,860 单</div>
+      <div class="foot">访问 → 付费 全链路转化</div>
+    </div>
+  </section>
+
+  <section class="grid">
+
+    <!-- 走势图 -->
+    <div class="card">
+      <div class="head">
+        <div>
+          <h2>近 12 个月营收走势</h2>
+          <div class="desc">单位：万元 · 2025-11 至 2026-10</div>
+        </div>
+      </div>
+      <div style="position:relative">
+        <svg id="trend-chart" viewBox="0 0 720 280" role="img" aria-label="近12个月营收走势折线图"></svg>
+        <div class="chart-tip" id="trend-tip"></div>
+      </div>
+    </div>
+
+    <!-- 产品线占比 -->
+    <div class="card">
+      <div class="head">
+        <div>
+          <h2>产品线营收占比</h2>
+          <div class="desc">本月合计 480 万元</div>
+        </div>
+      </div>
+      <div class="donut-box">
+        <div class="donut-wrap">
+          <svg id="donut" width="200" height="200" viewBox="0 0 200 200" role="img" aria-label="产品线营收占比环形图"></svg>
+          <div class="donut-center" id="donut-center">
+            <div class="pct">100%</div>
+            <div class="name">总营收</div>
+          </div>
+        </div>
+        <div class="legend" id="legend"></div>
+      </div>
+    </div>
+
+    <!-- 渠道漏斗 -->
+    <div class="card wide">
+      <div class="head">
+        <div>
+          <h2>各渠道转化与流失（全渠道汇总漏斗）</h2>
+          <div class="desc">单位：人/单 · 本月 · 各阶段人数与阶段间流失</div>
+        </div>
+      </div>
+      <div class="funnel" id="funnel"></div>
+      <div class="funnel-summary">
+        <div>访问总量<b>120,000</b></div>
+        <div>付费订单<b>4,860</b></div>
+        <div>复购/续费<b>2,916</b></div>
+        <div>全链路转化率<b>2.43%</b></div>
+        <div>最大流失环节<b style="color:var(--down);font-size:14px">注册（流失 60%）</b></div>
+      </div>
+    </div>
+
+  </section>
+
+  <footer class="footer">
+    <div>数据说明：本页为演示样例数据，蓝色示意图表均可悬停查看明细；漏斗为全渠道汇总口径。</div>
+    <div class="print-note">建议横向打印 · 月度经营报告</div>
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- 数据 ---------- */
+  var months = ["2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08","2026-09","2026-10"];
+  var revenue = [352, 365, 358, 381, 390, 402, 417, 408, 424, 436, 429, 480];
+
+  var products = [
+    {name:"智能硬件", value:186, color:"#2f54eb"},
+    {name:"SaaS 订阅", value:152, color:"#4c9aff"},
+    {name:"专业服务", value:84,  color:"#7bd9a8"},
+    {name:"增值服务", value:58,  color:"#f5a623"}
+  ];
+
+  var funnel = [
+    {name:"访问",   count:120000},
+    {name:"注册",   count:21600},
+    {name:"激活/试用", count:9720},
+    {name:"付费",   count:4860},
+    {name:"复购/续费", count:2916}
+  ];
+
+  var fmt = function(n){ return n.toLocaleString("zh-CN"); };
+
+  /* ---------- 走势折线图 ---------- */
+  var W=720, H=280, L=52, R=24, T=26, B=40;
+  var iw=W-L-R, ih=H-T-B;
+  var yMax=500, yMin=300;
+  var svg=document.getElementById("trend-chart");
+  var NS="http://www.w3.org/2000/svg";
+  function el(tag,attrs){
+    var e=document.createElementNS(NS,tag);
+    for(var k in attrs) e.setAttribute(k,attrs[k]);
+    return e;
+  }
+  var x=function(i){ return L + iw * (i/(months.length-1)); };
+  var y=function(v){ return T + ih * (1-(v-yMin)/(yMax-yMin)); };
+
+  [300,350,400,450,500].forEach(function(v){
+    svg.appendChild(el("line",{x1:L,x2:W-R,y1:y(v),y2:y(v),stroke:"#e6e9ef","stroke-width":1}));
+    var t=el("text",{x:L-8,y:y(v)+4,"text-anchor":"end","class":"axis-v"});
+    t.textContent=v; svg.appendChild(t);
+  });
+  months.forEach(function(m,i){
+    var t=el("text",{x:x(i),y:H-14,"text-anchor":"middle","class":"axis-t"});
+    t.textContent=m.slice(2); svg.appendChild(t);
+  });
+
+  var d="", area="";
+  revenue.forEach(function(v,i){ d+=(i===0?"M":"L")+x(i)+","+y(v); });
+  area=d+"L"+x(revenue.length-1)+","+(T+ih)+"L"+L+","+(T+ih)+"Z";
+  var defs=el("defs",{});
+  var grad=el("linearGradient",{id:"areaGrad",x1:0,y1:0,x2:0,y2:1});
+  grad.appendChild(el("stop",{offset:"0%","stop-color":"#2f54eb","stop-opacity":"0.16"}));
+  grad.appendChild(el("stop",{offset:"100%","stop-color":"#2f54eb","stop-opacity":"0.02"}));
+  defs.appendChild(grad); svg.appendChild(defs);
+
+  svg.appendChild(el("path",{d:area,fill:"url(#areaGrad)"}));
+  svg.appendChild(el("path",{d:d,fill:"none",stroke:"#2f54eb","stroke-width":2.5,"stroke-linecap":"round","stroke-linejoin":"round"}));
+
+  revenue.forEach(function(v,i){
+    svg.appendChild(el("circle",{cx:x(i),cy:y(v),r:3.5,fill:"#fff",stroke:"#2f54eb","stroke-width":2}));
+  });
+
+  var lastX=x(revenue.length-1), lastY=y(revenue[revenue.length-1]);
+  var lastRing=el("circle",{cx:lastX,cy:lastY,r:7,fill:"rgba(47,84,235,.18)"});
+  svg.appendChild(lastRing);
+
+  var guide=el("line",{x1:0,x2:0,y1:T,y2:T+ih,"class":"guide"});
+  var hoverDot=el("circle",{r:5,fill:"#2f54eb",stroke:"#fff","stroke-width":2,"class":"hover-dot"});
+  svg.appendChild(guide); svg.appendChild(hoverDot);
+
+  var tip=document.getElementById("trend-tip");
+  var container=svg.parentElement;
+  svg.addEventListener("mousemove",function(ev){
+    var rect=svg.getBoundingClientRect();
+    var mx=(ev.clientX-rect.left)*(W/rect.width);
+    var idx=Math.round((mx-L)/iw*(months.length-1));
+    idx=Math.max(0,Math.min(months.length-1,idx));
+    var px=x(idx), py=y(revenue[idx]);
+    guide.setAttribute("x1",px); guide.setAttribute("x2",px); guide.style.opacity=1;
+    hoverDot.setAttribute("cx",px); hoverDot.setAttribute("cy",py); hoverDot.style.opacity=1;
+    var mom = idx>0 ? ((revenue[idx]/revenue[idx-1]-1)*100) : null;
+    var html = '<div class="m">'+months[idx]+'</div><b>'+(revenue[idx]/100).toFixed(2)+' 亿</b><span class="m">（'+fmt(revenue[idx])+' 万）</span>';
+    if(mom!==null){
+      var cls = mom>=0 ? "#6ee7a8" : "#ff9b9e";
+      html += '<div style="color:'+cls+';font-weight:600">环比 '+(mom>=0?"+":"")+mom.toFixed(1)+'%</div>';
+    }
+    tip.innerHTML=html;
+    var left = px/W*rect.width, top = py/H*rect.height;
+    tip.style.left=left+"px"; tip.style.top=top+"px"; tip.style.display="block";
+  });
+  svg.addEventListener("mouseleave",function(){
+    guide.style.opacity=0; hoverDot.style.opacity=0; tip.style.display="none";
+  });
+
+  /* ---------- 环形图 ---------- */
+  var donut=document.getElementById("donut");
+  var cxp=100, cyp=100, r=74, sW=22;
+  var C=2*Math.PI*r;
+  var total=products.reduce(function(s,p){return s+p.value;},0);
+  var segs=[];
+  var off=0;
+  products.forEach(function(p){
+    var frac=p.value/total;
+    var seg=el("circle",{cx:cxp,cy:cyp,r:r,fill:"none",stroke:p.color,"stroke-width":sW,
+      "stroke-dasharray":(frac*C-3)+" "+(C-frac*C+3),
+      "stroke-dashoffset":-off*C,
+      transform:"rotate(-90 "+cxp+" "+cyp+")",
+      style:"transition:opacity .2s, stroke-width .2s;cursor:default"});
+    donut.appendChild(seg);
+    segs.push(seg); off+=frac;
+  });
+
+  var center=document.getElementById("donut-center");
+  var legend=document.getElementById("legend");
+  function highlight(idx){
+    segs.forEach(function(s,i){
+      s.style.opacity=(idx===null||i===idx)?1:0.25;
+      s.setAttribute("stroke-width",(idx===i)?sW+5:sW);
+    });
+    var items=legend.children;
+    for(var i=0;i<items.length;i++) items[i].classList.toggle("on",idx===i);
+    if(idx===null){
+      center.innerHTML='<div class="pct">100%</div><div class="name">总营收</div>';
+    }else{
+      var p=products[idx];
+      center.innerHTML='<div class="pct">'+(p.value/total*100).toFixed(1)+'%</div><div class="name">'+p.name+' '+fmt(p.value)+' 万</div>';
+    }
+  }
+  products.forEach(function(p,i){
+    var li=document.createElement("div");
+    li.className="legend-item";
+    li.innerHTML='<span class="dot" style="background:'+p.color+'"></span>'+
+      '<span class="name">'+p.name+'</span>'+
+      '<span class="val">'+fmt(p.value)+' 万</span>'+
+      '<span class="pct">'+(p.value/total*100).toFixed(1)+'%</span>';
+    li.addEventListener("mouseenter",function(){highlight(i);});
+    li.addEventListener("mouseleave",function(){highlight(null);});
+    legend.appendChild(li);
+    segs[i].addEventListener("mouseenter",function(){highlight(i);});
+    segs[i].addEventListener("mouseleave",function(){highlight(null);});
+  });
+
+  /* ---------- 漏斗 ---------- */
+  var funnelEl=document.getElementById("funnel");
+  var maxCount=funnel[0].count;
+  funnel.forEach(function(stage,i){
+    var pctOfMax=stage.count/maxCount*100;
+    var row=document.createElement("div");
+    row.className="f-stage";
+    row.innerHTML=
+      '<div class="f-name"><b>'+stage.name+'</b>'+fmt(stage.count)+'</div>'+
+      '<div class="f-bartrack"><div class="f-bar" data-w="'+pctOfMax.toFixed(2)+'" style="width:0">'+fmt(stage.count)+'</div></div>'+
+      '<div class="f-side">'+
+        (i===0?'<span class="conv">起点 · 100%</span>':
+        (function(){
+          var prev=funnel[i-1];
+          var conv=stage.count/prev.count*100;
+          var lost=prev.count-stage.count;
+          var lostPct=100-conv;
+          return '<span class="conv">环节转化 '+conv.toFixed(1)+'%</span>'+
+                 '<span class="lost">流失 '+fmt(lost)+'（'+lostPct.toFixed(0)+'%）</span>';
+        })())+
+      '</div>';
+    funnelEl.appendChild(row);
+
+    if(i<funnel.length-1){
+      var arrow=document.createElement("div");
+      arrow.className="f-arrow";
+      var conv=funnel[i+1].count/stage.count*100;
+      arrow.innerHTML='<div style="flex:1;border-top:1px dashed #d3d8e2"></div>'+
+        '<span>↓ '+stage.name+' → '+funnel[i+1].name+'：转化 <b>'+conv.toFixed(1)+'%</b></span>'+
+        '<span class="lost-tag">↓ 流失 '+fmt(stage.count-funnel[i+1].count)+' 人/单</span>'+
+        '<div style="flex:1;border-top:1px dashed #d3d8e2"></div>';
+      funnelEl.appendChild(arrow);
+    }
+  });
+  requestAnimationFrame(function(){
+    requestAnimationFrame(function(){
+      var bars=document.querySelectorAll(".f-bar");
+      for(var i=0;i<bars.length;i++) bars[i].style.width=bars[i].getAttribute("data-w")+"%";
+    });
+  });
+})();
+</script>
+</body>
+</html>

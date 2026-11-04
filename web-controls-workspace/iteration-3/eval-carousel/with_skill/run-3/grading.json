@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用默认形式：主图浏览没有做成“translateX 左右滑动 + 仅三个圆点指示器”的默认组合",
+      "passed": true,
+      "evidence": "outputs/page.html：主展示区为 <div class=\"viewer\" id=\"viewer\"> 内的 <canvas id=\"stage\">，通过圆柱投影逐列采样贴图绘制 360° 旋转（脚本注释“360° 绘制：圆柱正交投影，逐列采样贴图”及 drawStage 中 ctx.drawImage(tex, u, 0, sw, TEXH, x, topY, ...)），全文件无 translateX 轮播轨道，也无圆点分页指示器；指示器为度数徽标 + 环形罗盘（<div class=\"chip\"> 内 #degVal / #compass）和左侧缩略图列表（role=\"tablist\" 的 .thumbs）。"
+    },
+    {
+      "text": "使用了一种成形的替代形式（3D 旋转木马 / 卡片堆叠 / 翻页式 / 手风琴画廊 / 360°展示 / 视差 / 淡入式 之一）",
+      "passed": true,
+      "evidence": "outputs/page.html：<title>陶鸣 TM-01 陶瓷蓝牙音箱 — 360° 展示</title>；canvas role=\"img\" aria-label=\"…360° 视图：左右拖动或用方向键旋转…\"；交互实现为 pointerdown/pointermove 中 azimuth -= dx / Rcss 并帧循环 drawStage()，即按住拖动旋转查看全角度的 360°展示（360° View）。outputs/notes.md 第三节：“主控件：360°旋转展示 360° View”。"
+    },
+    {
+      "text": "展示细节说清了：含指示器（缩略图/进度/编号等）与自动播放或明确的交互控制（拖拽/悬停/点击切换等）",
+      "passed": true,
+      "evidence": "outputs/page.html 指示器：缩略图列表（<ul class=\"thumbs\" role=\"tablist\">，icon+名称五项，选中态 class=\"on\"/aria-selected）、度数徽标 <b id=\"degVal\">0°</b>、环形罗盘 .compass、视图编号（capNo \"VIEW · 360\"\"VIEW · 01\"等）；交互控制：pointerdown/pointermove 拖拽旋转带惯性（vel 与 exp(-dt*3.4) 衰减）、键盘 ArrowLeft/ArrowRight 旋转、#resetBtn 回正（缓动动画）、点击缩略图切换视图（setView）；自动播放：脚本 var AUTO = 0.1; var HOLD = 2800; 与 “if (!hovering && !reduceMotion && now - lastAct > HOLD) azimuth += AUTO * dt”——闲置 2.8 秒且未悬停时自动慢速旋转，悬停/拖动暂停。outputs/notes.md 第四节亦完整描述了这些规则（松手惯性、闲置 2.8s 自动慢转、悬停暂停、度数徽标+环形罗盘、←/→、回正、prefers-reduced-motion）。"
+    },
+    {
+      "text": "notes.md 给出候选方案对比与选型理由",
+      "passed": true,
+      "evidence": "outputs/notes.md 第二节“候选对比（轮播 7 种中的 3 个 + 1 个辅助控件）”列出 360° View／手风琴画廊／3D Carousel／卡片堆叠／图片预览标签的对比表（形式、适用场景、契合度星级）；第三节“判断依据（工作流第 2 步）”给 4 点判断；第四节“最终选型与理由”给出“主控件：360°旋转展示 360° View；辅助控件：图片预览标签”及选型理由汇总四条（契合标注场景、可演示交互规则、辅助控件闭环、边界与可达性）。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 2
+}

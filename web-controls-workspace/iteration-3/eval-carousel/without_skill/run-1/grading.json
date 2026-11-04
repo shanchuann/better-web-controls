@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用默认形式：主图浏览没有做成“translateX 左右滑动 + 仅三个圆点指示器”的默认组合",
+      "passed": true,
+      "evidence": "outputs/page.html 中 .slide 的 transform 为复合 3D 变换：translateX 结合 translateZ(calc(-1*abs(var(--o))*170px))、rotateY(calc(var(--o)*-20deg))、scale 与 blur（page.html:82-87），并非纯 translateX 平铺滑动；指示器为底部胶片条缩略导航（.filmstrip 含编号与图名，page.html:137-165、472-482）与编号计数 .slide-count（page.html:162-165、416），没有三个圆点指示器。"
+    },
+    {
+      "text": "使用了一种成形的替代形式（3D 旋转木马 / 卡片堆叠 / 翻页式 / 手风琴画廊 / 360°展示 / 视差 / 淡入式 之一）",
+      "passed": true,
+      "evidence": "outputs/page.html:55-107 实现为 3D Coverflow 环绕展台（notes.md 第 6 行自称“3D 环绕展台（Coverflow 画廊）”）：perspective:1400px 容器内，侧边卡片 translateZ 后退、rotateY 偏转、缩小加模糊，形成 3D 旋转木马式纵深排布（page.html:57-92）。"
+    },
+    {
+      "text": "展示细节说清了：含指示器（缩略图/进度/编号等）与自动播放或明确的交互控制（拖拽/悬停/点击切换等）",
+      "passed": true,
+      "evidence": "outputs/page.html 同时具备：指示器——胶片条缩略导航（编号 .num + 图名 .lbl + active 高亮，page.html:141-160）和进度线（.film-item.active.fill::after 进度填充，page.html:155-160）与编号计数 '01 / 05'（page.html:416、501）；自动播放——restartFill() 约 3.8s 自动 step(1) 巡展（page.html:513-523）；交互控制——鼠标拖拽带速度甩动判定（pointerdown/move/endDrag，page.html:525-552）、滚轮切换（wheel 监听，page.html:574-581）、左右方向键（keydown，page.html:570-573）、两侧悬停箭头按钮（page.html:407-412）、点击主图缩放（page.html:554-561）。notes.md 第 9-13 行亦有说明。"
+    },
+    {
+      "text": "notes.md 给出候选方案对比与选型理由",
+      "passed": false,
+      "evidence": "outputs/notes.md 仅在“## 方案：3D 环绕展台（Coverflow 画廊）”一节描述了最终选定方案的实现细节（第 6-15 行），全文没有列出任何其他候选形式（如卡片堆叠、翻页式、淡入式等）的对比，也没有解释为何选择 Coverflow 而非其他形式的选型理由。"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "run": "without_skill",
+  "eval_id": 2
+}

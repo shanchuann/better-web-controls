@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用浏览器原生 <select> 默认样式直接糊弄（自绘了下拉组件或对 select 做了成形样式）",
+      "passed": true,
+      "evidence": "page.html 中全文无任何 <select> 标签（grep 无匹配），而是用 JS 自绘组件：注释‘自定义下拉组件（可复用）’（page.html:243-247），Dropdown 构造函数（page.html:267）用 <div class=\"dd\">+<button class=\"dd-trigger\">+<div class=\"dd-panel\" role=\"listbox\"> 组合成形，CSS 定义了 .dd-trigger、.dd-panel、.dd-option 等完整样式（page.html:83-158），非原生默认样式。"
+    },
+    {
+      "text": "负责人筛选场景用了合适的下拉形态：单选用 Select；若体现多选则用 Multi-select 且选中项显示为可单独移除的标签",
+      "passed": true,
+      "evidence": "筛选场景为单选，采用了标准 Select（listbox）形态：触发按钮带 aria-haspopup=\"listbox\"（page.html:281），面板 role=\"listbox\"（page.html:276），选项 role=\"option\"+aria-selected，选中项显示 ✓（page.html:335-343, 139-143）；点击选项即 setValue 后 closeDropdown（page.html:339-343），同时只保留一个值，符合单选 Select 规则。未体现多选需求，故无需 Multi-select 标签形态。"
+    },
+    {
+      "text": "下拉说清了操作规则：选项来源、单选/多选、清空或重选方式",
+      "passed": true,
+      "evidence": "notes.md 第8行说明了选项来源与清空/重选方式：‘‘负责人’下拉（选项：全部 / 张伟 / 李娜 / 王强 / 赵敏 / 陈静），选择后表格实时过滤，出现‘重置筛选’按钮’；第23行‘顶部筛选下拉支持“×”一键清空（回到“全部”）’；单选规则由行为描述体现：选择一项即过滤（page.html:432-436 onChange 中 currentFilter 取单值并 syncFilter），未指派可重选‘未指派’（notes.md 第12行：‘可直接点开更改所属人’）。"
+    },
+    {
+      "text": "notes.md 给出候选方案（Select / Multi-select / Combobox 等）对比与选型理由",
+      "passed": true,
+      "evidence": "notes.md（全文 32 行）只包含：功能说明（1-13）、‘下拉组件（自定义，可复用）’特性列表（15-23）、数据与渲染（25-28）、已验证（30-32），全文未出现 Select / Multi-select / Combobox 等候选方案名词，也没有任何对比表或选型理由段落。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "without_skill",
+  "eval_id": 3
+}

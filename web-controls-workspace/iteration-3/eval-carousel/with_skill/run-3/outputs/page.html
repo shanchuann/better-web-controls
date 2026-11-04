@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陶鸣 TM-01 陶瓷蓝牙音箱 — 360° 展示</title>
+<style>
+  :root{
+    --ink:#242f2a;
+    --ink-2:#5c6a63;
+    --paper:#f1ecE3;
+    --card:#fbf8f1;
+    --line:rgba(94,108,98,.16);
+    --line-2:rgba(94,108,98,.3);
+    --brass:#b68c3f;
+    --brass-deep:#8a652f;
+    --r-lg:24px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    min-height:100vh;
+    background:
+      radial-gradient(1100px 620px at 78% -12%, rgba(255,255,255,.9), transparent 60%),
+      radial-gradient(900px 520px at -10% 110%, rgba(211,199,175,.45), transparent 55%),
+      #f1ece3;
+    color:var(--ink);
+    font-family:-apple-system,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+    display:flex;align-items:center;justify-content:center;
+    padding:44px 20px 56px;
+  }
+
+  .gallery{width:min(1080px,94vw)}
+  .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+  /* 页头 */
+  .head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;padding:0 4px}
+  .brand{font-family:Georgia,"Songti SC","STSong","SimSun",serif;font-size:25px;letter-spacing:2px}
+  .brand i{font-style:normal;font-size:12.5px;color:var(--ink-2);letter-spacing:3.5px;margin-left:12px;font-family:Georgia,serif}
+  .crumb{font-size:12px;color:var(--ink-2);letter-spacing:2px}
+
+  .layout{display:grid;grid-template-columns:212px 1fr;gap:24px;align-items:start}
+
+  /* 缩略图（图片预览标签） */
+  .thumbs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+  .thumb{
+    display:flex;align-items:center;gap:12px;width:100%;text-align:left;
+    font:inherit;color:var(--ink);cursor:pointer;
+    padding:11px 13px;border:1px solid var(--line);border-radius:16px;
+    background:rgba(255,255,255,.55);
+    transition:transform .22s ease,box-shadow .28s ease,border-color .25s,background .25s;
+  }
+  .thumb:hover{transform:translateX(3px);background:#fff}
+  .thumb:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .thumb.on{
+    background:#fff;border-color:rgba(176,137,67,.7);
+    box-shadow:0 12px 26px -16px rgba(92,72,40,.5);
+  }
+  .thumb.on .t-name{color:var(--brass-deep)}
+  .t-ic{
+    width:40px;height:40px;border-radius:11px;flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;
+    color:var(--brass-deep);
+    background:linear-gradient(180deg,#f6f1e6,#eae1d0);
+    border:1px solid rgba(94,108,98,.12);
+  }
+  .t-txt{min-width:0}
+  .t-name{display:block;font-size:13.5px;letter-spacing:1px;line-height:1.2}
+  .t-sub{display:block;margin-top:3px;font-size:10.5px;color:var(--ink-2);letter-spacing:.8px}
+
+  /* 主卡片 */
+  .stage-card{
+    position:relative;
+    background:linear-gradient(180deg,#fcf9f3,#f3ebdd);
+    border:1px solid var(--line);
+    border-radius:var(--r-lg);
+    box-shadow:0 34px 80px -42px rgba(74,60,38,.5),0 2px 10px rgba(74,60,38,.05);
+    overflow:hidden;
+  }
+  .viewer{position:relative;height:600px;user-select:none;-webkit-user-select:none}
+  .viewer canvas{
+    position:absolute;inset:0;width:100%;height:100%;display:block;
+    cursor:grab;touch-action:pan-y;outline:none;
+  }
+  .viewer canvas:focus-visible{box-shadow:inset 0 0 0 2px rgba(176,137,67,.75)}
+  .viewer canvas.grabbing{cursor:grabbing}
+  .viewer.static canvas{display:none}
+  #staticBox{
+    display:none;position:absolute;inset:0;
+    align-items:center;justify-content:center;padding:26px;
+    background:linear-gradient(180deg,#fbf7ee,#f0e7d7);
+  }
+  #staticBox svg{width:min(76%,520px);height:auto;max-height:92%}
+  .viewer.static #staticBox{display:flex}
+
+  /* 覆盖控件 */
+  .chip{
+    position:absolute;top:16px;right:16px;z-index:3;
+    display:flex;align-items:center;gap:9px;
+    background:rgba(255,255,255,.8);border:1px solid var(--line);
+    padding:6px 7px 6px 13px;border-radius:100px;
+    font-size:12px;color:var(--ink-2);backdrop-filter:blur(4px);
+    transition:opacity .3s;
+  }
+  .chip b{font-family:Georgia,serif;font-weight:600;font-size:15px;color:var(--ink);min-width:36px;text-align:right}
+  .compass{position:relative;width:24px;height:24px;flex:0 0 auto;
+    border-radius:50%;border:1.5px solid rgba(94,108,98,.35)}
+  .compass::before,.compass::after{
+    content:"";position:absolute;top:50%;left:50%;width:5px;height:1.6px;
+    margin-left:3px;margin-top:-.8px;background:var(--brass);border-radius:2px;
+    transform-origin:2px .8px;
+  }
+  .compass::after{height:1px;opacity:.4}
+  .viewer.static .chip{opacity:0;pointer-events:none}
+  .mini{
+    font:inherit;font-size:12px;letter-spacing:1.5px;
+    color:var(--brass-deep);background:none;border:none;
+    padding:5px 10px;border-radius:100px;cursor:pointer;
+  }
+  .mini:hover{background:rgba(176,137,67,.14)}
+  .mini:focus-visible{outline:2px solid var(--brass);outline-offset:-2px}
+
+  .modeBtn{
+    position:absolute;top:16px;left:16px;z-index:3;
+    display:none;align-items:center;gap:7px;
+    font:inherit;font-size:12.5px;letter-spacing:1px;color:var(--brass-deep);
+    background:rgba(255,255,255,.85);border:1px solid var(--line);
+    padding:8px 13px;border-radius:100px;cursor:pointer;
+    transition:box-shadow .25s;
+  }
+  .modeBtn:hover{box-shadow:0 8px 20px -10px rgba(92,72,40,.45)}
+  .modeBtn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+  .viewer.static .modeBtn{display:inline-flex}
+
+  .hint{
+    position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:3;
+    display:flex;align-items:center;gap:9px;white-space:nowrap;
+    background:rgba(35,46,41,.85);color:#f4efe5;
+    font-size:12.5px;letter-spacing:1px;
+    padding:9px 16px;border-radius:100px;
+    pointer-events:none;backdrop-filter:blur(3px);
+    transition:opacity .45s ease,visibility .45s;
+  }
+  .hint.hide{opacity:0;visibility:hidden}
+  .viewer.static .hint{opacity:0;visibility:hidden}
+
+  /* 说明文案 */
+  .cap{display:flex;gap:26px;align-items:flex-start;padding:20px 26px 24px;border-top:1px dashed var(--line-2)}
+  .cap-main{flex:1;min-width:0}
+  .cap h2{margin:0 0 6px;font-family:Georgia,"Songti SC","STSong","SimSun",serif;font-weight:600;font-size:17.5px;letter-spacing:1px}
+  .cap p{margin:0;font-size:13px;line-height:1.85;color:var(--ink-2);max-width:62ch}
+  .cap-side{flex:0 0 auto;text-align:right;padding-top:2px}
+  .cap-no{font-family:Georgia,serif;font-size:12px;color:var(--brass-deep);letter-spacing:2px}
+  .cap-meta{margin-top:6px;font-size:11.5px;color:var(--ink-2);letter-spacing:1px}
+
+  footer{margin-top:16px;text-align:center;font-size:11px;color:rgba(96,108,99,.6);letter-spacing:2px}
+
+  @media (max-width:900px){
+    body{padding:24px 14px 40px}
+    .layout{grid-template-columns:1fr;gap:16px}
+    .head{padding:0 2px}
+    .brand{font-size:21px}
+    .crumb{display:none}
+    .viewer{height:min(80vw,470px)}
+    .cap{flex-direction:column;gap:12px;padding:16px 18px 20px}
+    .cap-side{text-align:left}
+    .thumbs{flex-direction:row;overflow-x:auto;padding:4px 2px 12px;scrollbar-width:none}
+    .thumbs::-webkit-scrollbar{display:none}
+    .thumb{flex:0 0 auto;width:176px}
+    .thumb:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+<main class="gallery">
+  <header class="head">
+    <div class="brand">陶 鸣<i>TAOCAST</i></div>
+    <div class="crumb">商品详情 · 陶瓷蓝牙音箱 TM-01</div>
+  </header>
+
+  <div class="layout">
+    <!-- 图片预览标签：缩略图切换主图，选中态描边高亮 -->
+    <ul class="thumbs" role="tablist" aria-label="切换商品图">
+      <li><button class="thumb on" role="tab" aria-selected="true" data-view="360" type="button">
+        <span class="t-ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor">
+            <path d="M17.6 5.7A7.6 7.6 0 1 0 18.6 11" stroke-width="1.3" stroke-linecap="round"/>
+            <path d="M17.9 2.2 18.6 6l-3.9-.6" stroke-width="1.2" stroke-linejoin="round"/>
+            <text x="11" y="14" text-anchor="middle" font-size="7" fill="currentColor" stroke="none" font-family="Georgia,serif">360°</text>
+          </svg>
+        </span>
+        <span class="t-txt"><span class="t-name">360° 全景</span><span class="t-sub">拖动 · 惯性 · 回正</span></span>
+      </button></li>
+      <li><button class="thumb" role="tab" aria-selected="false" data-view="glaze" type="button">
+        <span class="t-ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor">
+            <rect x="4" y="3.4" width="14" height="15.2" rx="4.5" stroke-width="1.3"/>
+            <path d="M6.8 9c2.4-1.3 5.6-1.1 8.4.4M6.6 13.4c3-1.6 6.8-1.2 8.8.2" stroke-width="1" opacity=".55"/>
+          </svg>
+        </span>
+        <span class="t-txt"><span class="t-name">釉面细节</span><span class="t-sub">冰裂 · 开片纹</span></span>
+      </button></li>
+      <li><button class="thumb" role="tab" aria-selected="false" data-view="base" type="button">
+        <span class="t-ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor">
+            <rect x="4.6" y="3" width="12.8" height="13" rx="4.2" stroke-width="1.3"/>
+            <rect x="7.6" y="8.6" width="6.8" height="2.8" rx="1.4" stroke-width="1"/>
+            <line x1="4.6" y1="18.8" x2="17.4" y2="18.8" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="t-txt"><span class="t-name">底座接口</span><span class="t-sub">Type-C · 指示灯</span></span>
+      </button></li>
+      <li><button class="thumb" role="tab" aria-selected="false" data-view="scene" type="button">
+        <span class="t-ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor">
+            <rect x="5.6" y="4.6" width="8" height="12" rx="4" stroke-width="1.3"/>
+            <circle cx="15.4" cy="6.4" r="2" stroke-width="1"/>
+            <line x1="3" y1="18.8" x2="19" y2="18.8" stroke-width="1.3" stroke-linecap="round"/>
+          </svg>
+        </span>
+        <span class="t-txt"><span class="t-name">场景一瞥</span><span class="t-sub">案头 · 晨光</span></span>
+      </button></li>
+      <li><button class="thumb" role="tab" aria-selected="false" data-view="colors" type="button">
+        <span class="t-ic" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 22 22">
+            <rect x="3.4" y="7" width="4.4" height="10" rx="2.2" fill="#eef0ea" stroke="#8a652f" stroke-width=".7"/>
+            <rect x="8.8" y="5" width="4.4" height="12" rx="2.2" fill="#c3d3ca" stroke="#8a652f" stroke-width=".7"/>
+            <rect x="14.2" y="7" width="4.4" height="10" rx="2.2" fill="#5c6663" stroke="#8a652f" stroke-width=".7"/>
+          </svg>
+        </span>
+        <span class="t-txt"><span class="t-name">三款釉色</span><span class="t-sub">月白 · 天青 · 黛灰</span></span>
+      </button></li>
+    </ul>
+
+    <!-- 主展示区 -->
+    <section class="stage-card">
+      <div class="viewer" id="viewer">
+        <canvas id="stage" tabindex="0" role="img" aria-label="陶鸣 TM-01 陶瓷蓝牙音箱 360° 视图：左右拖动或用方向键旋转，度数徽标显示当前角度，回正按钮平滑复位"></canvas>
+        <div id="staticBox" aria-live="polite"></div>
+        <div class="chip" aria-label="当前旋转角度">
+          <span class="compass" id="compass" aria-hidden="true"></span>
+          <b id="degVal">0°</b>
+          <button class="mini" type="button" id="resetBtn">回正</button>
+        </div>
+        <button class="modeBtn" type="button" id="modeBtn">
+          <svg width="14" height="14" viewBox="0 0 22 22" fill="none" stroke="currentColor" aria-hidden="true">
+            <path d="M17.6 5.7A7.6 7.6 0 1 0 18.6 11" stroke-width="1.4" stroke-linecap="round"/>
+            <path d="M17.9 2.2 18.6 6l-3.9-.6" stroke-width="1.2" stroke-linejoin="round"/>
+          </svg>
+          返回 360°
+        </button>
+        <div class="hint" id="hint" aria-hidden="true">
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none" stroke="#e4c88e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M4.5 7h13"/><path d="M5.5 3.6 2 7l3.5 3.4"/><path d="M20.5 3.6 24 7l-3.5 3.4"/>
+          </svg>
+          <span>按住左右拖动查看 360° 全角度 · ←/→ 可旋转</span>
+        </div>
+      </div>
+
+      <div class="cap">
+        <div class="cap-main">
+          <h2 id="capTitle">360° 全景 · 拖动探索</h2>
+          <p id="capText">按住音箱左右拖动，查看正面网面单元与背面釉面刻字；松手后带着惯性缓缓停下，闲置片刻会自行慢转。</p>
+        </div>
+        <div class="cap-side">
+          <div class="cap-no" id="capNo">VIEW · 360</div>
+          <div class="cap-meta">TM-01 · 天青釉 · 全角度</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>单文件演示 · 零依赖 · 双击离线可开</footer>
+</main>
+
+<!-- 静态视图插画（模板，切换时克隆注入主区，随选中项重放入场动画） -->
+<div style="display:none">
+  <svg class="tpl" viewBox="0 0 640 500">
+    <defs>
+      <linearGradient id="z-pap" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fcf8f0"/><stop offset="1" stop-color="#eee4d1"/>
+      </linearGradient>
+      <linearGradient id="z-glz" x1="0" y1="0" x2=".42" y2="1">
+        <stop offset="0" stop-color="#eaeee7"/><stop offset=".52" stop-color="#ccd8cf"/><stop offset="1" stop-color="#aebfb6"/>
+      </linearGradient>
+    </defs>
+    <rect width="640" height="500" fill="url(#z-pap)"/>
+    <g transform="rotate(-7 320 250)">
+      <rect x="172" y="146" width="316" height="222" rx="26" fill="#8ca397" opacity=".3"/>
+      <rect x="152" y="126" width="316" height="222" rx="26" fill="url(#z-glz)"/>
+      <ellipse cx="205" cy="172" rx="66" ry="24" fill="#fff" opacity=".3"/>
+      <path d="M172 244c42-14 80 10 122-4s76 6 120-8M170 282c48-8 86 14 130 2s68 2 120-10M206 200c32-10 62 6 96-2s58 4 92-4M204 306c36-6 66 10 104 2s60 2 98-6" stroke="#6f8177" stroke-width="1" fill="none" opacity=".34"/>
+      <path d="M188 226c24-6 42 4 66-2s42 2 60-4M266 158c18-4 32 2 50-2" stroke="#7c8e84" stroke-width=".8" fill="none" opacity=".3"/>
+    </g>
+    <text x="60" y="62" font-family="Georgia,'Songti SC',serif" font-size="12.5" letter-spacing="3" fill="#8d7e60">CRAZING · 冰裂纹长于意，收于器</text>
+  </svg>
+
+  <svg class="tpl" viewBox="0 0 640 500">
+    <defs>
+      <linearGradient id="y-pap" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fcf8f0"/><stop offset="1" stop-color="#eee4d1"/>
+      </linearGradient>
+      <radialGradient id="y-body" cx=".42" cy=".35" r=".85">
+        <stop offset="0" stop-color="#ecf0e9"/><stop offset=".62" stop-color="#c8d5cd"/><stop offset="1" stop-color="#aebfb5"/>
+      </radialGradient>
+      <linearGradient id="y-au" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#8a652f"/><stop offset=".5" stop-color="#e8cf9a"/><stop offset="1" stop-color="#9c743a"/>
+      </linearGradient>
+    </defs>
+    <rect width="640" height="500" fill="url(#y-pap)"/>
+    <ellipse cx="320" cy="258" rx="196" ry="196" fill="url(#y-body)"/>
+    <circle cx="320" cy="258" r="150" fill="none" stroke="url(#y-au)" stroke-width="9"/>
+    <circle cx="320" cy="258" r="136" fill="none" stroke="#7e8f86" stroke-width="1.4" opacity=".5"/>
+    <ellipse cx="272" cy="188" rx="58" ry="30" fill="#fff" opacity=".26"/>
+    <g>
+      <rect x="268" y="150" width="10" height="30" rx="5" fill="#3c4541"/>
+      <rect x="284" y="150" width="10" height="30" rx="5" fill="#3c4541"/>
+      <rect x="300" y="150" width="10" height="30" rx="5" fill="#3c4541"/>
+      <rect x="362" y="336" width="10" height="30" rx="5" fill="#3c4541"/>
+      <rect x="378" y="336" width="10" height="30" rx="5" fill="#3c4541"/>
+      <rect x="394" y="336" width="10" height="30" rx="5" fill="#3c4541"/>
+    </g>
+    <rect x="272" y="240" width="96" height="26" rx="13" fill="#252f2a"/>
+    <rect x="277" y="243" width="86" height="8" rx="4" fill="#57615a" opacity=".85"/>
+    <circle cx="404" cy="230" r="14" fill="#e2be6a" opacity=".28"/>
+    <circle cx="404" cy="230" r="5.5" fill="#c99f4e"/>
+    <text x="70" y="62" font-family="Georgia,'Songti SC',serif" font-size="12.5" letter-spacing="3" fill="#8d7e60">底座 · TYPE-C · 呼吸指示灯</text>
+  </svg>
+
+  <svg class="tpl" viewBox="0 0 640 500">
+    <defs>
+      <linearGradient id="c-pap" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fcf8f0"/><stop offset="1" stop-color="#ece0cb"/>
+      </linearGradient>
+      <linearGradient id="c-body" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e8ece5"/><stop offset=".58" stop-color="#c6d3cb"/><stop offset="1" stop-color="#abc0b4"/>
+      </linearGradient>
+      <linearGradient id="c-au" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#8a652f"/><stop offset=".5" stop-color="#e6cd94"/><stop offset="1" stop-color="#9c743a"/>
+      </linearGradient>
+      <pattern id="c-dots" width="15" height="15" patternUnits="userSpaceOnUse">
+        <circle cx="7" cy="7" r="2" fill="#222825" opacity=".62"/>
+      </pattern>
+    </defs>
+    <rect width="640" height="500" fill="url(#c-pap)"/>
+    <circle cx="512" cy="106" r="44" fill="none" stroke="#b9893a" stroke-width="1.5" opacity=".6"/>
+    <circle cx="512" cy="106" r="30" fill="#b9893a" opacity=".12"/>
+    <rect x="0" y="374" width="640" height="126" fill="#e2d3b6"/>
+    <rect x="0" y="374" width="640" height="3" fill="#c6b38b"/>
+    <ellipse cx="264" cy="392" rx="102" ry="12" fill="#4a4030" opacity=".2"/>
+    <rect x="188" y="130" width="152" height="256" rx="74" fill="url(#c-body)"/>
+    <rect x="184" y="160" width="160" height="7" rx="3.5" fill="url(#c-au)"/>
+    <rect x="184" y="296" width="160" height="7" rx="3.5" fill="url(#c-au)"/>
+    <rect x="188" y="170" width="152" height="122" fill="#3a423e"/>
+    <rect x="196" y="170" width="13" height="122" fill="#d0dcd5" opacity=".2"/>
+    <rect x="196" y="178" width="136" height="106" fill="url(#c-dots)"/>
+    <g>
+      <path d="M508 376v-64" stroke="#74855f" stroke-width="3.5" fill="none"/>
+      <path d="M508 330c-28-7-37-33-33-50 22 2 38 24 33 50Z" fill="#8b9c77"/>
+      <path d="M508 316c28-4 41-28 39-47-21 0-39 19-39 47Z" fill="#75875f"/>
+      <path d="M507 288c-19-2-30-17-30-32 15 2 28 15 30 32Z" fill="#a3b28e"/>
+      <path d="M476 376h64l-8 46h-48Z" fill="#b9893a" opacity=".82"/>
+    </g>
+  </svg>
+
+  <svg class="tpl" viewBox="0 0 640 500">
+    <defs>
+      <linearGradient id="s-pap" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#fcf8f0"/><stop offset="1" stop-color="#eee4d1"/>
+      </linearGradient>
+      <linearGradient id="s-au" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0" stop-color="#8a652f"/><stop offset=".5" stop-color="#e8cf9a"/><stop offset="1" stop-color="#9c743a"/>
+      </linearGradient>
+      <radialGradient id="s-k1" cx=".4" cy=".32" r=".9">
+        <stop offset="0" stop-color="#f5f6f1"/><stop offset="1" stop-color="#d5dbd2"/>
+      </radialGradient>
+      <radialGradient id="s-k2" cx=".4" cy=".32" r=".9">
+        <stop offset="0" stop-color="#d5e1d8"/><stop offset="1" stop-color="#a9bcb0"/>
+      </radialGradient>
+      <radialGradient id="s-k3" cx=".4" cy=".32" r=".9">
+        <stop offset="0" stop-color="#6b7673"/><stop offset="1" stop-color="#525c59"/>
+      </radialGradient>
+      <pattern id="s-dots" width="14" height="14" patternUnits="userSpaceOnUse">
+        <circle cx="7" cy="7" r="1.9" fill="#1c211f" opacity=".6"/>
+      </pattern>
+    </defs>
+    <rect width="640" height="500" fill="url(#s-pap)"/>
+    <ellipse cx="147" cy="300" rx="56" ry="10" fill="#4a4030" opacity=".16"/>
+    <ellipse cx="320" cy="284" rx="62" ry="11" fill="#4a4030" opacity=".2"/>
+    <ellipse cx="493" cy="300" rx="56" ry="10" fill="#4a4030" opacity=".16"/>
+    <g>
+      <rect x="107" y="78" width="80" height="220" rx="40" fill="url(#s-k1)"/>
+      <rect x="101" y="118" width="92" height="6" rx="3" fill="url(#s-au)"/>
+      <rect x="101" y="252" width="92" height="6" rx="3" fill="url(#s-au)"/>
+      <rect x="107" y="127" width="80" height="122" rx="9" fill="#38413d"/>
+      <rect x="112" y="133" width="70" height="110" fill="url(#s-dots)"/>
+    </g>
+    <g>
+      <rect x="280" y="62" width="80" height="220" rx="40" fill="url(#s-k2)"/>
+      <rect x="274" y="102" width="92" height="6" rx="3" fill="url(#s-au)"/>
+      <rect x="274" y="236" width="92" height="6" rx="3" fill="url(#s-au)"/>
+      <rect x="280" y="111" width="80" height="122" rx="9" fill="#38413d"/>
+      <rect x="285" y="117" width="70" height="110" fill="url(#s-dots)"/>
+    </g>
+    <g>
+      <rect x="453" y="78" width="80" height="220" rx="40" fill="url(#s-k3)"/>
+      <rect x="447" y="118" width="92" height="6" rx="3" fill="url(#s-au)"/>
+      <rect x="447" y="252" width="92" height="6" rx="3" fill="url(#s-au)"/>
+      <rect x="453" y="127" width="80" height="122" rx="9" fill="#2e3633"/>
+      <rect x="458" y="133" width="70" height="110" fill="url(#s-dots)"/>
+    </g>
+    <g font-family="'Songti SC','STSong','SimSun',serif" font-size="20" letter-spacing="6" fill="#4a544e" text-anchor="middle">
+      <text x="147" y="352">月白</text>
+      <text x="320" y="336">天青</text>
+      <text x="493" y="352">黛灰</text>
+    </g>
+    <text x="86" y="52" font-family="Georgia,'Songti SC',serif" font-size="12.5" letter-spacing="3" fill="#8d7e60">三款釉色 · 同窑同火 · 各自成器</text>
+  </svg>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var TAU = Math.PI * 2;
+  function mod(v, m) { return ((v % m) + m) % m; }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ============ 元素 ============ */
+  var card = document.querySelector('.stage-card');
+  var viewer = document.getElementById('viewer');
+  var canvas = document.getElementById('stage');
+  var ctx = canvas.getContext('2d', { alpha: false });
+  var staticBox = document.getElementById('staticBox');
+  var degEl = document.getElementById('degVal');
+  var compass = document.getElementById('compass');
+  var resetBtn = document.getElementById('resetBtn');
+  var modeBtn = document.getElementById('modeBtn');
+  var hintEl = document.getElementById('hint');
+  var thumbs = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+  var capTitle = document.getElementById('capTitle');
+  var capText = document.getElementById('capText');
+  var capNo = document.getElementById('capNo');
+  var capMeta = document.getElementById('capMeta');
+
+  /* ============ 文案（随选中项切换） ============ */
+  var CAPS = {
+    '360':    { no: 'VIEW · 360', t: '360° 全景 · 拖动探索', m: 'TM-01 · 天青釉 · 全角度',
+                d: '按住音箱左右拖动，查看正面网面单元与背面釉面刻字；松手后带着惯性缓缓停下，闲置片刻会自行慢转。' },
+    glaze:    { no: 'VIEW · 01', t: '釉面细节 · 冰裂开片', m: '1280℃ 还原烧 · 手工修坯',
+                d: '亚光青釉在窑火中生成蝉翼般的开片细纹，裂理走向每台都是孤本；指腹抚过，是陶瓷特有的莹润阻尼。' },
+    base:     { no: 'VIEW · 02', t: '底座接口 · 细节一览', m: 'Type-C · 12 小时续航',
+                d: 'Type-C 接口嵌入底座声腔，外圈黄铜定环与呼吸指示灯随状态明灭；底部开细缝散热，不积灰尘。' },
+    scene:    { no: 'VIEW · 03', t: '场景一瞥 · 案头光晕', m: '直径 96mm · 重 0.9kg',
+                d: '圆筒身形宽 96 毫米，握持刚好；摆上案头或窗台，它先是一件瓷器，其次才是一台音箱。' },
+    colors:   { no: 'VIEW · 04', t: '三款釉色 · 选一台如选茶杯', m: '月白 · 天青 · 黛灰',
+                d: '三款釉色出自同一窑口、同一温区；月白如晨霜，天青如雨过，黛灰如暮山，随光会呈现不同浓淡。' }
+  };
+
+  /* ============ 360° 贴图：2048px 等于一整圈展开面 ============ */
+  var TEXW = 2048, TEXH = 1000;
+  var tex = buildTexture();
+
+  function buildTexture() {
+    var t = document.createElement('canvas');
+    t.width = TEXW; t.height = TEXH;
+    var c = t.getContext('2d');
+    var i;
+
+    /* 釉面基底 */
+    var base = c.createLinearGradient(0, 0, 0, TEXH);
+    base.addColorStop(0, '#e9ebe3');
+    base.addColorStop(0.45, '#cdd9d0');
+    base.addColorStop(0.8, '#c0cfc7');
+    base.addColorStop(1, '#b2c2bb');
+    c.fillStyle = base;
+    c.fillRect(0, 0, TEXW, TEXH);
+
+    /* 拉坯细痕 */
+    for (i = 0; i < 90; i++) {
+      var sw = 4 + Math.random() * 22;
+      var sa = 0.03 + Math.random() * 0.05;
+      c.fillStyle = Math.random() < 0.5
+        ? 'rgba(255,255,255,' + sa.toFixed(3) + ')'
+        : 'rgba(64,84,74,' + (sa * 0.8).toFixed(3) + ')';
+      c.fillRect(Math.random() * TEXW, 0, sw, TEXH);
+    }
+
+    /* 正面：编织网面声学单元（约覆盖 180°，带羽化边缘） */
+    var GX = TEXW / 2, GR = 470, GT = 104, GB = 896;
+    var gh = GB - GT;
+    var g = document.createElement('canvas');
+    g.width = GR * 2; g.height = gh;
+    var gc = g.getContext('2d');
+    var gp = gc.createLinearGradient(0, 0, 0, gh);
+    gp.addColorStop(0, '#31393a');
+    gp.addColorStop(0.5, '#3a4340');
+    gp.addColorStop(1, '#2c3432');
+    gc.fillStyle = gp;
+    gc.fillRect(0, 0, g.width, g.height);
+    for (var y = 34; y < gh - 22; y += 19) {
+      var off = (Math.round(y / 19) % 2) ? 9 : 0;
+      for (var x = 34 + off; x < g.width - 26; x += 19) {
+        gc.beginPath();
+        gc.arc(x + (Math.random() * 2 - 1), y + (Math.random() * 2 - 1), 3.3, 0, TAU);
+        gc.fillStyle = 'rgba(13,17,16,.72)';
+        gc.fill();
+      }
+    }
+    var gs = gc.createLinearGradient(0, 0, 0, gh);
+    gs.addColorStop(0, 'rgba(255,255,255,.10)');
+    gs.addColorStop(0.45, 'rgba(255,255,255,0)');
+    gs.addColorStop(1, 'rgba(0,0,0,.15)');
+    gc.fillStyle = gs;
+    gc.fillRect(0, 0, g.width, g.height);
+    /* 羽化：先水平方向蒙版，再垂直方向 */
+    gc.globalCompositeOperation = 'destination-in';
+    var mh = gc.createLinearGradient(0, 0, g.width, 0);
+    mh.addColorStop(0, 'rgba(255,255,255,0)');
+    mh.addColorStop(0.09, 'rgba(255,255,255,1)');
+    mh.addColorStop(0.91, 'rgba(255,255,255,1)');
+    mh.addColorStop(1, 'rgba(255,255,255,0)');
+    gc.fillStyle = mh; gc.fillRect(0, 0, g.width, g.height);
+    var mv = gc.createLinearGradient(0, 0, 0, g.height);
+    mv.addColorStop(0, 'rgba(255,255,255,0)');
+    mv.addColorStop(0.06, 'rgba(255,255,255,1)');
+    mv.addColorStop(0.94, 'rgba(255,255,255,1)');
+    mv.addColorStop(1, 'rgba(255,255,255,0)');
+    gc.fillStyle = mv; gc.fillRect(0, 0, g.width, g.height);
+    gc.globalCompositeOperation = 'source-over';
+    c.drawImage(g, GX - GR, GT);
+
+    /* 黄铜装饰环 */
+    function ring(x0) {
+      var rg = c.createLinearGradient(x0, 0, x0 + 14, 0);
+      rg.addColorStop(0, '#8a652f');
+      rg.addColorStop(0.5, '#e8cf9a');
+      rg.addColorStop(1, '#9c743a');
+      c.fillStyle = rg;
+      c.fillRect(x0, GT - 12, 14, gh + 24);
+    }
+    ring(GX - GR - 30);
+    ring(GX + GR + 16);
+
+    /* 背面：釉面刻字 / 散热缝 / Type-C / 指示灯（跨接缝绘制） */
+    function atSeam(fn) { fn(-TEXW); fn(0); fn(TEXW); }
+    atSeam(function (o) {
+      c.save();
+      c.translate(o, 0);
+      c.textAlign = 'center';
+      c.font = '600 76px Georgia, "Times New Roman", serif';
+      c.fillStyle = 'rgba(255,255,255,.3)';
+      c.fillText('TAOCAST', TEXW, 408);
+      c.fillStyle = 'rgba(56,72,64,.5)';
+      c.fillText('TAOCAST', TEXW, 404);
+      c.font = '500 40px "Microsoft YaHei", "PingFang SC", sans-serif';
+      c.fillStyle = 'rgba(255,255,255,.26)';
+      c.fillText('陶 鸣 声 学 · TM-01', TEXW, 486);
+      c.fillStyle = 'rgba(56,72,64,.42)';
+      c.fillText('陶 鸣 声 学 · TM-01', TEXW, 482);
+      c.font = '500 26px Georgia, sans-serif';
+      c.fillStyle = 'rgba(255,255,255,.22)';
+      c.fillText('CERAMIC ACOUSTICS · EST. 2018', TEXW, 540);
+
+      for (i = 0; i < 9; i++) {
+        c.fillStyle = 'rgba(72,88,80,.5)';
+        c.fillRect(TEXW - 66 + i * 15, 160, 7, 42);
+        c.fillRect(TEXW - 66 + i * 15, 215, 7, 42);
+      }
+
+      var up = c.createLinearGradient(0, 850, 0, 886);
+      up.addColorStop(0, '#2a3430');
+      up.addColorStop(1, '#465049');
+      c.fillStyle = up;
+      c.fillRect(TEXW - 64, 850, 128, 36);
+      c.fillStyle = 'rgba(255,255,255,.25)';
+      c.fillRect(TEXW - 64, 850, 128, 5);
+      c.fillStyle = 'rgba(210,225,215,.75)';
+      c.fillRect(TEXW - 26, 866, 52, 7);
+
+      var led = c.createRadialGradient(TEXW - 126, 236, 1, TEXW - 126, 236, 16);
+      led.addColorStop(0, 'rgba(224,186,102,.9)');
+      led.addColorStop(1, 'rgba(224,186,102,0)');
+      c.fillStyle = led;
+      c.beginPath(); c.arc(TEXW - 126, 236, 16, 0, TAU); c.fill();
+      c.fillStyle = '#d9b867';
+      c.beginPath(); c.arc(TEXW - 126, 236, 5.5, 0, TAU); c.fill();
+      c.restore();
+    });
+
+    /* 接缝细影 */
+    var e1 = c.createLinearGradient(0, 0, 26, 0);
+    e1.addColorStop(0, 'rgba(60,74,66,.35)'); e1.addColorStop(1, 'rgba(60,74,66,0)');
+    c.fillStyle = e1; c.fillRect(0, 0, 26, TEXH);
+    var e2 = c.createLinearGradient(TEXW - 26, 0, TEXW, 0);
+    e2.addColorStop(0, 'rgba(60,74,66,0)'); e2.addColorStop(1, 'rgba(60,74,66,.35)');
+    c.fillStyle = e2; c.fillRect(TEXW - 26, 0, 26, TEXH);
+    return t;
+  }
+
+  /* ============ 尺寸 ============ */
+  var dpr = 1, W = 0, H = 0, R = 0, Rcss = 1, BH = 0, cx = 0, topY = 0;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var wCss = viewer.clientWidth, hCss = viewer.clientHeight;
+    W = Math.max(2, Math.round(wCss * dpr));
+    H = Math.max(2, Math.round(hCss * dpr));
+    canvas.width = W; canvas.height = H;
+    BH = Math.min(H * 0.58, 430 * dpr);
+    R = Math.min(BH * 0.3, W * 0.28);
+    Rcss = R / dpr;
+    cx = Math.round(W / 2);
+    topY = Math.round((H - BH) * 0.42);
+  }
+  var modeV = '360';
+  window.addEventListener('resize', function () { if (modeV === '360') resize(); });
+
+  function bodyPath(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  /* ============ 360° 绘制：圆柱正交投影，逐列采样贴图 ============ */
+  function drawStage() {
+    var L = cx - R, Rw = 2 * R, bodyBot = topY + BH;
+    var bg = ctx.createLinearGradient(0, 0, 0, H);
+    bg.addColorStop(0, '#fbf7ee'); bg.addColorStop(1, '#efe5d2');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    var gl = ctx.createRadialGradient(cx, topY + BH * 0.45, R * 0.4, cx, topY + BH * 0.5, R * 3.4);
+    gl.addColorStop(0, 'rgba(255,255,255,.55)');
+    gl.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gl;
+    ctx.fillRect(0, 0, W, H);
+
+    /* 地面投影 */
+    ctx.save();
+    ctx.translate(cx, bodyBot + BH * 0.055);
+    ctx.scale(1, 0.21);
+    var sg = ctx.createRadialGradient(0, 0, R * 0.12, 0, 0, R * 1.45);
+    sg.addColorStop(0, 'rgba(62,50,33,.36)');
+    sg.addColorStop(1, 'rgba(62,50,33,0)');
+    ctx.fillStyle = sg;
+    ctx.beginPath(); ctx.arc(0, 0, R * 1.45, 0, TAU); ctx.fill();
+    ctx.restore();
+
+    /* 柱面采样 */
+    ctx.save();
+    bodyPath(L, topY, Rw, BH, R * 0.17);
+    ctx.clip();
+    var startX = Math.round(cx - R), endX = Math.round(cx + R);
+    var TWOd = 2;
+    for (var x = startX; x < endX; x += TWOd) {
+      var xr = Math.min(x + TWOd, endX);
+      var d1 = (x - cx) / R, d2 = (xr - cx) / R;
+      if (d2 <= -1) continue;
+      if (d1 >= 1) break;
+      var th1 = Math.asin(clamp(d1, -1, 1));
+      var th2 = Math.asin(clamp(d2, -1, 1));
+      var u = mod(azimuth + Math.PI + th1, TAU) * TEXW / TAU;
+      var sw = (th2 - th1) * TEXW / TAU;
+      if (sw <= 0.0001) continue;
+      var dw = xr - x;
+      if (u + sw <= TEXW) {
+        ctx.drawImage(tex, u, 0, sw, TEXH, x, topY, dw, BH);
+      } else {
+        var w1 = TEXW - u;
+        var dA = dw * (w1 / sw);
+        ctx.drawImage(tex, u, 0, w1, TEXH, x, topY, dA, BH);
+        if (sw - w1 > 0) ctx.drawImage(tex, 0, 0, sw - w1, TEXH, x + dA, topY, dw - dA, BH);
+      }
+    }
+
+    /* 上下内影（哑光陶瓷的收口） */
+    var vg = ctx.createLinearGradient(0, topY, 0, topY + BH);
+    vg.addColorStop(0, 'rgba(38,46,40,.30)');
+    vg.addColorStop(0.09, 'rgba(38,46,40,0)');
+    vg.addColorStop(0.9, 'rgba(30,38,33,0)');
+    vg.addColorStop(1, 'rgba(28,36,31,.34)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(L, topY, Rw, BH);
+
+    /* 柱面明暗（光源固定于视点） */
+    var og = ctx.createLinearGradient(L, 0, cx + R, 0);
+    og.addColorStop(0, 'rgba(15,22,18,.44)');
+    og.addColorStop(0.18, 'rgba(15,22,18,.08)');
+    og.addColorStop(0.34, 'rgba(255,255,255,.18)');
+    og.addColorStop(0.4, 'rgba(255,255,255,.3)');
+    og.addColorStop(0.55, 'rgba(255,255,255,.02)');
+    og.addColorStop(0.82, 'rgba(15,22,18,.1)');
+    og.addColorStop(1, 'rgba(15,22,18,.46)');
+    ctx.fillStyle = og;
+    ctx.fillRect(L, topY, Rw, BH);
+    ctx.restore();
+
+    /* 轮廓 */
+    bodyPath(L + 0.5, topY + 0.5, Rw - 1, BH - 1, R * 0.17);
+    ctx.strokeStyle = 'rgba(46,58,52,.22)';
+    ctx.lineWidth = dpr;
+    ctx.stroke();
+  }
+
+  /* ============ 状态 ============ */
+  var azimuth = 0, vel = 0;
+  var dragging = false, hovering = false, touched = false;
+  var lastAct = performance.now() + 900;
+  var prevX = 0, prevT = 0;
+  var resetAnim = false, resetFrom = 0, resetTarget = 0, resetStart = 0;
+  var lastDeg = -1;
+
+  function updateChip() {
+    var d = Math.round(mod(azimuth, TAU) * 180 / Math.PI);
+    if (d !== lastDeg) {
+      lastDeg = d;
+      degEl.textContent = d + '°';
+      compass.style.transform = 'rotate(' + d + 'deg)';
+    }
+  }
+
+  /* ============ 交互 ============ */
+  canvas.addEventListener('pointerdown', function (e) {
+    if (modeV !== '360') return;
+    dragging = true; touched = true;
+    resetAnim = false; vel = 0;
+    prevX = e.clientX; prevT = performance.now();
+    canvas.classList.add('grabbing');
+    hintEl.classList.add('hide');
+    if (canvas.setPointerCapture) { try { canvas.setPointerCapture(e.pointerId); } catch (err) {} }
+    lastAct = performance.now();
+    e.preventDefault();
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    if (!dragging || modeV !== '360') return;
+    var now = performance.now(), dms = now - prevT;
+    if (dms <= 0) return;
+    var dx = e.clientX - prevX;
+    azimuth -= dx / Rcss;
+    var inst = -(dx / (dms / 1000)) / Rcss;
+    vel = vel * 0.7 + inst * 0.3;
+    prevX = e.clientX; prevT = now;
+    lastAct = now;
+  });
+  function endDrag() {
+    if (!dragging) return;
+    dragging = false;
+    canvas.classList.remove('grabbing');
+    lastAct = performance.now();
+  }
+  canvas.addEventListener('pointerup', function (e) {
+    /* 触屏没有 mouseleave：抬起即视为离开；鼠标悬停仍保持暂停 */
+    if (e.pointerType !== 'mouse') hovering = false;
+    endDrag();
+  });
+  canvas.addEventListener('pointercancel', endDrag);
+  canvas.addEventListener('mouseenter', function () { hovering = true; });
+  canvas.addEventListener('mouseleave', function () { hovering = false; });
+  canvas.addEventListener('keydown', function (e) {
+    if (modeV !== '360') return;
+    if (e.key === 'ArrowLeft') { azimuth += 0.21; vel = 0; resetAnim = false; lastAct = performance.now(); touched = true; hintEl.classList.add('hide'); e.preventDefault(); }
+    if (e.key === 'ArrowRight') { azimuth -= 0.21; vel = 0; resetAnim = false; lastAct = performance.now(); touched = true; hintEl.classList.add('hide'); e.preventDefault(); }
+  });
+
+  resetBtn.addEventListener('click', function () {
+    if (modeV !== '360') return;
+    vel = 0; dragged();
+    var m = mod(azimuth, TAU);
+    var target = azimuth - m + (m > Math.PI ? TAU : 0);
+    if (reduceMotion) { azimuth = target; resetAnim = false; return; }
+    resetFrom = azimuth;
+    resetTarget = target;
+    resetStart = performance.now();
+    resetAnim = true;
+  });
+  function dragged() {
+    if (!touched) { touched = true; hintEl.classList.add('hide'); }
+    lastAct = performance.now();
+  }
+
+  /* ============ 视图切换：图片预览标签 ============ */
+  var TPLS = document.querySelectorAll('.tpl');
+  var IDX = { glaze: 0, base: 1, scene: 2, colors: 3 };
+
+  function showStatic(id) {
+    var node = TPLS[IDX[id]].cloneNode(true);
+    staticBox.innerHTML = '';
+    staticBox.appendChild(node);
+  }
+
+  function setView(v) {
+    modeV = v;
+    thumbs.forEach(function (b) {
+      var on = b.getAttribute('data-view') === v;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    var cap = CAPS[v];
+    capTitle.textContent = cap.t;
+    capText.textContent = cap.d;
+    capNo.textContent = cap.no;
+    capMeta.textContent = cap.m;
+    if (v === '360') {
+      viewer.classList.remove('static');
+      dragging = false;
+      canvas.classList.remove('grabbing');
+      if (touched) hintEl.classList.add('hide'); else hintEl.classList.remove('hide');
+      lastAct = performance.now() - 600;
+      updateChip();
+      if (window.innerWidth < 900) resize();
+    } else {
+      endDrag();
+      viewer.classList.add('static');
+      showStatic(v);
+    }
+  }
+
+  thumbs.forEach(function (b) {
+    b.addEventListener('click', function () { setView(b.getAttribute('data-view')); });
+  });
+  modeBtn.addEventListener('click', function () { setView('360'); });
+
+  /* ============ 主循环 ============ */
+  var AUTO = 0.1;    /* 闲时自转角速度 rad/s */
+  var HOLD = 2800;   /* 交互后恢复自转的静置时长 */
+  var lastT = performance.now();
+
+  function frame(now) {
+    var dt = Math.min((now - lastT) / 1000, 0.06);
+    lastT = now;
+    if (modeV === '360') {
+      if (resetAnim) {
+        var t = (now - resetStart) / 700;
+        if (t >= 1) { azimuth = resetTarget; resetAnim = false; }
+        else {
+          var ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+          azimuth = resetFrom + (resetTarget - resetFrom) * ease;
+        }
+      } else if (!dragging) {
+        azimuth += vel * dt;
+        vel *= Math.exp(-dt * 3.4);
+        if (Math.abs(vel) < 0.02) vel = 0;
+        if (!hovering && !reduceMotion && now - lastAct > HOLD) azimuth += AUTO * dt;
+      }
+      if (Math.abs(azimuth) > TAU * 4) azimuth = mod(azimuth, TAU);
+      updateChip();
+      drawStage();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  resize();
+  updateChip();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

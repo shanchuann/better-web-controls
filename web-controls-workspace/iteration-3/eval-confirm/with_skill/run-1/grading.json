@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "确认强度匹配后果严重程度：使用了强确认（弹窗 Modal 强制选择，或输入文字确认 Type to Confirm），而不是普通轻提示或直接执行",
+      "passed": true,
+      "evidence": "outputs/page.html:306 注释 '二次确认：输入文字确认 Type to Confirm，承载于居中 Modal'；line 320-322 要求 '请输入项目名称…以确认删除'，inputs 必须与项目名完全一致（script line 428 v === current.name）后 line 327 的'确认删除'按钮才从 disabled=true 变为可点击；删除不执行于行内按钮，而是先打开 Modal（line 396 openModal）。"
+    },
+    {
+      "text": "确认内容说明了后果（告知删除不可恢复/影响范围）",
+      "passed": true,
+      "evidence": "outputs/page.html:317 '此操作将永久删除该项目及其全部内容，<strong>删除后无法恢复</strong>'；line 402-405 动态列出影响范围：'34 个任务及其全部执行记录、128 个文件与历史版本、6 名成员的访问权限与协作记录'（按所选项目实际数据生成于 risk-consequences 列表）；line 301 页头也注明'删除项目会移除其中全部任务与文件，且不可恢复'。"
+    },
+    {
+      "text": "弹窗类确认有明确的取消/确认两个出口，且不会误触关闭（如不点蒙层直接关闭或做了防误触）",
+      "passed": true,
+      "evidence": "outputs/page.html:326 'btn-cancel 取消'与 line 327 'btn-confirm 确认删除'构成两个明确出口，均有绑定（line 453 cancelBtn.addEventListener(\"click\", closeModal)，line 439 confirmBtn 确认逻辑）；防误触：全代码未给 modal-mask 绑定点击关闭事件，点击蒙层不会关闭弹窗（notes.md:38 明确'蒙版点击不关闭，防误触丢失后果说明'）；另有 Esc 关闭（line 458）与右上关闭钮仅为逃生通道，且确认按钮在输入匹配前置灰（line 246-250 disabled 样式）防止误触执行。"
+    },
+    {
+      "text": "notes.md 说明选了哪种确认强度、为什么（决策线：不可逆且影响大→输入确认或弹窗）",
+      "passed": true,
+      "evidence": "outputs/notes.md:28 '最终选型：输入文字确认 Type to Confirm，承载于居中 Modal 弹窗'；line 30 '理由：决策线明确\"不可逆且影响大用输入确认或独立确认页\"；单个项目删除选前者。原型参考\"删除仓库\"（GitHub 类同场景）'；line 9-10 给出判断依据'不可恢复 → 排除撤销与轻量方案''整包删除…影响大'。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 4
+}

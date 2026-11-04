@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "修复“图片看着偏/歪”：房型卡图片改用 object-fit: cover 填满容器（代码中出现 cover，且不再是 contain）",
+      "passed": true,
+      "evidence": "outputs/page.html 第34行：`.room .pic img { display: block; width: 100%; height: 100%; object-fit: cover; }`，房型卡图片改为 cover 填满定高 220px 的圆角容器；全文（page.html 共88行）无任何 contain 出现。notes.md 第11行也确认：‘房型卡片图……修复：改为 `object-fit: cover` 铺满圆角容器’"
+    },
+    {
+      "text": "修复“间距去不掉”：旧模板残留的 margin（.old-copy 的 margin-left:40px / margin-top:24px）被清除，排版间距恢复正常",
+      "passed": true,
+      "evidence": "outputs/page.html 全文不存在 .old-copy 规则，也没有任何 margin-left:40px / margin-top:24px 的残留（ul/grep 核查仅 nav 内边距 padding: 0 40px 与 .lead margin: 0 0 16px 等正常值）；间距已归一为明确值，如第29行 `h2 { font-size: 22px; margin: 0 0 16px; }`、第37行 `.room .desc { margin: 12px 0 0; ... }`。notes.md 第14-15行说明‘删除该残留样式及其包裹层’"
+    },
+    {
+      "text": "修复“被导航挡住”：为 fixed 顶部导航留出了高度（body 或首屏的 padding-top/margin-top ≥ 64px），首屏文字不再被覆盖",
+      "passed": true,
+      "evidence": "outputs/page.html 第14行导航为 `position: fixed; top: 0; ... height: 64px;`，第10-11行 body：`margin: 0; padding-top: 64px;`，为 fixed 导航预留了等高 64px（≥64px）空间，首屏内容（hero 图片与后续文字）从导航下沿开始，不再被覆盖。notes.md 第7行：‘修复：`body { padding-top: 64px }`，与导航高度精确对齐’"
+    },
+    {
+      "text": "内容与视觉基本保持：民宿名称、房型三卡、价格等文案与整体风格未重写，只做样式修复",
+      "passed": true,
+      "evidence": "outputs/page.html 保留原名‘山晨民宿’（第49行 logo、第6行 title、第86行 footer）、三张房型卡完整（第68-81行：山景大床房/庭院套房/观星树屋）、价格 ¥128/¥256/¥388 及‘/ 晚起’单位、首屏文案‘推窗见山，晨起听林…’等原文；风格沿用原配色背景 #faf8f5、白卡 #fff、圆角 12px、PingFang SC/Microsoft YaHei 字体与半透明模糊导航（rgba(255,255,255,0.55)+backdrop-filter），未重写。notes.md 第3行：‘文案、图片、配色、字体均保持原样’"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "without_skill",
+  "eval_id": 1
+}

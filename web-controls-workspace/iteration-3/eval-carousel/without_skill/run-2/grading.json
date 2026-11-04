@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用默认形式：主图浏览没有做成“translateX 左右滑动 + 仅三个圆点指示器”的默认组合",
+      "passed": true,
+      "evidence": "page.html:555-562 主图切换采用层叠淡入/淡出（.layer transition opacity .5s + transform cubic-bezier，enter-r/enter-l 为 ±4.5% 位移 + 1.02 缩放），非整体 translateX 滑动；指示器无圆点，改用 page.html:293 缩略图胶片带（.strip role=tablist 6 个 .thumb）+ page.html:284 计数器（01/06 等宽数字），notes.md:7 也明确“放弃了自动播放、循环克隆、底部圆点这些轮播特征”"
+    },
+    {
+      "text": "使用了一种成形的替代形式（3D 旋转木马 / 卡片堆叠 / 翻页式 / 手风琴画廊 / 360°展示 / 视差 / 淡入式 之一）",
+      "passed": true,
+      "evidence": "page.html:563-609 show() 函数：新图作为 .layer 从 ±4.5% 位移 + 1.02 缩放进入并淡入（opacity 0→1），旧图 .out 类淡出并反向放大 1.035，属“淡入式（层叠过渡）”；notes.md:21 描述为“景深推移”而非横滑"
+    },
+    {
+      "text": "展示细节说清了：含指示器（缩略图/进度/编号等）与自动播放或明确的交互控制（拖拽/悬停/点击切换等）",
+      "passed": true,
+      "evidence": "指示器：page.html:611-621 缩略图条（66px 带 .no 角标编号、active 描边、scrollIntoView）、page.html:284 计数器 01/06（换图时 rise 动画）；交互控制：无自动播放但有明确的多重控制——page.html:648-684 拖拽（0.6 阻尼跟手、70px 阈值切换/弹回）、page.html:687-697 滚轮换图（720ms 阻尼、边界让路）、page.html:625-626 左右箭头按钮、page.html:635-636 方向键、点击缩略图/釉色联动切换，notes.md 交互表格逐条列明"
+    },
+    {
+      "text": "notes.md 给出候选方案对比与选型理由",
+      "passed": true,
+      "evidence": "notes.md:5-17 有专门章节“交互方案：为什么不是”左滑 + 圆点“轮播”，对比了被否决的默认轮播特征（自动播放、循环克隆、底部圆点）并给出选型理由“改用一套完全由用户驱动的电影胶片式浏览”，随后以表格逐项列出所选方案的交互行为依据"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "without_skill",
+  "eval_id": 2
+}

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目管理后台 · 删除项目确认演示</title>
+<style>
+  :root {
+    --bg: #f5f6fa;
+    --surface: #ffffff;
+    --border: #e4e7ef;
+    --text-1: #1f2430;
+    --text-2: #5b6272;
+    --text-3: #9aa1b2;
+    --primary: #3348e0;
+    --danger: #d92b2b;
+    --danger-dark: #b32222;
+    --danger-bg: #fdf1f1;
+    --radius: 12px;
+    --shadow-lg: 0 24px 64px rgba(23, 26, 40, .18);
+    --shadow-sm: 0 2px 10px rgba(23, 26, 40, .06);
+    --font: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text-1);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- 顶栏 ---------- */
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 15px;
+  }
+  .brand-mark {
+    width: 26px; height: 26px; border-radius: 7px;
+    background: linear-gradient(135deg, #3348e0, #7b5cf5);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px;
+  }
+  .topbar .breadcrumb { font-size: 13px; color: var(--text-3); }
+  .topbar .breadcrumb b { color: var(--text-2); font-weight: 500; }
+
+  /* ---------- 主内容 ---------- */
+  main { max-width: 760px; margin: 40px auto; padding: 0 24px; }
+  .page-title { font-size: 13px; color: var(--text-3); margin-bottom: 12px; letter-spacing: .5px; }
+
+  .project-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    padding: 28px 32px;
+  }
+  .project-card .head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+  }
+  .project-meta { display: flex; align-items: center; gap: 12px; }
+  .project-avatar {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: linear-gradient(135deg, #3348e0, #7b5cf5);
+    color: #fff; font-weight: 600; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .project-name { font-size: 18px; font-weight: 600; }
+  .project-tag {
+    display: inline-block; font-size: 12px; padding: 1px 8px;
+    border-radius: 999px; vertical-align: 2px; margin-left: 6px;
+    background: #eef0ff; color: #3348e0;
+  }
+  .project-desc { margin-top: 6px; color: var(--text-2); font-size: 13px; }
+
+  .stat-row { display: flex; gap: 12px; margin-top: 22px; }
+  .stat {
+    flex: 1; background: #fafbfd; border: 1px solid var(--border);
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .stat .num { font-size: 22px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stat .label { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+  /* 危险操作区 */
+  .danger-zone {
+    margin-top: 24px; border: 1px solid #f3d4d4; background: var(--danger-bg);
+    border-radius: 10px; padding: 18px 20px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  }
+  .danger-zone .info h4 { font-size: 14px; color: var(--danger); }
+  .danger-zone .info p { font-size: 12px; color: var(--text-2); margin-top: 4px; line-height: 1.6; }
+
+  /* 按钮三要素：形态 / 样式 / 文字 */
+  .btn {
+    font-family: inherit; font-size: 14px; border-radius: 8px;
+    padding: 9px 18px; cursor: pointer; border: 1px solid transparent;
+    transition: background .15s, border-color .15s, color .15s, opacity .15s;
+    display: inline-flex; align-items: center; gap: 7px; white-space: nowrap;
+  }
+  .btn-danger-solid {
+    background: var(--danger); color: #fff; border-color: var(--danger);
+  }
+  .btn-danger-solid:hover { background: var(--danger-dark); border-color: var(--danger-dark); }
+  .btn-outline {
+    background: transparent; color: var(--text-2); border-color: #cfd3de;
+  }
+  .btn-outline:hover { border-color: var(--text-3); color: var(--text-1); }
+  .btn-text-danger {
+    background: transparent; border: none; color: var(--danger); padding: 6px 10px;
+  }
+  .btn-text-danger:hover { background: var(--danger-bg); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  .btn .spinner {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+    animation: spin .7s linear infinite; display: none;
+  }
+  .btn.loading .spinner { display: inline-block; }
+  .btn.loading { pointer-events: none; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---------- 空状态 ---------- */
+  .empty-state { text-align: center; padding: 56px 0 40px; }
+  .empty-state .icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: #eef0f5; margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center; font-size: 28px;
+  }
+  .empty-state h3 { font-size: 16px; margin-bottom: 6px; }
+  .empty-state p { font-size: 13px; color: var(--text-2); margin-bottom: 20px; }
+
+  /* ---------- Toast 轻提示 ---------- */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translate(-50%, -16px);
+    background: #262b38; color: #fff; font-size: 13px;
+    padding: 10px 18px; border-radius: 8px; box-shadow: var(--shadow-lg);
+    opacity: 0; pointer-events: none; transition: opacity .25s, transform .25s; z-index: 60;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- 弹窗确认 Modal + 输入文字确认 ---------- */
+  .overlay {
+    position: fixed; inset: 0; background: rgba(24, 27, 40, .5);
+    backdrop-filter: blur(2px); z-index: 50;
+    display: none; align-items: center; justify-content: center; padding: 24px;
+  }
+  .overlay.open { display: flex; }
+  .modal {
+    background: var(--surface); border-radius: 14px; box-shadow: var(--shadow-lg);
+    width: 440px; max-width: 100%; max-height: calc(100vh - 48px); overflow: auto;
+    padding: 28px; animation: pop .18s ease-out;
+  }
+  @keyframes pop {
+    from { transform: scale(.96) translateY(8px); opacity: 0; }
+    to   { transform: scale(1) translateY(0); opacity: 1; }
+  }
+  .modal .warning-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--danger-bg); color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 14px;
+  }
+  .modal h2 { font-size: 16px; margin-bottom: 10px; line-height: 1.5; }
+  .modal h2 b { color: var(--danger); }
+  .modal .consequence { font-size: 13px; color: var(--text-2); line-height: 1.7; }
+  .modal .impact-list {
+    margin-top: 14px; background: #fafbfd; border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text-1);
+  }
+  .modal .impact-list li { list-style: none; display: flex; justify-content: space-between; padding: 3px 0; }
+  .modal .impact-list .val { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .modal .impact-head {
+    font-size: 12px; color: var(--danger); padding-bottom: 6px; border-bottom: 1px dashed var(--border); margin-bottom: 6px;
+  }
+
+  .modal label.block { display: block; font-size: 13px; color: var(--text-1); margin: 16px 0 6px; }
+  .modal .help { font-size: 12px; color: var(--text-3); margin-bottom: 6px; }
+  .modal input[type="text"] {
+    width: 100%; padding: 9px 12px; font-size: 14px; font-family: inherit;
+    border: 1px solid #cfd3de; border-radius: 8px; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .modal input[type="text"]:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(217,43,43,.12); }
+  .modal .input-error { display: none; font-size: 12px; color: var(--danger); margin-top: 6px; }
+
+  .modal .actions {
+    display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px;
+  }
+
+  @media (max-width: 560px) {
+    .project-card { padding: 22px; }
+    .project-card .head { flex-direction: column; }
+    .danger-zone { flex-direction: column; align-items: stretch; }
+    .btn-danger-solid, .btn-outline { width: 100%; justify-content: center; }
+    .modal .actions { flex-direction: column-reverse; }
+    .modal .actions .btn { width: 100%; justify-content: center; padding: 12px 18px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="brand-mark">星</span>项目管理后台</div>
+  <div class="breadcrumb">工作台 / 所有项目 / <b>星链运营平台</b></div>
+</header>
+
+<main>
+  <div class="page-title">项目详情 · 设置</div>
+
+  <!-- 项目信息卡 -->
+  <section class="project-card" id="projectCard">
+    <div class="head">
+      <div class="project-meta">
+        <div class="project-avatar">星</div>
+        <div>
+          <div class="project-name">星链运营平台<span class="project-tag">进行中</span></div>
+          <div class="project-desc">2025 重点运营项目 · 创建于 2025-03 · 负责人：陈默</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat"><div class="num">128</div><div class="label">任务</div></div>
+      <div class="stat"><div class="num">342</div><div class="label">文件</div></div>
+      <div class="stat"><div class="num">12</div><div class="label">协作成员</div></div>
+      <div class="stat"><div class="num">1.2 GB</div><div class="label">存储占用</div></div>
+    </div>
+
+    <div class="danger-zone">
+      <div class="info">
+        <h4>删除项目</h4>
+        <p>删除后，本项目下的所有任务与文件将被永久移除，无法恢复。</p>
+      </div>
+      <button class="btn btn-danger-solid" id="deleteBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        删除项目
+      </button>
+    </div>
+  </section>
+
+  <!-- 删除后的空状态（演示用） -->
+  <section class="project-card empty-state" id="emptyState" hidden>
+    <div class="icon">🗑️</div>
+    <h3>项目已删除</h3>
+    <p>“星链运营平台”及其全部任务与文件已被永久移除。</p>
+    <button class="btn btn-text-danger" id="resetBtn" style="border:1px solid #cfd3de; border-radius:8px; color:var(--text-2);">重新载入演示</button>
+  </section>
+</main>
+
+<!-- 轻提示 Toast -->
+<div class="toast" id="toast" role="status"></div>
+
+<!-- 二次确认：弹窗确认 Modal + 输入文字确认 Type to Confirm -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="warning-icon">!</div>
+    <h2 id="modalTitle">确认删除 <b>“星链运营平台”</b> 吗？</h2>
+    <p class="consequence">此操作<b>不可恢复</b>。删除后将带来以下影响：</p>
+    <ul class="impact-list">
+      <li class="impact-head" style="display:block"><strong>影响范围</strong></li>
+      <li><span>永久删除任务</span><span class="val">128 个</span></li>
+      <li><span>永久删除文件</span><span class="val">342 个（约 1.2 GB）</span></li>
+      <li><span>移除协作成员的项目访问权限</span><span class="val">12 人</span></li>
+    </ul>
+
+    <label class="block" for="confirmInput">请输入项目名称以确认</label>
+    <p class="help">输入 <b>星链运营平台</b> 后才能执行删除</p>
+    <input type="text" id="confirmInput" placeholder="星链运营平台" autocomplete="off" spellcheck="false">
+    <p class="input-error" id="inputError">输入内容不匹配，请核对项目名称后重试</p>
+
+    <div class="actions">
+      <button class="btn btn-outline" id="cancelBtn">取消</button>
+      <button class="btn btn-danger-solid" id="confirmBtn" disabled>
+        <span class="spinner"></span>
+        <span class="text">永久删除</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  var overlay     = document.getElementById('overlay');
+  var deleteBtn   = document.getElementById('deleteBtn');
+  var cancelBtn   = document.getElementById('cancelBtn');
+  var confirmBtn  = document.getElementById('confirmBtn');
+  var input       = document.getElementById('confirmInput');
+  var inputError  = document.getElementById('inputError');
+  var toast       = document.getElementById('toast');
+  var projectCard = document.getElementById('projectCard');
+  var emptyState  = document.getElementById('emptyState');
+  var resetBtn    = document.getElementById('resetBtn');
+
+  var PROJECT_NAME = '星链运营平台';
+  var lastFocus = null;
+
+  function openModal() {
+    lastFocus = document.activeElement;
+    input.value = '';
+    inputError.style.display = 'none';
+    confirmBtn.disabled = true;
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    requestAnimationFrame(function () { input.focus(); });
+  }
+
+  function closeModal() {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+    if (lastFocus) lastFocus.focus();
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toast.classList.remove('show'); }, 2600);
+  }
+
+  deleteBtn.addEventListener('click', openModal);
+  cancelBtn.addEventListener('click', closeModal);
+
+  overlay.addEventListener('mousedown', function (e) {
+    if (e.target === overlay) closeModal();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeModal();
+  });
+
+  // 输入文字确认：只有输入项目名称完全一致后，删除按钮才启用
+  input.addEventListener('input', function () {
+    var ok = input.value.trim() === PROJECT_NAME;
+    confirmBtn.disabled = !ok;
+    inputError.style.display = 'none';
+    if (ok) { input.style.borderColor = ''; }
+  });
+
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !confirmBtn.disabled) confirmBtn.click();
+  });
+
+  confirmBtn.addEventListener('click', function () {
+    if (input.value.trim() !== PROJECT_NAME) {
+      inputError.style.display = 'block';
+      input.focus();
+      return;
+    }
+    // 模拟删除请求
+    confirmBtn.classList.add('loading');
+    confirmBtn.querySelector('.text').textContent = '删除中…';
+    confirmBtn.disabled = true;
+
+    setTimeout(function () {
+      confirmBtn.classList.remove('loading');
+      confirmBtn.querySelector('.text').textContent = '永久删除';
+      confirmBtn.disabled = true;
+      closeModal();
+      projectCard.hidden = true;
+      emptyState.hidden = false;
+      showToast('项目已永久删除');
+    }, 900);
+  });
+
+  resetBtn.addEventListener('click', function () {
+    emptyState.hidden = true;
+    projectCard.hidden = false;
+  });
+})();
+</script>
+</body>
+</html>

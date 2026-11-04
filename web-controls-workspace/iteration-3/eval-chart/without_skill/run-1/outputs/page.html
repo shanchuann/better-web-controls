@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月度经营报告 · 2026年10月</title>
+<style>
+  :root {
+    --bg: #f4f6fa;
+    --card: #ffffff;
+    --ink: #1c2434;
+    --ink-2: #5a6478;
+    --ink-3: #98a1b3;
+    --line: #e5e9f1;
+    --accent: #2f5fe0;
+    --accent-soft: #eaf0ff;
+    --green: #14905f;
+    --green-soft: #e3f5ec;
+    --red: #d64550;
+    --red-soft: #fdecec;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+    padding: 32px 20px 48px;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  header.page-head {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    margin-bottom: 24px;
+  }
+  .page-head .eyebrow {
+    font-size: 13px; letter-spacing: 2px; color: var(--accent); font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .page-head h1 { font-size: 26px; font-weight: 700; letter-spacing: .5px; }
+  .page-head .meta { color: var(--ink-3); font-size: 13px; margin-top: 6px; }
+  .head-actions { display: flex; gap: 10px; }
+  .btn {
+    appearance: none; border: 1px solid var(--line); background: var(--card);
+    color: var(--ink-2); font-size: 13px; padding: 8px 16px; border-radius: 8px;
+    cursor: pointer; transition: border-color .15s, color .15s, box-shadow .15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.primary:hover { box-shadow: 0 4px 14px rgba(47,95,224,.3); }
+
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px; margin-bottom: 20px;
+  }
+  .kpi {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 18px 20px;
+  }
+  .kpi .label { font-size: 13px; color: var(--ink-2); margin-bottom: 8px; }
+  .kpi .value { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .kpi .value small { font-size: 15px; color: var(--ink-3); font-weight: 500; margin-left: 2px; }
+  .delta {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; font-weight: 600; padding: 2px 8px; border-radius: 999px;
+    margin-top: 10px; font-variant-numeric: tabular-nums;
+  }
+  .delta.up { color: var(--green); background: var(--green-soft); }
+  .delta.down { color: var(--red); background: var(--red-soft); }
+  .kpi .sub { font-size: 12px; color: var(--ink-3); margin-top: 8px; }
+
+  .grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  .grid.two { grid-template-columns: 1.6fr 1fr; }
+  @media (max-width: 900px) { .grid.two { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 22px 24px;
+  }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 6px; }
+  .card-head h2 { font-size: 16px; font-weight: 600; }
+  .card-head .desc { font-size: 12px; color: var(--ink-3); }
+  .chart-box svg { display: block; width: 100%; height: auto; }
+
+  .legend { list-style: none; margin-top: 14px; }
+  .legend li {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; padding: 5px 0; color: var(--ink-2);
+  }
+  .legend .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+  .legend .name { flex: 1; }
+  .legend .val { font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600; }
+
+  .table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 10px; }
+  .table th {
+    text-align: left; font-weight: 600; color: var(--ink-3); font-size: 12px;
+    padding: 8px 10px; border-bottom: 1px solid var(--line); white-space: nowrap;
+  }
+  .table td { padding: 10px; border-bottom: 1px solid #f0f3f8; font-variant-numeric: tabular-nums; }
+  .table tr:last-child td { border-bottom: none; }
+  .table td.num, .table th.num { text-align: right; }
+
+  .funnel { margin-top: 10px; }
+  .funnel-row { display: grid; grid-template-columns: 92px 1fr 150px; align-items: center; gap: 12px; padding: 7px 0; }
+  .funnel-row .stage { font-size: 13px; color: var(--ink-2); font-weight: 500; }
+  .bar-track { height: 22px; background: #f0f3f8; border-radius: 6px; overflow: hidden; position: relative; }
+  .bar-fill {
+    height: 100%; border-radius: 6px; background: linear-gradient(90deg, #4d7bf0, #2f5fe0);
+    min-width: 30px;
+  }
+  .funnel-row .num { font-size: 13px; color: var(--ink); font-weight: 600; text-align: right; font-variant-numeric: tabular-nums; }
+  .funnel-row .num .rate { display: block; font-size: 11px; color: var(--ink-3); font-weight: 500; }
+  .funnel-sep { font-size: 11px; color: var(--red); text-align: center; margin: -2px 0 0 104px; }
+
+  footer.note {
+    margin-top: 28px; padding-top: 14px; border-top: 1px solid var(--line);
+    font-size: 12px; color: var(--ink-3);
+  }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    .head-actions, .btn { display: none; }
+    .card, .kpi { border-color: #d8dde6; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="page-head">
+    <div>
+      <div class="eyebrow">MONTHLY BUSINESS REPORT</div>
+      <h1>2026年10月 · 月度经营报告</h1>
+      <div class="meta">汇报对象：管理层 ｜ 数据截至：2026-10-31 ｜ 生成日期：2026-11-04</div>
+    </div>
+    <div class="head-actions">
+      <button class="btn" type="button" onclick="window.print()">导出 / 打印</button>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis"></section>
+
+  <div class="grid two" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-head">
+        <h2>近 12 个月营收走势</h2>
+        <span class="desc">单位：万元</span>
+      </div>
+      <div class="chart-box"><svg id="trend" viewBox="0 0 640 300" role="img" aria-label="近12个月营收折线图"></svg></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>各产品线营收占比</h2>
+        <span class="desc">本月</span>
+      </div>
+      <div class="chart-box"><svg id="donut" viewBox="0 0 240 240" role="img" aria-label="产品线营收占比环形图"></svg></div>
+      <ul class="legend" id="mixLegend"></ul>
+    </div>
+  </div>
+
+  <div class="grid two" style="margin-bottom:16px;">
+    <div class="card">
+      <div class="card-head">
+        <h2>整体转化漏斗</h2>
+        <span class="desc">全渠道汇总（本月）</span>
+      </div>
+      <div class="funnel" id="funnel"></div>
+    </div>
+    <div class="card">
+      <div class="card-head">
+        <h2>各渠道转化与流失</h2>
+        <span class="desc">本月</span>
+      </div>
+      <table class="table" id="channelTable">
+        <thead>
+          <tr>
+            <th>渠道</th>
+            <th class="num">访问</th>
+            <th class="num">成交</th>
+            <th class="num">转化率</th>
+            <th class="num">流失</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div style="margin-top:10px; font-size:12px; color: var(--ink-3);">
+        注：流失 = 未完成成交的访问用户；转化率 = 成交 ÷ 访问。社交媒体流失率偏高，建议投放侧优化落地页与人群定向。
+      </div>
+    </div>
+  </div>
+
+  <footer class="note">
+    数据说明：本页数据为示例数据，正式汇报前请以财务口径核算结果替换。营收为含税口径，环比 = 本月 ÷ 上月 − 1。
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var fmt = function (n) { return n.toLocaleString("zh-CN"); };
+
+  var revenue = [386, 391, 376, 402, 398, 415, 408, 421, 430, 442, 429, 480];
+  var months = ["11月","12月","1月","2月","3月","4月","5月","6月","7月","8月","9月","10月"];
+
+  var kpis = [
+    { label: "本月营收", value: "480", unit: "万元", delta: "+12%", dir: "up", sub: "上月 428.6 万元" },
+    { label: "环比变化", value: "+12.0", unit: "%", delta: "创近3月新高", dir: "", sub: "8→9月 -2.9%，9→10月 +11.9%" },
+    { label: "近12个月累计", value: "4978", unit: "万元", delta: "", dir: "", sub: "月均 414.8 万元" },,
+    { label: "单月最高", value: "480", unit: "万元", delta: "本月", dir: "", sub: "历史峰值，首次突破 470" }
+  ];
+  var kpiEl = document.getElementById("kpis");
+  kpis.forEach(function (k) {
+    var card = document.createElement("div");
+    card.className = "kpi";
+    card.innerHTML =
+      '<div class="label">' + k.label + '</div>' +
+      '<div class="value">' + k.value + '<small>' + k.unit + '</small></div>' +
+      (k.delta ? '<span class="delta ' + k.dir + '">' + (k.dir === "up" ? "▲" : "") + (k.dir === "down" ? "▼" : "") + k.delta + '</span>' : '') +
+      '<div class="sub">' + k.sub + '</div>';
+    kpiEl.appendChild(card);
+  });
+
+  var W = 640, H = 300, padL = 46, padR = 16, padT = 26, padB = 34;
+  var svg = document.getElementById("trend");
+  var minV = 350, maxV = 500;
+  var iw = W - padL - padR, ih = H - padT - padB;
+  var x = function (i) { return padL + (iw * i) / (revenue.length - 1); };
+  var y = function (v) { return padT + ih - (ih * (v - minV)) / (maxV - minV); };
+  var parts = [];
+
+  [350, 400, 450, 500].forEach(function (gv) {
+    var yy = y(gv);
+    parts.push('<line x1="' + padL + '" y1="' + yy + '" x2="' + (W - padR) + '" y2="' + yy + '" stroke="#e5e9f1" stroke-width="1"/>');
+    parts.push('<text x="' + (padL - 8) + '" y="' + (yy + 4) + '" text-anchor="end" font-size="10" fill="#98a1b3">' + gv + '</text>');
+  });
+
+  var linePath = "", areaPath = "M " + x(0) + " " + y(revenue[0]);
+  for (var i = 0; i < revenue.length; i++) {
+    if (i > 0) linePath += " L ";
+    linePath += x(i) + " " + y(revenue[i]);
+  }
+  areaPath += " L " + linePath.slice(2) + " L " + x(revenue.length - 1) + " " + (padT + ih) + " L " + x(0) + " " + (padT + ih) + " Z";
+  parts.push('<defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f5fe0" stop-opacity=".18"/><stop offset="1" stop-color="#2f5fe0" stop-opacity="0"/></linearGradient></defs>');
+  parts.push('<path d="' + areaPath + '" fill="url(#g1)"/>');
+  parts.push('<path d="M ' + linePath + '" fill="none" stroke="#2f5fe0" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>');
+
+  revenue.forEach(function (v, i) {
+    var cx = x(i), cy = y(v);
+    var last = i === revenue.length - 1;
+    parts.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + (last ? 5 : 3.5) + '" fill="#fff" stroke="#2f5fe0" stroke-width="2"><title>' + months[i] + '：' + v + ' 万元</title></circle>');
+    if (last) {
+      parts.push('<text x="' + cx + '" y="' + (cy - 12) + '" text-anchor="middle" font-size="13" font-weight="700" fill="#2f5fe0">' + v + '</text>');
+    }
+    parts.push('<text x="' + cx + '" y="' + (H - 10) + '" text-anchor="middle" font-size="10" fill="#98a1b3">' + months[i] + '</text>');
+  });
+  svg.innerHTML = parts.join("");
+
+  var mix = [
+    { name: "产品线 A", pct: 32, color: "#2f5fe0" },
+    { name: "产品线 B", pct: 26, color: "#4d9df0" },
+    { name: "产品线 C", pct: 18, color: "#19b39a" },
+    { name: "产品线 D", pct: 13, color: "#f5a623" },
+    { name: "产品线 E", pct: 11, color: "#a06bf0" }
+  ];
+  var donut = document.getElementById("donut");
+  var cx = 120, cy = 120, R = 86, r = 52, circ = 2 * Math.PI * ((R + r) / 2);
+  var acc = 0, dParts = [], mixAmt = 480;
+  mix.forEach(function (m) {
+    var frac = m.pct / 100;
+    var off = circ * (1 - acc / 100);
+    dParts.push('<circle cx="' + cx + '" cy="' + cy + '" r="' + ((R + r) / 2) + '" fill="none" stroke="' + m.color + '" stroke-width="' + (R - r) + '" stroke-dasharray="' + (circ * frac) + ' ' + circ + '" stroke-dashoffset="' + off + '" stroke-linecap="butt"><title>' + m.name + '：' + m.pct + '%（约 ' + Math.round(mixAmt * m.pct / 100) + ' 万元）</title></circle>');
+    acc += m.pct;
+  });
+  dParts.push('<text x="' + cx + '" y="' + (cy - 4) + '" text-anchor="middle" font-size="26" font-weight="700" fill="#1c2434">480</text>');
+  dParts.push('<text x="' + cx + '" y="' + (cy + 18) + '" text-anchor="middle" font-size="11" fill="#98a1b3">营收（万元）</text>');
+  donut.innerHTML = dParts.join("");
+
+  var legendEl = document.getElementById("mixLegend");
+  mix.forEach(function (m) {
+    var li = document.createElement("li");
+    li.innerHTML = '<span class="dot" style="background:' + m.color + '"></span><span class="name">' + m.name + '</span><span class="val">' + m.pct + '%</span>';
+    legendEl.appendChild(li);
+  });
+
+  var funnel = [
+    { stage: "访问", v: 128000, rate: "" },
+    { stage: "注册 / 留资", v: 21400, rate: "16.7%" },
+    { stage: "商机咨询", v: 6900, rate: "32.2%" },
+    { stage: "成交", v: 2140, rate: "31.0%" }
+  ];
+  var funnelEl = document.getElementById("funnel");
+  var maxV2 = funnel[0].v;
+  funnel.forEach(function (f, i) {
+    var row = document.createElement("div");
+    row.className = "funnel-row";
+    row.innerHTML =
+      '<div class="stage">' + f.stage + '</div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + (f.v / maxV2 * 100) + '%"></div></div>' +
+      '<div class="num">' + fmt(f.v) + (f.rate ? '<span class="rate">转化 ' + f.rate + '</span>' : '') + '</div>';
+    funnelEl.appendChild(row);
+    if (i < funnel.length - 1) {
+      var lossPct = (100 - funnel[i + 1].v / f.v * 100).toFixed(1);
+      var sep = document.createElement("div");
+      sep.className = "funnel-sep";
+      sep.textContent = "↓ 流失 " + fmt(f.v - funnel[i + 1].v) + "（" + lossPct + "%）";
+      funnelEl.appendChild(sep);
+    }
+  });
+
+  var channels = [
+    { name: "官网直达", visits: 32600, deals: 830 },
+    { name: "搜索引擎", visits: 48800, deals: 640 },
+    { name: "社交媒体", visits: 34200, deals: 380 },
+    { name: "线下渠道", visits: 12400, deals: 290 }
+  ];
+  var tbody = document.querySelector("#channelTable tbody");
+  channels.forEach(function (c) {
+    var conv = (c.deals / c.visits * 100);
+    var loss = 100 - conv;
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td>' + c.name + '</td>' +
+      '<td class="num">' + fmt(c.visits) + '</td>' +
+      '<td class="num">' + fmt(c.deals) + '</td>' +
+      '<td class="num" style="color:var(--green);font-weight:600;">' + conv.toFixed(2) + '%</td>' +
+      '<td class="num" style="color:var(--red);">' + loss.toFixed(2) + '%</td>';
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "确认强度匹配后果严重程度：使用了强确认（弹窗 Modal 强制选择，或输入文字确认 Type to Confirm），而不是普通轻提示或直接执行",
+      "passed": true,
+      "evidence": "page.html:272-310 为 role=\"alertdialog\" 的阻断式模态弹窗，第298-302行有强制输入确认（input#confirmInput，label 要求“输入项目名称 XXX 以确认”），JS 中 validate()（第363-374行）要求输入与项目名完全匹配才解除 btnOk.disabled，初始状态确认按钮 disabled（第307行），即双重强确认（Modal + Type to Confirm），并非轻提示或直接执行。"
+    },
+    {
+      "text": "确认内容说明了后果（告知删除不可恢复/影响范围）",
+      "passed": true,
+      "evidence": "page.html:290-291 弹窗正文“<span class=\"danger-text\"><strong>删除后所有任务、附件及关联数据将被永久清除，不可恢复。</strong></span>”；第293-296行 impact-box 列出影响范围：“任务将被删除 / 附件文件将被删除（具体数量）/ 负责人（创建信息一并删除）”，openConfirm() 第389-391行动态填入具体任务数与文件数。"
+    },
+    {
+      "text": "弹窗类确认有明确的取消/确认两个出口，且不会误触关闭（如不点蒙层直接关闭或做了防误触）",
+      "passed": false,
+      "evidence": "page.html:306-307 确有“取消”“确认删除”两个明确按钮出口；但第462-465行“overlay.addEventListener('click', ...) if (e.target === overlay) closeConfirm()”实现为点击蒙层即直接关闭弹窗，正常状态下（非删除进行中）点击蒙层没有任何防误触保护（如 1.5 秒延迟窗口、二次确认等仅用于确认按钮 doDelete() 第413-417行，与蒙层关闭无关），ESC（第470行）也可直接关闭，存在误触关闭路径。"
+    },
+    {
+      "text": "notes.md 说明选了哪种确认强度、为什么（决策线：不可逆且影响大→输入确认或弹窗）",
+      "passed": true,
+      "evidence": "notes.md:4 “‘删除项目’属于不可恢复的高危操作（删除会连带清空任务与文件），因此没有使用轻量 toast/气泡确认，而是采用阻断式模态确认弹窗（alertdialog）+ 输入确认（type-to-confirm）”，明确给出了确认强度选择（弹窗+输入确认）及决策理由（不可逆、影响大）。"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "run": "without_skill",
+  "eval_id": 4
+}

@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>客户管理 - CRM</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --primary: #4f6bfe;
+    --primary-hover: #3d57db;
+    --primary-light: #eef1ff;
+    --text-1: #1f2329;
+    --text-2: #646a73;
+    --text-3: #8f959e;
+    --border: #e5e7eb;
+    --bg: #f5f6f7;
+    --surface: #ffffff;
+    --danger: #f54a45;
+    --radius: 8px;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text-1);
+    font-size: 14px;
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  /* ---------- 侧边栏 ---------- */
+  .sidebar {
+    width: 200px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+  .logo {
+    padding: 20px 20px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .logo-mark {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #4f6bfe, #7b8ffe);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+  }
+  .nav { padding: 8px 12px; flex: 1; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    border-radius: 6px;
+    color: var(--text-2);
+    cursor: pointer;
+    margin-bottom: 2px;
+    transition: background .15s;
+  }
+  .nav-item:hover { background: #f2f3f5; }
+  .nav-item.active { background: var(--primary-light); color: var(--primary); font-weight: 500; }
+  .nav-item svg { width: 16px; height: 16px; }
+
+  /* ---------- 主区域 ---------- */
+  .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+
+  .topbar {
+    height: 56px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    flex-shrink: 0;
+  }
+  .breadcrumb { color: var(--text-3); font-size: 13px; }
+  .breadcrumb b { color: var(--text-1); font-weight: 500; }
+  .demo-switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fffbe6;
+    border: 1px solid #ffe28a;
+    padding: 4px 8px 4px 12px;
+    border-radius: 6px;
+    color: #8a6100;
+    font-size: 12px;
+  }
+  .demo-switch select {
+    border: 1px solid #e5c95c;
+    background: #fff;
+    border-radius: 4px;
+    padding: 3px 6px;
+    font-size: 12px;
+    color: var(--text-1);
+    outline: none;
+    cursor: pointer;
+  }
+
+  .content { flex: 1; overflow: auto; padding: 20px 24px; }
+
+  /* ---------- 卡片 ---------- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .card-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .card-title { font-size: 16px; font-weight: 600; margin-right: 8px; }
+
+  .search-box {
+    position: relative;
+    flex: 1;
+    min-width: 220px;
+    max-width: 360px;
+  }
+  .search-box svg {
+    position: absolute; left: 10px; top: 50%;
+    transform: translateY(-50%);
+    width: 15px; height: 15px;
+    color: #b0b4ba;
+    pointer-events: none;
+  }
+  .search-box input {
+    width: 100%;
+    height: 32px;
+    padding: 0 30px 0 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .search-box input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(79,107,254,.12);
+  }
+  .search-clear {
+    position: absolute;
+    right: 8px; top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: #e5e7eb;
+    color: var(--text-2);
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    font-size: 10px;
+    line-height: 16px;
+    text-align: center;
+    cursor: pointer;
+    display: none;
+  }
+  .search-clear:hover { background: #d3d6da; color: var(--text-1); }
+
+  .filter-btn {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text-1);
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: border-color .15s;
+  }
+  .filter-btn:hover { border-color: var(--primary); color: var(--primary); }
+  .filter-btn .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 16px; height: 16px;
+    padding: 0 4px;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 8px;
+    font-size: 11px;
+  }
+  .btn {
+    height: 32px;
+    padding: 0 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-default { background: var(--surface); border-color: var(--border); color: var(--text-1); }
+  .btn-default:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+  .select {
+    height: 32px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    padding: 0 8px;
+    font-size: 13px;
+    color: var(--text-1);
+    outline: none;
+    cursor: pointer;
+  }
+
+  /* ---------- 表格 ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-3);
+    background: #fafbfc;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f0f1f3;
+    white-space: nowrap;
+  }
+  tbody tr { transition: background .12s; }
+  tbody tr:hover { background: #f7f9ff; }
+  tbody tr:last-child td { border-bottom: none; }
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    margin-right: 10px;
+    vertical-align: middle;
+  }
+  .tag {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .tag-vip { background: #fff4e5; color: #d2670a; }
+  .tag-normal { background: #f2f3f5; color: var(--text-2); }
+  .status-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .status-active { background: #2ea121; }
+  .status-idle { background: #ff9900; }
+  .link-btn { color: var(--primary); cursor: pointer; margin-right: 12px; }
+  .link-btn:hover { text-decoration: underline; }
+
+  .table-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--text-3);
+    font-size: 13px;
+    margin-top: auto;
+  }
+  .pager { display: flex; gap: 6px; }
+  .page-btn {
+    min-width: 26px; height: 26px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface);
+    color: var(--text-1);
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .page-btn.current { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .page-btn:disabled { color: #c0c4cc; cursor: not-allowed; }
+
+  /* ---------- 空状态 1：无客户数据 ---------- */
+  .empty-state {
+    flex: 1;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 56px 32px;
+  }
+  .empty-state.show { display: flex; }
+
+  .empty-illustration {
+    width: 132px; height: 132px;
+    margin-bottom: 24px;
+    border-radius: 50%;
+    background: linear-gradient(160deg, #eef1ff, #f6f8ff);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .empty-illustration svg { width: 64px; height: 64px; color: #8ea0ff; }
+
+  .empty-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-1);
+    margin-bottom: 8px;
+  }
+  .empty-desc {
+    font-size: 13px;
+    color: var(--text-3);
+    line-height: 1.7;
+    max-width: 360px;
+    margin-bottom: 20px;
+  }
+  .empty-actions { display: flex; gap: 12px; margin-bottom: 28px; }
+  .btn-lg { height: 38px; padding: 0 20px; font-size: 14px; }
+
+  .guide-steps {
+    display: flex;
+    gap: 0;
+    padding: 20px 8px;
+    border-top: 1px dashed var(--border);
+    max-width: 560px;
+    width: 100%;
+  }
+  .step {
+    flex: 1;
+    padding: 0 16px;
+    position: relative;
+    text-align: center;
+  }
+  .step + .step::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 12px;
+    width: 1px; height: 44px;
+    background: var(--border);
+  }
+  .step-icon {
+    width: 40px; height: 40px;
+    margin: 0 auto 10px;
+    border-radius: 10px;
+    background: var(--primary-light);
+    color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-icon svg { width: 20px; height: 20px; }
+  .step-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  .step-desc { font-size: 12px; color: var(--text-3); line-height: 1.5; }
+
+  /* ---------- 空状态 2：搜索/筛选无结果 ---------- */
+  .no-result-illustration {
+    width: 112px; height: 112px;
+    margin-bottom: 20px;
+    border-radius: 50%;
+    background: #f5f6f7;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .no-result-illustration svg { width: 52px; height: 52px; color: #b7bcc3; }
+
+  .searched-term {
+    display: inline-block;
+    max-width: 240px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: bottom;
+    font-weight: 600;
+    color: var(--text-2);
+    background: #f2f3f5;
+    border-radius: 4px;
+    padding: 0 6px;
+  }
+  .suggestions {
+    text-align: left;
+    background: #fafbfc;
+    border: 1px solid #f0f1f3;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--text-2);
+    margin-bottom: 22px;
+    max-width: 400px;
+  }
+  .suggestions b {
+    display: block;
+    color: var(--text-1);
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .suggestions li {
+    list-style: none;
+    line-height: 2;
+    display: flex;
+    align-items: center;
+  }
+  .suggestions li::before {
+    content: "";
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: #c9cdd4;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  /* 选中筛选项标签 */
+  .filter-tags {
+    display: flex;
+    gap: 8px;
+    padding: 12px 20px 0;
+    flex-wrap: wrap;
+  }
+  .filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .filter-tag span { cursor: pointer; color: var(--primary); font-weight: 600; }
+  .filter-tag span:hover { color: var(--danger); }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    left: 50%; bottom: 40px;
+    transform: translateX(-50%) translateY(16px);
+    background: rgba(31,35,41,.9);
+    color: #fff;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s, transform .25s;
+    z-index: 99;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ---------- 模态 ---------- */
+  .modal-mask {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.35);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 120px;
+    z-index: 50;
+  }
+  .modal-mask.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 8px;
+    width: 420px;
+    box-shadow: 0 12px 32px rgba(0,0,0,.12);
+    animation: pop .2s ease;
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: scale(.96) translateY(-8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .modal-header {
+    padding: 16px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .modal-close { cursor: pointer; color: var(--text-3); font-size: 16px; border: none; background: none; }
+  .modal-body { padding: 20px; display: grid; gap: 14px; }
+  .field label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
+  .field input {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 13px;
+    outline: none;
+  }
+  .field input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(79,107,254,.12); }
+  .modal-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo"><span class="logo-mark">C</span>极客CRM</div>
+  <nav class="nav">
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-7h-6v7H4a1 1 0 0 1-1-1z"/></svg>工作台</div>
+    <div class="nav-item active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><circle cx="17.5" cy="9" r="2.5"/><path d="M15.5 14.7c2.8.2 4.9 1.9 6 5.3"/></svg>客户管理</div>
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 15l2 2 4-4"/></svg>商机线索</div>
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>合同回款</div>
+    <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>数据报表</div>
+  </nav>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div class="breadcrumb">首页 / <b>客户管理</b></div>
+    <div class="demo-switch">
+      演示切换
+      <select id="demoSelect">
+        <option value="data">体验1：已有客户数据</option>
+        <option value="empty">场景A：新用户 · 暂无客户</option>
+        <option value="noresult">场景B：搜索/筛选 · 无匹配</option>
+      </select>
+    </div>
+  </header>
+
+  <section class="content">
+    <div class="card">
+      <!-- 工具栏 -->
+      <div class="card-header">
+        <span class="card-title">客户列表</span>
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="searchInput" type="text" placeholder="搜索客户名称、电话、负责人…" autocomplete="off">
+          <button class="search-clear" id="searchClear" title="清空">✕</button>
+        </div>
+        <select class="select" id="filterStage">
+          <option value="">全部阶段</option>
+          <option value="促成">成交</option>
+          <option value="跟进">跟进中</option>
+        </select>
+        <button class="filter-btn" id="filterOwnerBtn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 3H2l8 9.5V19l4 2v-8.5z"/></svg>
+          筛选
+          <span class="badge" id="filterCount" style="display:none">0</span>
+        </button>
+        <button class="btn btn-primary" onclick="openAddModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+          新建客户
+        </button>
+      </div>
+
+      <!-- 筛选标签 -->
+      <div class="filter-tags" id="filterTags" style="display:none"></div>
+
+      <!-- 表格（有数据时显示） -->
+      <div id="tableView" style="display:none">
+        <table>
+          <thead>
+            <tr>
+              <th>客户名称</th><th>联系电话</th><th>所属行业</th><th>阶段</th><th>状态</th><th>负责人</th><th>创建时间</th><th>操作</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+        <div class="table-footer">
+          <span id="pageInfo">共 0 条</span>
+          <div class="pager">
+            <button class="page-btn" disabled>‹</button>
+            <button class="page-btn current">1</button>
+            <button class="page-btn" disabled>›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空状态 A：新用户暂无客户 -->
+      <div class="empty-state" id="emptyNew">
+        <div class="empty-illustration">
+          <svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="10" y="22" width="30" height="22" rx="3"/>
+            <path d="M15 22v-5a3 3 0 0 1 3-3h24a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3h-2"/>
+            <path d="M20 2l2.2 4.4L27 7l-3.4 3.3.8 4.7L20 12.8 15.6 15l.8-4.7L13 7l4.8-.6z" transform="translate(26 24) scale(.55)"/>
+          </svg>
+        </div>
+        <div class="empty-title">还没有客户，从第一批开始</div>
+        <p class="empty-desc">客户是 CRM 的起点。手动新建、按模板批量导入，或从线索转化，都能快速建立你的客户库。</p>
+        <div class="empty-actions">
+          <button class="btn btn-primary btn-lg" onclick="openAddModal()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+            新建客户
+          </button>
+          <button class="btn btn-default btn-lg" onclick="importDemo()">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
+            批量导入
+          </button>
+        </div>
+        <div class="guide-steps">
+          <div class="step">
+            <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.2-4 4.4-6 8-6s6.8 2 8 6"/></svg></div>
+            <div class="step-title">1. 新建或导入</div>
+            <div class="step-desc">录入基本信息，上传 Excel 模板一次导入</div>
+          </div>
+          <div class="step">
+            <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+            <div class="step-title">2. 分层管理</div>
+            <div class="step-desc">按阶段与状态分组，方便团队跟进</div>
+          </div>
+          <div class="step">
+            <div class="step-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 15l4-4 3 3 5-7"/></svg></div>
+            <div class="step-title">3. 跟踪转化</div>
+            <div class="step-desc">报表自动统计成交率与回款进度</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 空状态 B：搜索/筛选无结果 -->
+      <div class="empty-state" id="emptyNoResult">
+        <div class="no-result-illustration">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M21 21l-4.3-4.3"/>
+            <path d="M8.5 10h5"/>
+          </svg>
+        </div>
+        <div class="empty-title">未找到匹配的客户</div>
+        <p class="empty-desc" id="noResultDesc">没有符合当前搜索或筛选条件的客户，请调整条件后重试。</p>
+        <div class="suggestions">
+          <b>你可以试试：</b>
+          <ul style="margin:0">
+            <li>检查关键词的拼写是否有误</li>
+            <li>减少筛选条件，或扩大搜索范围</li>
+            <li>尝试搜索客户电话、负责人的部分字段</li>
+          </ul>
+        </div>
+        <div class="empty-actions">
+          <button class="btn btn-primary" onclick="clearAllConditions()">清除全部搜索和筛选</button>
+          <button class="btn btn-default" onclick="clearStageFilter()">仅重置阶段筛选</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<!-- 新建客户模态 -->
+<div class="modal-mask" id="modalMask" onclick="if(event.target===this) closeAddModal()">
+  <div class="modal">
+    <div class="modal-header">新建客户 <button class="modal-close" onclick="closeAddModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>客户名称 *</label><input id="custName" type="text" placeholder="例如：极客科技有限公司"></div>
+      <div class="field"><label>联系电话 *</label><input id="custPhone" type="text" placeholder="例如：138****8888"></div>
+      <div class="field"><label>所属行业</label><input id="custIndustry" type="text" placeholder="例如：制造业"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-default" onclick="closeAddModal()">取消</button>
+      <button class="btn btn-primary" onclick="submitCustomer()">确定</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const ALL_CUSTOMERS = [
+    { name: "杭州云帆网络科技",   phone: "138****2221", industry: "互联网",   stage: "跟进", status: "活跃",   owner: "李明",   created: "2026-09-12" },
+    { name: "深圳智造精密制造",   phone: "139****8843", industry: "制造业",   stage: "跟进", status: "活跃",   owner: "王芳",   created: "2026-09-03" },
+    { name: "北京瑞信咨询集团",   phone: "186****9032", industry: "咨询服务", stage: "促成", status: "活跃",   owner: "李明",   created: "2026-08-21" },
+    { name: "上海临港新材料",     phone: "135****1176", industry: "制造业",   stage: "跟进", status: "沉默",   owner: "陈强",   created: "2026-08-15" },
+    { name: "广州华扬商贸有限",   phone: "189****5548", industry: "商贸零售", stage: "促成", status: "活跃",   owner: "王芳",   created: "2026-07-30" },
+    { name: "成都天府软件服务",   phone: "137****3905", industry: "互联网",   stage: "跟进", status: "活跃",   owner: "陈强",   created: "2026-07-18" },
+    { name: "南京金陵机械装备",   phone: "150****6417", industry: "制造业",   stage: "促成", status: "活跃",   owner: "李明",   created: "2026-07-02" },
+    { name: "苏州星辉自动化",     phone: "158****7342", industry: "制造业",   stage: "跟进", status: "沉默",   owner: "王芳",   created: "2026-06-25" },
+    { name: "武汉长江数科",       phone: "156****8159", industry: "互联网",   stage: "跟进", status: "活跃",   owner: "陈强",   created: "2026-06-11" },
+    { name: "青岛海汇供应链",     phone: "132****9740", industry: "商贸零售", stage: "促成", status: "活跃",   owner: "李明",   created: "2026-05-29" }
+  ];
+
+  const AVATAR_COLORS = ["#5b8ff9", "#5ad8a6", "#f6bd16", "#5d7092", "#e8684a"];
+  let searchKeyword = "";
+  let stageFilter = "";
+
+  const tableView   = document.getElementById("tableView");
+  const emptyNew    = document.getElementById("emptyNew");
+  const emptyNoResult = document.getElementById("emptyNoResult");
+  const searchInput = document.getElementById("searchInput");
+  const searchClear = document.getElementById("searchClear");
+  const filterStage = document.getElementById("filterStage");
+  const filterTags  = document.getElementById("filterTags");
+  const filterCount = document.getElementById("filterCount");
+  const demoSelect  = document.getElementById("demoSelect");
+
+  function getFiltered() {
+    return ALL_CUSTOMERS.filter(c => {
+      const kw = searchKeyword.trim().toLowerCase();
+      const hitKw = !kw ||
+        c.name.toLowerCase().includes(kw) ||
+        c.phone.toLowerCase().includes(kw) ||
+        c.owner.toLowerCase().includes(kw) ||
+        c.industry.toLowerCase().includes(kw);
+      const hitStage = !stageFilter || c.stage === stageFilter;
+      return hitKw && hitStage;
+    });
+  }
+
+  function render() {
+    const demoEmpty = demoSelect.value === "empty";
+    const rows = getFiltered();
+
+    if (demoEmpty) {
+      // 场景A：新用户空库 —— 无论筛选条件如何，均显示"暂无客户"引导
+      tableView.style.display = "none";
+      emptyNoResult.classList.remove("show");
+      emptyNew.classList.add("show");
+    } else if (rows.length > 0) {
+      emptyNew.classList.remove("show");
+      emptyNoResult.classList.remove("show");
+      tableView.style.display = "block";
+      renderTable(rows);
+    } else {
+      // 场景B：有筛选/搜索条件但无匹配结果
+      emptyNew.classList.remove("show");
+      tableView.style.display = "none";
+      emptyNoResult.classList.add("show");
+      updateNoResultDesc();
+    }
+    renderFilterTags();
+  }
+
+  function isDemoEmpty() {
+    return demoSelect.value === "empty";
+  }
+
+  function updateNoResultDesc() {
+    const desc = document.getElementById("noResultDesc");
+    const kw = searchKeyword.trim();
+    const stage = filterStage.value;
+    let parts = [];
+    if (kw) parts.push(`包含 "<b class="searched-term">${escapeHtml(kw)}</b>" 的客户`);
+    if (stage) parts.push(`阶段为“${stage}”的客户`);
+    let text = "";
+    if (parts.length) text = "没有找到" + parts.join("且") + "，请尝试调整搜索条件。";
+    else text = "没有符合条件的结果，请尝试调整搜索条件。";
+    desc.innerHTML = text;
+  }
+
+  /* 简单 HTML 转义，展示用户输入时防注入 */
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function renderTable(rows) {
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = rows.map((c, i) => `
+      <tr>
+        <td><span class="avatar" style="background:${AVATAR_COLORS[(c.name.charCodeAt(0)) % AVATAR_COLORS.length]}">${c.name.slice(0,1)}</span>${escapeHtml(c.name)}</td>
+        <td>${escapeHtml(c.phone)}</td>
+        <td>${escapeHtml(c.industry)}</td>
+        <td>${c.stage === "促成" ? '<span class="tag tag-vip">成交</span>' : '<span class="tag tag-normal">跟进中</span>'}</td>
+        <td><span class="status-dot ${c.status === "活跃" ? "status-active" : "status-idle"}"></span>${c.status}</td>
+        <td>${escapeHtml(c.owner)}</td>
+        <td>${c.created}</td>
+        <td><span class="link-btn">查看</span><span class="link-btn">编辑</span></td>
+      </tr>
+    `).join("");
+    document.getElementById("pageInfo").textContent = `共 ${rows.length} 条`;
+  }
+
+  function renderFilterTags() {
+    const tags = [];
+    const kw = searchKeyword.trim();
+    if (kw) tags.push({ label: `关键词：${kw}`, clear: () => { searchKeyword = ""; searchInput.value = ""; } });
+    if (stageFilter) tags.push({ label: `阶段：${stageFilter}`, clear: () => { stageFilter = ""; filterStage.value = ""; } });
+
+    const active = tags.length > 0;
+    filterTags.style.display = active ? "flex" : "none";
+    filterCount.style.display = active ? "inline-flex" : "none";
+    filterCount.textContent = tags.length;
+    filterTags.innerHTML = tags.map((t, i) =>
+      `<span class="filter-tag">${escapeHtml(t.label)}<span title="移除该条件" data-idx="${i}">✕</span></span>`
+    ).join("");
+
+    filterTags.querySelectorAll("[data-idx]").forEach(el => {
+      el.onclick = () => { const t = tags[+el.dataset.idx]; t.clear(); render(); };
+    });
+  }
+
+  /* ---------- 交互 ---------- */
+  searchInput.addEventListener("input", () => {
+    searchKeyword = searchInput.value;
+    searchClear.style.display = searchKeyword ? "block" : "none";
+    render();
+  });
+  searchClear.addEventListener("click", () => {
+    searchInput.value = "";
+    searchKeyword = "";
+    searchClear.style.display = "none";
+    searchInput.focus();
+    render();
+  });
+  filterStage.addEventListener("change", () => {
+    stageFilter = filterStage.value;
+    render();
+  });
+  document.getElementById("filterOwnerBtn").addEventListener("click", () => {
+    stageFilter = stageFilter === "促成" ? "跟进" : "促成";
+    filterStage.value = stageFilter;
+    render();
+  });
+
+  function clearAllConditions() {
+    searchKeyword = ""; searchInput.value = "";
+    stageFilter = ""; filterStage.value = "";
+    searchClear.style.display = "none";
+    render();
+    toast("已清除全部搜索和筛选条件");
+  }
+  function clearStageFilter() {
+    stageFilter = ""; filterStage.value = "";
+    render();
+    toast("已重置阶段筛选");
+  }
+
+  /* 演示切换 */
+  document.getElementById("demoSelect").addEventListener("change", () => {
+    if (demoSelect.value === "noresult") {
+      searchInput.value = searchKeyword = "不存在的公司名称xyz";
+      searchClear.style.display = "block";
+      filterStage.value = "";
+      stageFilter = "";
+    } else if (demoSelect.value === "empty") {
+      clearAllConditions();
+      return;
+    } else {
+      searchInput.value = ""; searchKeyword = "";
+      searchClear.style.display = "none";
+      filterStage.value = ""; stageFilter = "";
+    }
+    render();
+  });
+
+  /* ---------- 新建客户 ---------- */
+  const modalMask = document.getElementById("modalMask");
+  function openAddModal() { modalMask.classList.add("show"); setTimeout(() => document.getElementById("custName").focus(), 50); }
+  function closeAddModal() { modalMask.classList.remove("show"); }
+  function submitCustomer() {
+    const name = document.getElementById("custName").value.trim();
+    const phone = document.getElementById("custPhone").value.trim();
+    const industry = document.getElementById("custIndustry").value.trim() || "未分类";
+    if (!name || !phone) { toast("请填写客户名称和联系电话"); return; }
+    ALL_CUSTOMERS.unshift({
+      name, phone: phone.length > 7 ? phone.slice(0,3) + "****" + phone.slice(-4) : phone,
+      industry, stage: "跟进", status: "活跃", owner: "我", created: "2026-11-04"
+    });
+    closeAddModal();
+    document.getElementById("custName").value = "";
+    document.getElementById("custPhone").value = "";
+    document.getElementById("custIndustry").value = "";
+    // 新建后退出"空库演示"，回到数据视图
+    if (demoSelect.value === "empty") {
+      demoSelect.value = "data";
+    }
+    searchKeyword = ""; searchInput.value = ""; searchClear.style.display = "none";
+    stageFilter = ""; filterStage.value = "";
+    render();
+    toast(`客户“${name}”已创建`);
+  }
+  function importDemo() {
+    // 演示：模拟"批量导入成功"，从空库视图回到数据视图
+    if (isDemoEmpty()) {
+      document.getElementById("demoSelect").value = "data";
+    }
+    render();
+    toast("已从模板导入示例客户（演示）");
+  }
+
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeAddModal();
+    if (e.key === "/" && document.activeElement !== searchInput) {
+      e.preventDefault(); searchInput.focus();
+    }
+  });
+
+  /* ---------- Toast ---------- */
+  let toastTimer;
+  function toast(msg) {
+    const el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove("show"), 2200);
+  }
+
+  render();
+</script>
+</body>
+</html>

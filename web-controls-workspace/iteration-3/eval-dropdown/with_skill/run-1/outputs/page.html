@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订单管理 · 负责人指派与筛选</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --card: #ffffff;
+    --text: #1f2329;
+    --text-2: #646a73;
+    --text-3: #8f959e;
+    --line: #e5e7eb;
+    --primary: #2469e3;
+    --primary-weak: #eaf1fd;
+    --radius: 10px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 32px 16px 64px;
+  }
+  .page { max-width: 1080px; margin: 0 auto; }
+  .page-head { margin-bottom: 20px; }
+  .page-head h1 { font-size: 22px; font-weight: 600; }
+  .page-head p { font-size: 13px; color: var(--text-2); margin-top: 6px; }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  .filter-label { font-size: 13px; color: var(--text-2); white-space: nowrap; }
+  .count { font-size: 13px; color: var(--text-2); margin-left: auto; }
+  .count b { color: var(--text); font-weight: 600; }
+  .filter-chip {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    background: var(--primary-weak);
+    color: var(--primary);
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 999px;
+  }
+  .filter-chip button {
+    border: none;
+    background: none;
+    color: var(--primary);
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 999px;
+  }
+  .filter-chip button:hover { background: rgba(36,105,227,.12); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  thead th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 12.5px;
+    color: var(--text-2);
+    background: #fafbfc;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 16px;
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: middle;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+  td.col-order { font-family: ui-monospace, Consolas, monospace; color: var(--text-2); font-size: 13px; }
+  td.col-money {
+    text-align: right;
+    font-family: ui-monospace, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+  td.col-action { width: 200px; }
+
+  .badge {
+    display: inline-block;
+    font-size: 12px;
+    line-height: 20px;
+    padding: 0 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+  .badge-todo { background: #fdf3e3; color: #b25e09; }
+  .badge-doing { background: #e8f1fe; color: #2469e3; }
+  .badge-done { background: #e5f6ee; color: #15834e; }
+
+  .select { position: relative; user-select: none; }
+  .select-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 13.5px;
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .select-trigger:hover { border-color: #c4cbd4; }
+  .select.open .select-trigger {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(36,105,227,.12);
+  }
+  .select-trigger .placeholder { color: var(--text-3); }
+  .select-trigger .txt { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .select-trigger .caret {
+    flex: none;
+    width: 0; height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 5px solid var(--text-3);
+    transition: transform .15s;
+  }
+  .select.open .caret { transform: rotate(180deg); }
+
+  .option-dot {
+    flex: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12px;
+    line-height: 22px;
+    text-align: center;
+  }
+  .option-check { color: var(--primary); font-weight: 600; flex: none; }
+
+  .panel {
+    display: none;
+    position: absolute;
+    z-index: 30;
+    top: calc(100% + 6px);
+    left: 0;
+    min-width: 200px;
+    max-height: 264px;
+    overflow: auto;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(31,35,41,.12);
+    padding: 6px;
+  }
+  .panel.up { top: auto; bottom: calc(100% + 6px); }
+  .panel .option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    border: none;
+    background: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 13.5px;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+  }
+  .panel .option:hover, .panel .option.active { background: #f2f4f7; }
+  .panel .option[aria-selected="true"] { color: var(--primary); font-weight: 500; background: var(--primary-weak); }
+
+  .empty-tip { color: var(--text-3); font-size: 13px; }
+
+  .empty-row td { padding: 56px 16px; }
+  .empty-state { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .empty-state .icon { font-size: 34px; }
+  .empty-state .title { font-size: 15px; font-weight: 500; }
+  .empty-state .desc { font-size: 13px; color: var(--text-2); }
+  .clear-btn {
+    margin-top: 4px;
+    border: 1px solid var(--primary);
+    background: #fff;
+    color: var(--primary);
+    font-size: 13px;
+    padding: 6px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .clear-btn:hover { background: var(--primary-weak); }
+
+  .toast-wrap {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(31,35,41,.14);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    animation: toast-in .2s ease;
+  }
+  .toast.done { opacity: 0; transform: translateY(-6px); transition: all .25s ease; }
+  .toast .mark { color: #15834e; font-weight: 600; }
+  @keyframes toast-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: none; } }
+
+  @media (max-width: 640px) {
+    body { padding: 20px 8px 48px; }
+    thead th:nth-child(2), tbody td:nth-child(2),
+    thead th:nth-child(3), tbody td:nth-child(3) { display: none; }
+    td.col-action { width: 150px; }
+    .toolbar { padding: 12px 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header class="page-head">
+    <h1>订单管理</h1>
+    <p>为订单指派负责人，或按负责人筛选订单列表。</p>
+  </header>
+
+  <section class="card">
+    <div class="toolbar">
+      <span class="filter-label">负责人：</span>
+      <div id="filterSelect" style="width: 200px;"></div>
+      <span class="filter-chip" id="filterChip">
+        <span id="filterChipName"></span>
+        <button type="button" id="filterChipClose" title="清除筛选">×</button>
+      </span>
+      <span class="count" id="countText"></span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>订单号</th>
+          <th>客户 / 项目</th>
+          <th style="text-align: right;">金额（元）</th>
+          <th>状态</th>
+          <th>负责人</th>
+        </tr>
+      </thead>
+      <tbody id="orderBody"></tbody>
+    </table>
+  </section>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var OWNERS = [
+    { id: "o1", name: "陈默", color: "#2469e3" },
+    { id: "o2", name: "林晚秋", color: "#8a5cd6" },
+    { id: "o3", name: "王远航", color: "#15834e" },
+    { id: "o4", name: "苏一凡", color: "#c86a1f" },
+    { id: "o5", name: "周芷", color: "#c23e96" },
+    { id: "o6", name: "赵航宇", color: "#3f7fdb" }
+  ];
+
+  var STATUS = {
+    todo: { text: "待处理", cls: "badge-todo" },
+    doing: { text: "进行中", cls: "badge-doing" },
+    done: { text: "已完成", cls: "badge-done" }
+  };
+
+  var ORDERS = [
+    { id: "DD20261028001", customer: "恒瑞贸易 · 年度包年服务", money: 36800, status: "doing", owner: "o1" },
+    { id: "DD20261029002", customer: "星野咖啡 · 门店管理系统", money: 15200, status: "todo", owner: null },
+    { id: "DD20261030003", customer: "清岑设计 · 品牌官网改版", money: 8600, status: "doing", owner: "o2" },
+    { id: "DD20261031004", customer: "北岸物流 · 运单小程序", money: 27500, status: "done", owner: "o3" },
+    { id: "DD20261101005", customer: "麦田教育 · 报名系统组件", money: 4800, status: "todo", owner: "o1" },
+    { id: "DD20261101006", customer: "山屿民宿 · 预订日历定制", money: 6300, status: "doing", owner: "o4" },
+    { id: "DD20261102007", customer: "青山环保 · 数据大屏二期", money: 45000, status: "todo", owner: "o5" },
+    { id: "DD20261102008", customer: "启航二手车 · 库存列表", money: 9200, status: "done", owner: "o3" },
+    { id: "DD20261103009", customer: "拾光影像 · 相册站重构", money: 12000, status: "doing", owner: "o6" },
+    { id: "DD20261103010", customer: "拾音器材 · 商城对接", money: 21500, status: "todo", owner: null },
+    { id: "DD20261104011", customer: "半夏文具 · 订单看板", money: 7600, status: "doing", owner: "o6" },
+    { id: "DD20261104012", customer: "潮汐科技 · 应用会员体系", money: 53000, status: "done", owner: "o5" }
+  ];
+
+  var ownerById = {};
+  OWNERS.forEach(function (o) { ownerById[o.id] = o; });
+
+  function avatarDot(owner) {
+    return '<span class="option-dot" style="background:' + owner.color + '">' +
+      owner.name.charAt(0) + "</span>";
+  }
+
+  var openSelect = null;
+
+  function closeOpenSelect() {
+    if (openSelect) {
+      openSelect.classList.remove("open");
+      var p = openSelect.querySelector(".panel");
+      if (p) p.classList.remove("up");
+      var act = openSelect.querySelector(".option.active");
+      if (act) act.classList.remove("active");
+      openSelect = null;
+    }
+  }
+
+  function getOwnerOptions(selectedId, withAll) {
+    var list = [];
+    if (withAll) list.push({ id: "", name: "全部负责人" });
+    OWNERS.forEach(function (o) { list.push({ id: o.id, name: o.name }); });
+    return list;
+  }
+
+  function buildSelect(options, selectedId, placeholder, onChange) {
+    var root = document.createElement("div");
+    root.className = "select";
+
+    var selected = options.filter(function (x) { return x.id === selectedId; })[0] || null;
+
+    var trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.className = "select-trigger";
+
+    function triggerContent(txt, isPh) {
+      var html = "";
+      if (txt && !isPh && txt.name) {
+        if (txt.id) html += avatarDot(ownerById[txt.id]);
+        html += '<span class="txt">' + txt.name + "</span>";
+      } else {
+        html += '<span class="txt placeholder">' + placeholder + "</span>";
+      }
+      html += '<span class="caret"></span>';
+      return html;
+    }
+
+    trigger.innerHTML = triggerContent(selected, !selected);
+
+    var panel = document.createElement("div");
+    panel.className = "panel";
+
+    options.forEach(function (opt) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "option";
+      btn.setAttribute("role", "option");
+      btn.setAttribute("aria-selected", opt.id === selectedId ? "true" : "false");
+      var html = "";
+      if (opt.id) html += avatarDot(ownerById[opt.id]);
+      html += '<span class="txt" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + opt.name + "</span>";
+      if (opt.id === selectedId) html += '<span class="option-check">✓</span>';
+      btn.innerHTML = html;
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (opt.id !== selectedId) onChange(opt.id);
+        closeOpenSelect();
+      });
+      panel.appendChild(btn);
+    });
+
+    trigger.addEventListener("click", function (e) {
+      e.stopPropagation();
+      if (openSelect === root) { closeOpenSelect(); return; }
+      closeOpenSelect();
+      root.classList.add("open");
+      openSelect = root;
+      var rect = trigger.getBoundingClientRect();
+      var spaceBelow = window.innerHeight - rect.bottom;
+      if (spaceBelow < panel.offsetHeight + 14) panel.classList.add("up");
+    });
+
+    root.appendChild(trigger);
+    root.appendChild(panel);
+    return root;
+  }
+
+  var currentFilter = "";
+
+  var tbody = document.getElementById("orderBody");
+  var countText = document.getElementById("countText");
+  var filterChip = document.getElementById("filterChip");
+  var filterChipName = document.getElementById("filterChipName");
+
+  function render() {
+    var filtered = ORDERS.filter(function (o) {
+      return currentFilter === "" || o.owner === currentFilter;
+    });
+
+    tbody.innerHTML = "";
+
+    if (filtered.length === 0) {
+      var tr = document.createElement("tr");
+      tr.className = "empty-row";
+      tr.innerHTML =
+        '<td colspan="5"><div class="empty-state">' +
+        '<div class="icon">🔍</div>' +
+        '<div class="title">没有符合筛选条件的订单</div>' +
+        '<div class="desc">当前筛选：' + ownerById[currentFilter].name +
+        "&nbsp;·&nbsp;条件仍保留在页面上方标签里</div>" +
+        '<button type="button" class="clear-btn" id="emptyClear">清除筛选</button>' +
+        "</div></td>";
+      tbody.appendChild(tr);
+      document.getElementById("emptyClear").addEventListener("click", function () {
+        currentFilter = "";
+        render();
+      });
+    } else {
+      filtered.forEach(function (o) {
+        var st = STATUS[o.status];
+        var owner = o.owner ? ownerById[o.owner] : null;
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td class="col-order">' + o.id + "</td>" +
+          "<td>" + o.customer + "</td>" +
+          '<td class="col-money">' + o.money.toLocaleString("zh-CN") + "</td>" +
+          '<td><span class="badge ' + st.cls + '">' + st.text + "</span></td>" +
+          '<td class="col-action"></td>';
+        var cell = tr.querySelector(".col-action");
+        var sel = buildSelect(
+          ownerOptionsForAssign(),
+          o.owner || "",
+          "分配负责人",
+          function (newId) {
+            o.owner = newId === "" ? null : newId;
+            showToast("已" + (newId ? "指派给 " + ownerById[newId].name : "取消负责人"));
+            render();
+          }
+        );
+        cell.appendChild(sel);
+        tbody.appendChild(tr);
+      });
+    }
+
+    countText.innerHTML = "共 <b>" + filtered.length + "</b> / " + ORDERS.length + " 条订单";
+    if (currentFilter) {
+      filterChipName.textContent = "已筛选：" + ownerById[currentFilter].name;
+      filterChip.style.display = "inline-flex";
+    } else {
+      filterChip.style.display = "none";
+    }
+  }
+
+  function ownerOptionsForAssign() {
+    return OWNERS.map(function (o) { return { id: o.id, name: o.name }; });
+  }
+
+  var filterMount = document.getElementById("filterSelect");
+
+  function renderFilter() {
+    filterMount.innerHTML = "";
+    var options = getOwnerOptions(currentFilter, true);
+    var sel = buildSelect(options, currentFilter, "全部负责人", function (id) {
+      currentFilter = id;
+      render();
+      renderFilter();
+    });
+    filterMount.appendChild(sel);
+  }
+
+  document.getElementById("filterChipClose").addEventListener("click", function () {
+    currentFilter = "";
+    render();
+    renderFilter();
+  });
+
+  function showToast(msg) {
+    var wrap = document.getElementById("toastWrap");
+    var t = document.createElement("div");
+    t.className = "toast";
+    t.innerHTML = '<span class="mark">✓</span><span>' + msg + "</span>";
+    wrap.appendChild(t);
+    setTimeout(function () {
+      t.classList.add("done");
+      setTimeout(function () { t.remove(); }, 300);
+    }, 2200);
+  }
+
+  document.addEventListener("click", function () {
+    if (openSelect) closeOpenSelect();
+  });
+
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && openSelect) closeOpenSelect();
+  });
+
+  renderFilter();
+  render();
+})();
+</script>
+</body>
+</html>

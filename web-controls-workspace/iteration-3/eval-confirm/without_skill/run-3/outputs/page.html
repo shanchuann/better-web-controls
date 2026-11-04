@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>项目管理 - 后台管理</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --border: #e3e5e8;
+    --text: #24292f;
+    --text-secondary: #656d76;
+    --danger: #cf222e;
+    --danger-light: #fff1f2;
+    --primary: #2563eb;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* 顶部导航 */
+  .topbar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .topbar .logo { font-weight: 600; font-size: 16px; }
+  .topbar nav { display: flex; gap: 20px; font-size: 14px; color: var(--text-secondary); }
+  .topbar nav a { color: inherit; text-decoration: none; }
+  .topbar nav a.active { color: var(--primary); font-weight: 500; }
+
+  .container { max-width: 860px; margin: 32px auto; padding: 0 24px; }
+
+  /* 面包屑 */
+  .breadcrumb { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+  .breadcrumb a { color: var(--primary); text-decoration: none; }
+
+  /* 项目信息卡 */
+  .project-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+  }
+  .project-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  .project-title h1 { font-size: 20px; font-weight: 600; margin-bottom: 6px; }
+  .project-title .meta { font-size: 13px; color: var(--text-secondary); }
+  .badge {
+    display: inline-block; font-size: 12px; padding: 2px 8px; border-radius: 999px;
+    background: #eef4ff; color: var(--primary); margin-left: 8px; vertical-align: 2px;
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 14px; padding: 8px 16px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--card);
+    cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .btn:hover { background: #f8f9fa; }
+  .btn.btn-danger-outline { color: var(--danger); border-color: rgba(207,34,46,.4); }
+  .btn.btn-danger-outline:hover { background: var(--danger-light); border-color: var(--danger); }
+
+  /* 危险操作区 */
+  .danger-zone {
+    margin-top: 24px;
+    border: 1px solid rgba(207,34,46,.35);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .danger-zone .zone-title {
+    padding: 12px 20px; font-size: 14px; font-weight: 600; color: var(--danger);
+    background: var(--danger-light); border-bottom: 1px solid rgba(207,34,46,.2);
+  }
+  .danger-zone .zone-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 16px 20px; gap: 24px;
+  }
+  .danger-zone .zone-row .desc { font-size: 13px; color: var(--text-secondary); line-height: 1.6; }
+  .danger-zone .zone-row .desc strong { color: var(--text); font-weight: 600; }
+
+  /* 统计 */
+  .stats { display: flex; gap: 32px; margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .stat .num { font-size: 18px; font-weight: 600; }
+  .stat .label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ============ 确认弹窗 ============ */
+  .modal-mask {
+    position: fixed; inset: 0; background: rgba(9, 12, 16, .55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px; z-index: 100;
+    opacity: 0; pointer-events: none; transition: opacity .18s ease;
+  }
+  .modal-mask.open { opacity: 1; pointer-events: auto; }
+  .modal {
+    background: var(--card); border-radius: 12px; width: 100%; max-width: 440px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    transform: translateY(12px) scale(.97); transition: transform .18s ease;
+    outline: none;
+  }
+  .modal-mask.open .modal { transform: translateY(0) scale(1); }
+  .modal-head {
+    padding: 20px 24px 0; display: flex; align-items: center; gap: 12px;
+  }
+  .warn-icon {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: var(--danger-light); display: flex; align-items: center; justify-content: center;
+  }
+  .warn-icon svg { color: var(--danger); }
+  .modal-head h2 { font-size: 17px; font-weight: 600; line-height: 1.4; }
+  .modal-body { padding: 14px 24px 0; font-size: 14px; color: var(--text-secondary); line-height: 1.7; }
+  .modal-body strong { color: var(--text); }
+  .consequences {
+    margin-top: 12px; padding: 12px 16px;
+    background: #faf3f4; border: 1px solid rgba(207,34,46,.18); border-radius: 8px;
+    font-size: 13px;
+  }
+  .consequences li { list-style: none; display: flex; gap: 8px; margin: 4px 0; }
+  .consequences li::before { content: "•"; color: var(--danger); font-weight: 700; }
+
+  .confirm-input-wrap { margin-top: 14px; }
+  .confirm-input-wrap label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--text); }
+  .confirm-input-wrap label code {
+    background: #f0f1f3; padding: 2px 6px; border-radius: 4px; color: var(--danger); font-family: monospace;
+  }
+  .confirm-input-wrap input {
+    width: 100%; padding: 9px 12px; font-size: 14px; font-family: inherit;
+    border: 1px solid var(--border); border-radius: 6px; outline: none;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .confirm-input-wrap input:focus { border-color: var(--danger); box-shadow: 0 0 0 3px rgba(207,34,46,.12); }
+
+  .modal-foot {
+    padding: 20px 24px 24px; display: flex; justify-content: flex-end; gap: 10px;
+  }
+  .btn-danger {
+    background: var(--danger); color: #fff; border-color: var(--danger); font-weight: 500;
+  }
+  .btn-danger:hover:not(:disabled) { background: #a91e28; }
+  .btn-danger:disabled, .btn-danger[aria-disabled="true"] {
+    opacity: .45; cursor: not-allowed;
+  }
+  .btn:focus-visible, input:focus-visible {
+    box-shadow: 0 0 0 3px rgba(37,99,235,.35);
+  }
+
+  /* toast */
+  .toast-wrap { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 200; }
+  .toast {
+    background: #1f2328; color: #fff; font-size: 14px; padding: 10px 18px;
+    border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.2);
+    display: flex; align-items: center; gap: 8px;
+    animation: toastIn .25s ease;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+  .toast.out { opacity: 0; transform: translateY(8px); transition: all .3s; }
+
+  /* 已删除状态 */
+  .deleted-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+    padding: 48px 24px; text-align: center;
+  }
+  .deleted-card h2 { font-size: 18px; margin: 12px 0 8px; }
+  .deleted-card p { color: var(--text-secondary); font-size: 14px; margin-bottom: 20px; }
+  .body-blur-hidden { display: none; }
+</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo">后台管理</div>
+    <nav>
+      <a href="#">概览</a>
+      <a href="#" class="active">项目管理</a>
+      <a href="#">成员</a>
+      <a href="#">设置</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <div class="breadcrumb"><a href="#">项目管理</a> / 星辰数据平台</div>
+
+    <section class="project-card" id="projectCard">
+      <div class="project-head">
+        <div class="project-title">
+          <h1>星辰数据平台<span class="badge">进行中</span></h1>
+          <div class="meta">创建于 2025-06-12 · 负责人：张伟 · 最近更新 2 小时前</div>
+        </div>
+        <div></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><div class="num">128</div><div class="label">任务</div></div>
+        <div class="stat"><div class="num">342</div><div class="label">文件</div></div>
+        <div class="stat"><div class="num">8</div><div class="label">成员</div></div>
+        <div class="stat"><div class="num">42 GB</div><div class="label">存储占用</div></div>
+      </div>
+
+      <div class="danger-zone">
+        <div class="zone-title">危险操作</div>
+        <div class="zone-row">
+          <div class="desc">
+            <strong>删除此项目</strong><br>
+            删除后，项目下的全部 128 个任务、342 个文件将被永久清除，此操作不可恢复。
+          </div>
+          <button class="btn btn-danger-outline" id="deleteBtn" type="button">
+            删除项目
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- 确认弹窗 -->
+  <div class="modal-mask" id="modalMask" role="presentation" aria-hidden="true">
+    <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc" id="modal">
+      <div class="modal-head">
+        <div class="warn-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+        </div>
+        <h2 id="modalTitle">确定要删除“星辰数据平台”吗？</h2>
+      </div>
+      <div class="modal-body" id="modalDesc">
+        这是一个<strong style="color:var(--danger)">不可恢复</strong>的破坏性操作。删除后你将立即失去对以下内容的访问：
+        <ul class="consequences">
+          <li>项目下全部 <strong>128 个任务</strong> 及其记录</li>
+          <li>项目下全部 <strong>342 个文件</strong>（约 42 GB）</li>
+          <li>所有成员为此项目的协作历史与评论</li>
+        </ul>
+        <div class="confirm-input-wrap">
+          <label for="confirmInput">为避免误操作，请输入项目名称 <code>星辰数据平台</code> 以确认：</label>
+          <input type="text" id="confirmInput" placeholder="输入项目名称" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn" id="cancelBtn" type="button">取消</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn" type="button" disabled>永久删除</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+  <script>
+    const PROJECT_NAME = '星辰数据平台';
+    const deleteBtn = document.getElementById('deleteBtn');
+    const modalMask = document.getElementById('modalMask');
+    const modal = document.getElementById('modal');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const confirmInput = document.getElementById('confirmInput');
+    const projectCard = document.getElementById('projectCard');
+    const toastWrap = document.getElementById('toastWrap');
+    let lastFocused = null;
+    let deleting = false;
+
+    function openModal() {
+      lastFocused = document.activeElement;
+      modalMask.classList.add('open');
+      modalMask.setAttribute('aria-hidden', 'false');
+      confirmInput.value = '';
+      confirmBtn.disabled = true;
+      setTimeout(() => confirmInput.focus(), 60);
+    }
+
+    function closeModal() {
+      if (deleting) return;
+      modalMask.classList.remove('open');
+      modalMask.setAttribute('aria-hidden', 'true');
+      if (lastFocused) lastFocused.focus();
+    }
+
+    confirmInput.addEventListener('input', () => {
+      const ok = confirmInput.value.trim() === PROJECT_NAME;
+      confirmBtn.disabled = !ok;
+    });
+    confirmInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && confirmInput.value.trim() === PROJECT_NAME) confirmBtn.click();
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      deleting = true;
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = '正在删除…';
+      setTimeout(() => {
+        projectCard.innerHTML = `
+          <div class="deleted-card">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#cf222e" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto">
+              <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+            </svg>
+            <h2>项目已删除</h2>
+            <p>“${PROJECT_NAME}”及其全部任务与文件已永久清除。</p>
+            <button class="btn" onclick="location.reload()">返回项目管理</button>
+          </div>`;
+        document.querySelector('.breadcrumb').textContent = '项目管理 / 已删除项目';
+        showToast(`项目“${PROJECT_NAME}”已永久删除`);
+        deleting = false;
+        closeModalInstant();
+      }, 1200);
+    });
+
+    function closeModalInstant() {
+      modalMask.classList.remove('open');
+      modalMask.setAttribute('aria-hidden', 'true');
+    }
+
+    deleteBtn.addEventListener('click', openModal);
+    cancelBtn.addEventListener('click', closeModal);
+    modalMask.addEventListener('click', e => { if (e.target === modalMask) closeModal(); });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && modalMask.classList.contains('open')) closeModal();
+      // 焦点圈定在弹窗内
+      if (e.key === 'Tab' && modalMask.classList.contains('open')) {
+        const focusables = modal.querySelectorAll('button, input');
+        const first = focusables[0], last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast';
+      t.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>${msg}`;
+      toastWrap.appendChild(t);
+      setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 350); }, 3000);
+    }
+  </script>
+</body>
+</html>

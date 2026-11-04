@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月度经营报告 · 2026年10月</title>
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#ffffff; --line:#e5e9f0;
+    --ink:#0f172a; --muted:#64748b; --faint:#94a3b8;
+    --accent:#2563eb; --accent-soft:#dbeafe;
+    --up:#059669; --up-soft:#d1fae5;
+    --down:#dc2626; --down-soft:#fee2e2;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+    font-size:15px; line-height:1.6;
+    padding:32px 20px 48px;
+  }
+  .wrap{max-width:1180px;margin:0 auto}
+  .num{font-variant-numeric:tabular-nums}
+
+  /* ===== 头部 ===== */
+  .page-head{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    flex-wrap:wrap; gap:12px; margin-bottom:20px;
+  }
+  .page-head .kicker{
+    font-size:13px; color:var(--accent); font-weight:600; letter-spacing:.08em;
+  }
+  .page-head h1{font-size:26px; font-weight:700; letter-spacing:.02em}
+  .page-head h1 span{color:var(--muted); font-weight:500; font-size:18px; margin-left:10px}
+  .page-head .meta{font-size:13px; color:var(--faint); text-align:right}
+
+  /* ===== 卡片通用 ===== */
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:14px;
+    padding:20px 22px; box-shadow:0 1px 2px rgba(15,23,42,.04);
+  }
+  .card h2{font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px}
+  .card h2 .hint{font-size:12px; font-weight:400; color:var(--faint); margin-left:auto}
+  .card .sub{font-size:12px; color:var(--faint); margin-top:2px}
+
+  /* ===== 第一层：结论（KPI + 要点）===== */
+  .top-grid{
+    display:grid; grid-template-columns:1.35fr 1fr; gap:16px; margin-bottom:16px;
+  }
+  .kpi-card{display:flex; flex-direction:column; justify-content:center}
+  .kpi-label{font-size:13px; color:var(--muted); letter-spacing:.06em}
+  .kpi-row{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-top:6px}
+  .kpi-value{font-size:52px; font-weight:700; letter-spacing:-.02em; line-height:1.15}
+  .kpi-value small{font-size:20px; font-weight:500; color:var(--muted); margin-left:4px}
+  .badge-up{
+    display:inline-flex; align-items:center; gap:4px;
+    background:var(--up-soft); color:var(--up);
+    font-size:15px; font-weight:700; border-radius:999px; padding:4px 14px;
+  }
+  .kpi-foot{margin-top:10px; font-size:13px; color:var(--muted)}
+  .kpi-foot b{color:var(--ink)}
+  .kpi-foot .delta{color:var(--up); font-weight:600}
+
+  .notes-card ul{list-style:none; margin-top:12px}
+  .notes-card li{
+    position:relative; padding:8px 0 8px 20px; font-size:14px;
+    border-top:1px dashed var(--line);
+  }
+  .notes-card li:first-child{border-top:none}
+  .notes-card li::before{
+    content:""; position:absolute; left:4px; top:17px;
+    width:7px; height:7px; border-radius:50%; background:var(--accent);
+  }
+  .notes-card b{font-weight:600}
+  .notes-card .up{color:var(--up); font-weight:600}
+  .notes-card .down{color:var(--down); font-weight:600}
+
+  /* ===== 第二层：趋势 / 构成 / 流程 ===== */
+  .mid-grid{
+    display:grid; grid-template-columns:1.35fr 1fr 1fr; gap:16px; margin-bottom:16px;
+  }
+  .chart-svg{display:block; width:100%; height:auto; margin-top:8px}
+
+  /* 环形图图例 */
+  .donut-flex{display:flex; align-items:center; gap:14px; margin-top:10px}
+  .donut-flex svg{flex:0 0 168px; width:168px; height:168px}
+  .legend{flex:1; min-width:0}
+  .legend .row{
+    display:flex; align-items:center; gap:8px;
+    padding:6px 0; border-top:1px dashed var(--line); font-size:13px;
+  }
+  .legend .row:first-child{border-top:none}
+  .dot{width:10px; height:10px; border-radius:3px; flex:none}
+  .legend .name{flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .legend .val{color:var(--muted)}
+  .legend .pct{font-weight:700; width:52px; text-align:right}
+
+  /* 漏斗图 */
+  .funnel{margin-top:12px}
+  .f-stage{display:flex; justify-content:center}
+  .f-bar{
+    height:46px; display:flex; align-items:center; justify-content:center; gap:14px;
+    color:#1e3a8a; font-size:14px; padding:0 18px; white-space:nowrap;
+  }
+  .f-bar .f-name{font-weight:600}
+  .f-bar .f-num{font-weight:700}
+  .f-bar .f-share{font-size:12px; opacity:.75}
+  .f-step{
+    text-align:center; font-size:12px; color:var(--muted);
+    padding:8px 0; line-height:1.4;
+  }
+  .f-step b{color:var(--ink)}
+  .f-step .loss{color:var(--down); font-weight:600}
+  .funnel-foot{margin-top:6px; font-size:12px; color:var(--faint)}
+
+  /* ===== 第三层：明细表 ===== */
+  table{width:100%; border-collapse:collapse; margin-top:12px; font-size:14px}
+  th,td{padding:10px 12px; text-align:right; border-bottom:1px solid var(--line); white-space:nowrap}
+  th:first-child, td:first-child{text-align:left; padding-left:4px}
+  thead th{
+    font-size:12px; font-weight:600; color:var(--muted);
+    border-bottom:1px solid var(--line); background:#fafbfd;
+  }
+  tbody tr:hover{background:#f8fafc}
+  tfoot td{font-weight:700; border-top:2px solid var(--line); border-bottom:none; background:#fafbfd}
+  .ch-name{font-weight:600}
+  .pos{color:var(--up); font-weight:600}
+  .neg{color:var(--down); font-weight:600}
+  .table-foot{margin-top:10px; font-size:12px; color:var(--faint)}
+
+  .page-foot{
+    margin-top:28px; text-align:center; font-size:12px; color:var(--faint);
+  }
+
+  @media (max-width:960px){
+    .top-grid,.mid-grid{grid-template-columns:1fr}
+    .page-head .meta{text-align:left}
+    .donut-flex{flex-direction:column}
+    .donut-flex svg{flex:none}
+  }
+  @media print{
+    body{background:#fff; padding:0}
+    .card{box-shadow:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- 页头 -->
+  <header class="page-head">
+    <div>
+      <div class="kicker">经营复盘 · 上总下分</div>
+      <h1>月度经营报告<span>2026 年 10 月</span></h1>
+    </div>
+    <div class="meta">数据截至 2026-10-31<br>金额单位：万元（人民币）</div>
+  </header>
+
+  <!-- 第一层：结果 —— KPI 卡 + 本期要点 -->
+  <section class="top-grid">
+    <div class="card kpi-card">
+      <div class="kpi-label">本月营业收入</div>
+      <div class="kpi-row">
+        <div class="kpi-value num">480<small>万元</small></div>
+        <span class="badge-up">▲ 环比 +12.0%</span>
+      </div>
+      <div class="kpi-foot num">
+        上月 <b>428.4 万元</b> ·
+        环比增量 <span class="delta">+51.6 万元</span> ·
+        近 12 个月单月最高
+      </div>
+    </div>
+
+    <div class="card notes-card">
+      <h2>本期要点</h2>
+      <ul>
+        <li>营收 <b>480 万元</b>，环比 <span class="up">+12.0%</span>，为近 12 个月最高。</li>
+        <li><b>企业服务</b>产品线贡献 <b>40%</b> 营收，为第一大收入来源。</li>
+        <li>全渠道访问→成交转化率 <b>6.0%</b>；<span class="down">搜索引擎成交环比 −4.6%</span>，需重点跟进。</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 第二层：趋势 / 构成 / 流程 -->
+  <section class="mid-grid">
+
+    <!-- 近12个月营收走势：折线图 -->
+    <div class="card">
+      <h2>近 12 个月营收走势<span class="hint">点击数据点可看明细</span></h2>
+      <div class="sub">月度营收（万元）</div>
+      <svg class="chart-svg" viewBox="0 0 640 262" role="img" aria-label="近12个月营收走势折线图">
+        <!-- 网格 -->
+        <g stroke="#e5e9f0" stroke-width="1">
+          <line x1="60" y1="212.2" x2="590" y2="212.2"></line>
+          <line x1="60" y1="148.1" x2="590" y2="148.1"></line>
+          <line x1="60" y1="84.1"  x2="590" y2="84.1"></line>
+          <line x1="60" y1="20"    x2="590" y2="20"></line>
+        </g>
+        <g fill="#94a3b8" font-size="10" text-anchor="end">
+          <text x="50" y="215.2">350</text>
+          <text x="50" y="151.1">400</text>
+          <text x="50" y="87.1">450</text>
+          <text x="50" y="23">500</text>
+        </g>
+        <line x1="60" y1="225" x2="590" y2="225" stroke="#cbd5e1" stroke-width="1"></line>
+        <!-- 面积 -->
+        <path d="M60,196.8 L108.2,185.3 L156.4,205.8 L204.5,162.2 L252.7,145.6 L300.9,153.3 L349.1,125.1 L397.3,107.1 L445.5,116.1 L493.6,95.6 L541.8,111.8 L590,45.6 L590,225 L60,225 Z"
+              fill="url(#gradArea)"></path>
+        <!-- 折线 -->
+        <polyline
+          points="60,196.8 108.2,185.3 156.4,205.8 204.5,162.2 252.7,145.6 300.9,153.3 349.1,125.1 397.3,107.1 445.5,116.1 493.6,95.6 541.8,111.8 590,45.6"
+          fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></polyline>
+        <!-- 数据点（自带悬停提示） -->
+        <g fill="#2563eb" stroke="#fff" stroke-width="1.5">
+          <circle cx="60"    cy="196.8" r="3"><title>2025年11月：362 万元</title></circle>
+          <circle cx="108.2" cy="185.3" r="3"><title>2025年12月：371 万元</title></circle>
+          <circle cx="156.4" cy="205.8" r="3"><title>2026年1月：355 万元</title></circle>
+          <circle cx="204.5" cy="162.2" r="3"><title>2026年2月：389 万元</title></circle>
+          <circle cx="252.7" cy="145.6" r="3"><title>2026年3月：402 万元</title></circle>
+          <circle cx="300.9" cy="153.3" r="3"><title>2026年4月：396 万元</title></circle>
+          <circle cx="349.1" cy="125.1" r="3"><title>2026年5月：418 万元</title></circle>
+          <circle cx="397.3" cy="107.1" r="3"><title>2026年6月：432 万元</title></circle>
+          <circle cx="445.5" cy="116.1" r="3"><title>2026年7月：425 万元</title></circle>
+          <circle cx="493.6" cy="95.6"  r="3"><title>2026年8月：441 万元</title></circle>
+          <circle cx="541.8" cy="111.8" r="3"><title>2026年9月：428.4 万元</title></circle>
+        </g>
+        <!-- 本月高亮点 -->
+        <circle cx="590" cy="45.6" r="5" fill="#2563eb" stroke="#2563eb" stroke-opacity=".2" stroke-width="6">
+          <title>2026年10月：480 万元（环比 +12.0%）</title>
+        </circle>
+        <circle cx="590" cy="45.6" r="3.2" fill="#2563eb" stroke="#fff" stroke-width="1.5"></circle>
+        <text x="584" y="34" font-size="12" font-weight="700" fill="#2563eb" text-anchor="end">480 万</text>
+        <!-- X 轴标签 -->
+        <g fill="#64748b" font-size="10" text-anchor="middle">
+          <text x="60"    y="244">11月</text>
+          <text x="108.2" y="244">12月</text>
+          <text x="156.4" y="244">1月</text>
+          <text x="204.5" y="244">2月</text>
+          <text x="252.7" y="244">3月</text>
+          <text x="300.9" y="244">4月</text>
+          <text x="349.1" y="244">5月</text>
+          <text x="397.3" y="244">6月</text>
+          <text x="445.5" y="244">7月</text>
+          <text x="493.6" y="244">8月</text>
+          <text x="541.8" y="244">9月</text>
+          <text x="590"   y="244">10月</text>
+        </g>
+        <defs>
+          <linearGradient id="gradArea" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#2563eb" stop-opacity=".16"></stop>
+            <stop offset="100%" stop-color="#2563eb" stop-opacity="0"></stop>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
+
+    <!-- 各产品线营收占比：环形图 -->
+    <div class="card">
+      <h2>各产品线营收占比</h2>
+      <div class="sub">本月合计 480 万元</div>
+      <div class="donut-flex">
+        <svg viewBox="0 0 200 200" role="img" aria-label="各产品线营收占比环形图">
+          <g transform="rotate(-90 100 100)" fill="none" stroke-width="26">
+            <circle cx="100" cy="100" r="70" stroke="#2563eb"
+                    stroke-dasharray="175.93 439.82" stroke-dashoffset="0">
+              <title>企业服务：192.0 万元（40.0%）</title></circle>
+            <circle cx="100" cy="100" r="70" stroke="#38bdf8"
+                    stroke-dasharray="123.15 439.82" stroke-dashoffset="-175.93">
+              <title>智能硬件：134.4 万元（28.0%）</title></circle>
+            <circle cx="100" cy="100" r="70" stroke="#f59e0b"
+                    stroke-dasharray="87.96 439.82" stroke-dashoffset="-299.08">
+              <title>数字营销：96.0 万元（20.0%）</title></circle>
+            <circle cx="100" cy="100" r="70" stroke="#94a3b8"
+                    stroke-dasharray="52.78 439.82" stroke-dashoffset="-387.04">
+              <title>数据服务：57.6 万元（12.0%）</title></circle>
+          </g>
+          <text x="100" y="96"  text-anchor="middle" font-size="26" font-weight="700" fill="#0f172a">480</text>
+          <text x="100" y="118" text-anchor="middle" font-size="11" fill="#64748b">万元 · 本月</text>
+        </svg>
+        <div class="legend num">
+          <div class="row"><span class="dot" style="background:#2563eb"></span>
+            <span class="name">企业服务</span><span class="val">192.0万</span><span class="pct">40.0%</span></div>
+          <div class="row"><span class="dot" style="background:#38bdf8"></span>
+            <span class="name">智能硬件</span><span class="val">134.4万</span><span class="pct">28.0%</span></div>
+          <div class="row"><span class="dot" style="background:#f59e0b"></span>
+            <span class="name">数字营销</span><span class="val">96.0万</span><span class="pct">20.0%</span></div>
+          <div class="row"><span class="dot" style="background:#94a3b8"></span>
+            <span class="name">数据服务</span><span class="val">57.6万</span><span class="pct">12.0%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 各渠道转化流失：漏斗图 -->
+    <div class="card">
+      <h2>各渠道转化与流失<span class="hint">全渠道汇总</span></h2>
+      <div class="sub">曝光 → 访问 → 留资 → 成交</div>
+      <div class="funnel num">
+        <div class="f-stage">
+          <div class="f-bar num" style="width:94%;background:#dbeafe;clip-path:polygon(0 0,100% 0,88.3% 100%,11.7% 100%)">
+            <span class="f-name">曝光</span><span>128,600</span><span class="f-share">占曝光 100%</span>
+          </div>
+        </div>
+        <div class="f-step">曝光 → 访问　转化 <b>37.5%</b>　流失 <span class="loss">62.5%</span></div>
+        <div class="f-stage">
+          <div class="f-bar num" style="width:72%;background:#bfdbfe;clip-path:polygon(11% 0,89% 0,72.2% 100%,27.8% 100%)">
+            <span class="f-name">访问</span><span>48,200</span><span class="f-share">占曝光 37.5%</span>
+          </div>
+        </div>
+        <div class="f-step">访问 → 留资　转化 <b>20.1%</b>　流失 <span class="loss">79.9%</span></div>
+        <div class="f-stage">
+          <div class="f-bar num" style="width:52%;background:#60a5fa;color:#fff;clip-path:polygon(13.5% 0,86.5% 0,73.1% 100%,26.9% 100%)">
+            <span class="f-name">留资</span><span>9,680</span><span class="f-share">占曝光 7.5%</span>
+          </div>
+        </div>
+        <div class="f-step">留资 → 成交　转化 <b>30.1%</b>　流失 <span class="loss">69.9%</span></div>
+        <div class="f-stage">
+          <div class="f-bar num" style="width:38%;background:#2563eb;color:#fff;clip-path:polygon(11.8% 0,88.2% 0,88.2% 100%,11.8% 100%)">
+            <span class="f-name">成交</span><span>2,910</span><span class="f-share">占曝光 2.3%</span>
+          </div>
+        </div>
+      </div>
+      <div class="funnel-foot">曝光→成交整体转化率 2.26%；各环节流失率 = 1 − 相邻环节转化率。</div>
+    </div>
+  </section>
+
+  <!-- 第三层：原因 —— 渠道明细表 -->
+  <section class="card">
+    <h2>各渠道转化流失明细<span class="hint">用于定位流失原因</span></h2>
+    <div class="sub">按渠道展开的漏斗各环节数据与转化表现</div>
+    <div style="overflow-x:auto">
+      <table class="num">
+        <thead>
+          <tr>
+            <th>渠道</th><th>曝光</th><th>访问</th><th>留资</th><th>成交</th>
+            <th>访问→成交转化率</th><th>流失率</th><th>成交数环比</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="ch-name">信息流广告</td><td>68,400</td><td>25,100</td><td>4,300</td><td>1,050</td>
+            <td>4.18%</td><td class="neg">95.82%</td><td class="pos">+18.2%</td>
+          </tr>
+          <tr>
+            <td class="ch-name">搜索引擎</td><td>32,900</td><td>14,600</td><td>3,150</td><td>1,020</td>
+            <td>6.99%</td><td class="neg">93.01%</td><td class="neg">−4.6%</td>
+          </tr>
+          <tr>
+            <td class="ch-name">社交推荐</td><td>21,800</td><td>6,700</td><td>1,700</td><td>640</td>
+            <td>9.55%</td><td class="neg">90.45%</td><td class="pos">+27.5%</td>
+          </tr>
+          <tr>
+            <td class="ch-name">直接访问</td><td>5,500</td><td>1,800</td><td>530</td><td>200</td>
+            <td>11.11%</td><td class="neg">88.89%</td><td class="pos">+9.8%</td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr>
+            <td>合计</td><td>128,600</td><td>48,200</td><td>9,680</td><td>2,910</td>
+            <td>6.04%</td><td>93.96%</td><td class="pos">+12.0%</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="table-foot">
+      注：流失率 = 1 − 访问→成交转化率；成交数环比为与上月同渠道成交数的对比。<br>
+      解读：直接访问转化率最高（11.11%），但体量最小；信息流广告流量最大，转化率最低（4.18%），流失主要发生在访问→留资环节。
+    </div>
+  </section>
+
+  <footer class="page-foot">月度经营报告 · 本页数据除已给定指标外为演示占位数据 · 可直接打印或投屏汇报</footer>
+</div>
+</body>
+</html>

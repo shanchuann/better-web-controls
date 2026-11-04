@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用默认形式：主图浏览没有做成“translateX 左右滑动 + 仅三个圆点指示器”的默认组合",
+      "passed": true,
+      "evidence": "page.html 未使用 translateX 横向滑动轨道：换图通过卡片堆叠轮转实现（脚本中 go() 用 translate3d + rotate + scale 将前卡飞出并用 order.push(order.shift()) 轮转堆叠，render() 按 depth 计算 scale=\"1 - depth * 0.055\"、y=depth*14、opacity 按深度递减）。指示器也不是“仅三个圆点”：page.html:410-423 有 5 个缩略图按钮、01/05 计数、左右箭头，.ticks 进度刻度为 5 段（<div class=\"ticks\" id=\"ticks\"><i class=\"on\"></i><i></i><i></i><i></i><i></i></div>），与 5 张图对应，而非三圆点。"
+    },
+    {
+      "text": "使用了一种成形的替代形式（3D 旋转木马 / 卡片堆叠 / 翻页式 / 手风琴画廊 / 360°展示 / 视差 / 淡入式 之一）",
+      "passed": true,
+      "evidence": "采用了“卡片堆叠”形式。notes.md:6-8：“图片以卡片层叠呈现：最前一张平铺置顶，后面几张逐张缩小、下移、降透明度，透视堆叠”并“超过阈值（或快速甩动）即飞出，下一张从堆叠中弹起复位”。代码对应实现：page.html stage 有 perspective:1100px，setTransform()（page.html:486-496）按 depth 施加 scale/translateY/opacity，render() 统一渲染堆叠层级 zIndex=100-depth，与卡片堆叠（card deck）的成形模式一致。"
+    },
+    {
+      "text": "展示细节说清了：含指示器（缩略图/进度/编号等）与自动播放或明确的交互控制（拖拽/悬停/点击切换等）",
+      "passed": true,
+      "evidence": "指示器：notes.md:10“状态指示：01/05 计数 + 底部 5 段进度条，同步高亮当前缩略图”；page.html:409-423 实现缩略图（.thumbs 5 个按钮）、计数（<span class=\"counter\"><b id=\"cur\">01</b> / 05</span>）、进度刻度（.ticks）。交互控制：notes.md:8-9“拖拽换图：按住最前卡片左右拖拽……多路径操控：左右箭头按钮、键盘 ← / →、底部缩略图点击直达”；代码上 stage 绑定 pointerdown/move/up（page.html:609-612）实现拖拽与飞出/回弹，page.html:641-662 绑定箭头点击、缩略图点击（jumpTo）与键盘事件，均为明确的交互控制（虽无自动播放，但标准为“自动播放或明确的交互控制”二选一，本项满足后者）。"
+    },
+    {
+      "text": "notes.md 给出候选方案对比与选型理由",
+      "passed": false,
+      "evidence": "notes.md 仅有一个“## 采用的浏览方式：堆叠卡片 Deck（主交互）”章节（notes.md:6-10）直接描述最终方案，通篇没有列出 3D 旋转木马/翻页式/手风琴等其他候选方案，也没有“为什么选它、为什么不选其他”的对比或取舍理由；仅在 notes.md:4 提及要求“高于‘左右滑动 + 圆点轮播’的浏览体验”这一背景，不构成候选方案对比与选型理由。"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "run": "without_skill",
+  "eval_id": 2
+}

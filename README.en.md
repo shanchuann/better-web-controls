@@ -73,32 +73,37 @@ Once installed, the agent runs this flow on any request that involves a web page
 
 ## Benchmark
 
-9 real scenarios with 4 assertions each, run twice: once with the skill and once without it. The no-skill run is blocked from reading the skill directory.
+9 real scenarios (navbar, page fixes, carousel, owner dropdown, delete confirmation, save feedback, business report charts, empty states, login page) with 4 assertions each, comparing output with the skill versus without it. The no-skill run is blocked from reading the skill directory. Grading checks each assertion against the artifacts with evidence attached.
 
-| Metric | With skill | Without skill | Delta |
+- Baseline (iteration-2): same GLM flash model, one run per scenario.
+- Repeated runs (iteration-3): same model, 3 runs per scenario, all executed headless via CLI. 53/54 gradings were produced by an automated judge (one hit the free-tier usage limit during grading and was scored manually with the same criteria); samples were then spot-checked by hand.
+
+| Round | With skill | Without skill | Delta |
 |:---:|:---:|:---:|:---:|
-| Assertions passed | **36 / 36 (100%)** | 31 / 36 (86.1%) | **+13.9pp** |
+| Single run (iteration-2) | 36 / 36 (100%) | 31 / 36 (86.1%) | +13.9pp |
+| Repeated-run mean (iteration-3) | 106 / 108 (98.1%) | 90 / 108 (83.3%) | **+14.8pp** |
 
-Per-scenario results:
+Per-scenario run mean ± std for iteration-3 (3 runs per cell):
 
-| # | Scenario | With skill | Without skill | Failure without skill |
-|:---:|---|:---:|:---:|---|
-| 0 | Navbar | 4/4 | 3/4 | No candidate comparison or rationale |
-| 1 | Page fixes | 4/4 | 4/4 | n/a |
-| 2 | Carousel | 4/4 | 4/4 | n/a |
-| 3 | Owner dropdown | 4/4 | 3/4 | No candidate comparison or rationale |
-| 4 | Delete confirmation | 4/4 | 4/4 | n/a |
-| 5 | Save feedback | 4/4 | 4/4 | n/a |
-| 6 | Business report charts | 4/4 | 3/4 | No chart selection rationale |
-| 7 | Empty states (two cases) | 4/4 | 3/4 | Wrong primary button on no-results state |
-| 8 | Login page | 4/4 | 3/4 | No candidate comparison or rationale |
+| # | Scenario | With skill | Without skill |
+|:---:|---|:---:|:---:|
+| 0 | Navbar | 100% ± 0% | 75% ± 0% |
+| 1 | Page fixes | 100% ± 0% | 100% ± 0% |
+| 2 | Carousel | 100% ± 0% | 83% ± 12% |
+| 3 | Owner dropdown | 100% ± 0% | 75% ± 20% |
+| 4 | Delete confirmation | 100% ± 0% | 92% ± 12% |
+| 5 | Save feedback | 100% ± 0% | 100% ± 0% |
+| 6 | Business report charts | 83% ± 12% | 67% ± 24% |
+| 7 | Empty states (two cases) | 100% ± 0% | 92% ± 12% |
+| 8 | Login page | 100% ± 0% | 67% ± 12% |
 
-Two things stand out.
+Three things stand out.
 
-- Most of the gap comes from the selection process: 4 of the 5 failures were no candidate comparison or rationale. The no-skill runs hand over an implementation with an unreviewable choice behind it; the skill runs carry candidates, reasons and upgrade conditions, which can be checked.
-- Implicit rules decide whether the output is right. In the empty-state scenario the no-skill run rendered search returned nothing as a message with a large button, plus a new customer primary action that pushes a user who is stuck toward the wrong next step. The skill's rule avoids this: a search that finds nothing is fixed by changing the keyword, and a filter that matches nothing by changing the conditions.
+- The with-skill group is highly stable: 25 perfect scores across 27 runs, the only misses being two 3/4s in the chart scenario (missing period-over-period labels on some KPI cards), never below 3/4. The measured gap also stayed in the same 14–15pp band across both rounds.
+- The no-skill group swings a lot: within one scenario, runs can differ by two grades — both a 2/4 and a 4/4 appeared under owner dropdown and charts; delete confirmation, carousel and empty states oscillate between 3/4 and 4/4. A single run can be luck; variance is what shows the behavioral difference is real.
+- Failure modes are reproducible. Of the 18 failed assertions, 12 were "no candidate comparison or rationale" (the no-skill navbar runs lost the same point all 3 times); the rest are missing period-over-period labels on KPI cards (4 cases, split evenly across both groups) plus isolated gaps in interaction rules, layout detail and misclick prevention. This is a stable content gap, not grading noise.
 
-Full report with per-assertion evidence: [web-controls-workspace/iteration-2/benchmark.md](web-controls-workspace/iteration-2/benchmark.md)
+Full reports with per-assertion evidence: baseline [web-controls-workspace/iteration-2/benchmark.md](web-controls-workspace/iteration-2/benchmark.md) · repeated runs [web-controls-workspace/iteration-3/benchmark.md](web-controls-workspace/iteration-3/benchmark.md)
 
 ## Coverage
 

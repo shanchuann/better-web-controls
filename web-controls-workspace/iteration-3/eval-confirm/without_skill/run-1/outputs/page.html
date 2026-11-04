@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>后台管理 · 项目管理（删除项目确认演示）</title>
+<style>
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --border: #e4e7ec;
+    --text: #1f2329;
+    --text-2: #646a73;
+    --text-3: #8f959e;
+    --primary: #3370ff;
+    --danger: #d93025;
+    --danger-hover: #b3261e;
+    --danger-bg: #fdecea;
+    --radius: 8px;
+    --shadow: 0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* ===== 后台管理页面布局 ===== */
+  .layout { display: flex; min-height: 100vh; }
+  .sidebar {
+    width: 220px; flex-shrink: 0;
+    background: #2b2f36; color: #c5cad1;
+    padding: 20px 0;
+  }
+  .sidebar .logo {
+    font-size: 16px; font-weight: 600; color: #fff;
+    padding: 0 24px 20px; margin-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+  }
+  .sidebar a {
+    display: block; padding: 10px 24px;
+    color: #c5cad1; text-decoration: none; font-size: 14px;
+  }
+  .sidebar a.active {
+    background: rgba(255,255,255,.08); color: #fff;
+    border-left: 3px solid var(--primary);
+  }
+  .main { flex: 1; padding: 24px 32px; }
+  .page-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+  .page-header h1 { font-size: 20px; font-weight: 600; }
+  .page-desc { color: var(--text-2); font-size: 13px; margin-top: 4px; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 12px 16px; text-align: left; font-size: 13px; }
+  th { background: #fafbfc; color: var(--text-2); font-weight: 500; border-bottom: 1px solid var(--border); }
+  td { border-bottom: 1px solid var(--border); }
+  tr:last-child td { border-bottom: none; }
+  .proj-name { font-weight: 500; }
+  .tag { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; }
+  .tag-on  { background: #e8f5e9; color: #2e7d32; }
+  .tag-off { background: #f0f1f3; color: var(--text-3); }
+
+  /* ===== 按钮体系 ===== */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 6px 14px; border-radius: 6px;
+    border: 1px solid transparent; background: none;
+    font: inherit; font-size: 13px; line-height: 1.5;
+    cursor: pointer; user-select: none;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .btn:disabled { cursor: not-allowed; opacity: .5; }
+  .btn-secondary { border-color: var(--border); color: var(--text-2); background: #fff; }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+  .btn-danger-ghost { color: var(--danger); }
+  .btn-danger-ghost:hover:not(:disabled) { background: var(--danger-bg); color: var(--danger-hover); }
+  .btn-danger-solid { background: var(--danger); color: #fff; }
+  .btn-danger-solid:hover:not(:disabled) { background: var(--danger-hover); }
+  .btn-danger-solid:disabled { background: #edaaa5; color: #fff; opacity: 1; }
+
+  .spinner {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+    animation: spin .7s linear infinite; display: inline-block;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== 遮罩 + 确认弹窗 ===== */
+  .overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(15,18,24,.5);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity .18s ease;
+  }
+  .overlay.show { opacity: 1; pointer-events: auto; }
+  .modal {
+    width: 480px; max-width: calc(100vw - 40px);
+    background: var(--surface); border-radius: 12px;
+    box-shadow: var(--shadow); overflow: hidden;
+    transform: translateY(12px) scale(.97);
+    transition: transform .18s ease;
+  }
+  .overlay.show .modal { transform: none; }
+
+  .modal-header { padding: 20px 24px 0; display: flex; align-items: flex-start; gap: 12px; }
+  .warning-icon {
+    width: 36px; height: 36px; flex-shrink: 0;
+    border-radius: 50%; background: var(--danger-bg); color: var(--danger);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .warning-icon svg { width: 20px; height: 20px; }
+  .modal-title { font-size: 16px; font-weight: 600; padding-top: 6px; }
+  .modal-close {
+    margin-left: auto; border: none; background: none;
+    color: var(--text-3); cursor: pointer; padding: 4px;
+    border-radius: 4px; display: flex;
+  }
+  .modal-close:hover { background: #f0f1f3; color: var(--text); }
+  .modal-close svg { width: 18px; height: 18px; }
+
+  .modal-body { padding: 12px 24px 0; }
+  .modal-desc { color: var(--text-2); font-size: 13.5px; }
+  .modal-desc strong { color: var(--text); }
+  .modal-desc .danger-text { color: var(--danger); }
+
+  .impact-box {
+    margin-top: 12px; list-style: none;
+    background: #fafbfc; border: 1px solid var(--border);
+    border-radius: 8px; padding: 6px 14px;
+  }
+  .impact-box li {
+    display: flex; justify-content: space-between;
+    font-size: 13px; padding: 6px 0; color: var(--text-2);
+  }
+  .impact-box li + li { border-top: 1px dashed var(--border); }
+  .impact-box .val { color: var(--text); font-weight: 500; }
+  .impact-box .val.danger { color: var(--danger); }
+
+  .type-confirm { margin-top: 14px; }
+  .type-confirm label { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
+  .type-confirm label code {
+    background: var(--danger-bg); color: var(--danger);
+    padding: 1px 6px; border-radius: 4px;
+    font-family: Consolas, monospace; font-weight: 600;
+  }
+  .type-confirm input {
+    width: 100%; padding: 8px 12px;
+    border: 1px solid var(--border); border-radius: 6px;
+    font: inherit; font-size: 14px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .type-confirm input:focus {
+    outline: none; border-color: var(--danger);
+    box-shadow: 0 0 0 3px rgba(217,48,37,.12);
+  }
+  .type-hint { font-size: 12px; color: var(--text-3); margin-top: 4px; min-height: 18px; }
+  .type-hint.error { color: var(--danger); }
+
+  .modal-footer {
+    padding: 16px 24px 20px; margin-top: 8px;
+    display: flex; justify-content: flex-end; align-items: center; gap: 10px;
+  }
+  .busy-note { font-size: 12px; color: var(--text-3); margin-right: auto; }
+
+  /* ===== Toast 反馈 ===== */
+  .toast {
+    position: fixed; top: 24px; left: 50%; z-index: 200;
+    transform: translateX(-50%) translateY(-16px);
+    background: #fff; border: 1px solid var(--border);
+    border-left: 4px solid #2e7d32; border-radius: 8px;
+    box-shadow: var(--shadow); padding: 12px 20px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13.5px; opacity: 0; pointer-events: none;
+    transition: opacity .2s, transform .2s;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .toast.danger { border-left-color: var(--danger); }
+  .toast svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .toast .ok  { color: #2e7d32; }
+  .toast .err { color: var(--danger); }
+
+  .empty-row td { text-align: center; color: var(--text-3); padding: 40px 0; }
+
+  @media (max-width: 720px) {
+    .sidebar { display: none; }
+    .main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="logo">● 项目管理后台</div>
+    <a href="#">工作台</a>
+    <a href="#" class="active">项目管理</a>
+    <a href="#">任务中心</a>
+    <a href="#">文件库</a>
+    <a href="#">成员管理</a>
+    <a href="#">系统设置</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1>项目管理</h1>
+        <div class="page-desc">删除项目为高危操作，删除后数据<b>不可恢复</b>。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:24%">项目名称</th>
+            <th style="width:12%">负责人</th>
+            <th style="width:10%">任务数</th>
+            <th style="width:10%">附件数</th>
+            <th style="width:14%">状态</th>
+            <th style="width:30%">操作</th>
+          </tr>
+        </thead>
+        <tbody id="projectList">
+          <tr>
+            <td class="proj-name">官网改版 2026</td>
+            <td>张伟</td><td>32</td><td>18</td>
+            <td><span class="tag tag-on">进行中</span></td>
+            <td>
+              <button class="btn btn-secondary" onclick="alert('进入项目详情（演示）')">详情</button>
+              <button class="btn btn-danger-ghost" data-delete
+                data-name="官网改版 2026" data-tasks="32" data-files="18" data-owner="张伟">删除</button>
+            </td>
+          </tr>
+          <tr>
+            <td class="proj-name">用户调研问卷系统</td>
+            <td>李娜</td><td>8</td><td>3</td>
+            <td><span class="tag tag-on">进行中</span></td>
+            <td>
+              <button class="btn btn-secondary" onclick="alert('进入项目详情（演示）')">详情</button>
+              <button class="btn btn-danger-ghost" data-delete
+                data-name="用户调研问卷系统" data-tasks="8" data-files="3" data-owner="李娜">删除</button>
+            </td>
+          </tr>
+          <tr>
+            <td class="proj-name">旧版 CRM 迁移</td>
+            <td>王强</td><td>127</td><td>94</td>
+            <td><span class="tag tag-off">已归档</span></td>
+            <td>
+              <button class="btn btn-secondary" onclick="alert('进入项目详情（演示）')">详情</button>
+              <button class="btn btn-danger-ghost" data-delete
+                data-name="旧版 CRM 迁移" data-tasks="127" data-files="94" data-owner="王强">删除</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- 删除确认弹窗：alertdialog 语义 -->
+<div class="overlay" id="overlay">
+  <div class="modal" role="alertdialog" aria-modal="true" aria-labelledby="dlgTitle" aria-describedby="dlgDesc">
+    <div class="modal-header">
+      <div class="warning-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="modal-title" id="dlgTitle">确认删除该项目？</div>
+      <button class="modal-close" id="btnCloseX" aria-label="关闭弹窗">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc" id="dlgDesc">
+        您即将删除项目 <strong id="mName">—</strong>。<br>
+        <span class="danger-text"><strong>删除后所有任务、附件及关联数据将被永久清除，不可恢复。</strong></span>
+      </p>
+      <ul class="impact-box">
+        <li><span>任务将被删除</span><span class="val danger" id="mTasks">—</span></li>
+        <li><span>附件文件将被删除</span><span class="val danger" id="mFiles">—</span></li>
+        <li><span>负责人（创建信息一并删除）</span><span class="val" id="mOwner">—</span></li>
+      </ul>
+      <div class="type-confirm">
+        <label for="confirmInput">为防止误操作，请输入项目名称 <code id="mNameCode">—</code> 以确认：</label>
+        <input type="text" id="confirmInput" autocomplete="off" spellcheck="false" placeholder="输入完整项目名称后才能删除">
+        <div class="type-hint" id="typeHint"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <span class="busy-note" id="busyNote" hidden></span>
+      <button class="btn btn-secondary" id="btnCancel">取消</button>
+      <button class="btn btn-danger-solid" id="btnConfirm" disabled>确认删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 结果反馈 Toast -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <svg id="toastIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"></svg>
+  <span id="toastText"></span>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var overlay   = document.getElementById('overlay');
+  var input     = document.getElementById('confirmInput');
+  var hint      = document.getElementById('typeHint');
+  var btnOk     = document.getElementById('btnConfirm');
+  var btnCancel = document.getElementById('btnCancel');
+  var btnX      = document.getElementById('btnCloseX');
+  var busyNote  = document.getElementById('busyNote');
+  var toast     = document.getElementById('toast');
+
+  var current   = null;  // 待删除项目信息
+  var lastFocus = null;  // 打开弹窗前的焦点元素
+  var openedAt  = 0;     // 弹窗打开时间
+  var deleting  = false;
+
+  function showToast(msg, kind) {
+    var icon = document.getElementById('toastIcon');
+    var cls = kind === 'danger' ? 'err' : 'ok';
+    toast.classList.toggle('danger', kind === 'danger');
+    icon.setAttribute('class', cls);
+    icon.innerHTML = kind === 'danger'
+      ? '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'
+      : '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>';
+    document.getElementById('toastText').textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function () { toast.classList.remove('show'); }, 3200);
+  }
+
+  function setInputState(ok, msg, isError) {
+    if (input.value === current.name) {
+      input.style.borderColor = '';
+      input.style.boxShadow = '';
+    } else if (!ok) {
+      input.style.borderColor = 'var(--danger)';
+    } else {
+      input.style.borderColor = '#2e7d32';
+    }
+    hint.textContent = msg || '';
+    hint.className = 'type-hint' + (isError ? ' error' : '');
+  }
+
+  function validate() {
+    var v = input.value.trim();
+    if (!v) { btnOk.disabled = true; setInputState(false); hint.textContent = ''; return; }
+    if (!current) return;
+    if (v === current.name) {
+      btnOk.disabled = false;
+      setInputState(true, '已确认，可执行删除。');
+    } else {
+      btnOk.disabled = true;
+      setInputState(false, '项目名称不匹配，请输入完整名称。', true);
+    }
+  }
+
+  function openConfirm(btn) {
+    current = {
+      name:  btn.getAttribute('data-name'),
+      tasks: btn.getAttribute('data-tasks'),
+      files: btn.getAttribute('data-files'),
+      owner: btn.getAttribute('data-owner'),
+      row:   btn.closest('tr')
+    };
+    lastFocus = btn;
+    deleting = false;
+
+    document.getElementById('mName').textContent = current.name;
+    document.getElementById('mNameCode').textContent = current.name;
+    document.getElementById('mTasks').textContent = current.tasks + ' 个任务';
+    document.getElementById('mFiles').textContent = current.files + ' 个文件';
+    document.getElementById('mOwner').textContent = current.owner;
+    input.value = '';
+    btnOk.disabled = true;
+    hint.textContent = '';
+    hint.className = 'type-hint';
+    input.style.borderColor = '';
+    btnOk.textContent = '确认删除';
+    busyNote.hidden = true;
+
+    overlay.classList.add('show');
+    openedAt = Date.now();
+    setTimeout(function () { input.focus(); }, 50);
+  }
+
+  function closeConfirm() {
+    if (deleting) return; // 删除进行中不允许取消
+    overlay.classList.remove('show');
+    if (lastFocus) lastFocus.focus();
+  }
+
+  function doDelete() {
+    if (deleting || !current || btnOk.disabled) return;
+    // 高危二次保险：弹窗停留不足 1.5 秒时要求再点一次
+    if (Date.now() - openedAt < 1500) {
+      showToast('已拦截：弹窗刚打开，请再次点击确认删除。', 'danger');
+      btnOk.focus();
+      return;
+    }
+    deleting = true;
+    btnOk.disabled = true;
+    btnOk.innerHTML = '<span class="spinner" aria-hidden="true"></span> 删除中…';
+    busyNote.textContent = '正在永久删除，请稍候…（此时无法取消）';
+    busyNote.hidden = false;
+    input.disabled = true;
+    btnCancel.disabled = true;
+    btnX.disabled = true;
+
+    var name = current.name;
+    var row = current.row;
+
+    // 演示：模拟 1.6s 删除请求
+    setTimeout(function () {
+      overlay.classList.remove('show');
+      if (row) {
+        var body = row.parentElement;
+        row.remove();
+        if (!body.querySelector('tr')) {
+          body.innerHTML = '<tr class="empty-row"><td colspan="6">暂无项目</td></tr>';
+        }
+      }
+      showToast('已删除项目“' + name + '”及其全部任务与附件。', 'ok');
+      // 复位状态，便于再次演示
+      deleting = false;
+      input.disabled = false;
+      btnCancel.disabled = false;
+      btnX.disabled = false;
+      current = null;
+      if (lastFocus) { lastFocus = null; }
+    }, 1600);
+  }
+
+  // 事件绑定
+  document.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-delete]');
+    if (btn) openConfirm(btn);
+  });
+
+  btnOk.addEventListener('click', doDelete);
+  btnCancel.addEventListener('click', closeConfirm);
+  btnX.addEventListener('click', closeConfirm);
+
+  // 点击遮罩空白处关闭（删除进行中除外）
+  overlay.addEventListener('click', function (e) {
+    if (e.target === overlay) closeConfirm();
+  });
+
+  // 键盘：ESC 关闭；焦点锁定在弹窗内
+  document.addEventListener('keydown', function (e) {
+    if (!overlay.classList.contains('show')) return;
+    if (e.key === 'Escape') { closeConfirm(); return; }
+    if (e.key === 'Tab') {
+      var els = overlay.querySelectorAll('button:not(:disabled), input:not(:disabled)');
+      if (!els.length) return;
+      var first = els[0], last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      else if (!overlay.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+    }
+  });
+
+  input.addEventListener('input', validate);
+  input.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !btnOk.disabled) doDelete();
+  });
+})();
+</script>
+</body>
+</html>

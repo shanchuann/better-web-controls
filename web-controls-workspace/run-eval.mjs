@@ -14,7 +14,7 @@
 // 产物目录：web-controls-workspace/<iteration>/<eval-name>/<arm>/run-K/outputs/
 // 评分文件：<run 目录>/grading.json
 import { spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync, readFileSync, existsSync, unlinkSync, rmSync } from "node:fs";
+import { mkdirSync, writeFileSync, readFileSync, existsSync, unlinkSync, rmSync, statSync } from "node:fs";
 import { join, resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -69,19 +69,26 @@ function cliCommand(prompt) {
 // Node spawn 不带 shell 无法执行 npm 的 shim（cmd/ps1），需定位真实 .exe
 function resolveExe(name, packageRelative) {
   const probe = spawnSync("where.exe", [name], { encoding: "utf8" });
-  if (probe.status !== 0) throw new Error(`找不到 ${name} CLI`);
-  const lines = probe.stdout.split(/\r?\n/).filter(Boolean);
-  for (const line of lines) {
-    if (line.toLowerCase().endsWith(".exe") && existsSync(line)) return line; // claude.exe 等真实二进制
+  if (probe.status === 0) {
+    const lines = probe.stdout.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      if (line.toLowerCase().endsWith(".exe") && existsSync(line)) return line; // claude.exe 等真实二进制
+    }
+    // shim：从 shim 所在目录探测包内二进制（如 D:\nodejs\node_global → node_modules\opencode-ai\bin\opencode.exe）
+    const shimDir = dirname(lines[0]);
+    const candidate = join(shimDir, packageRelative);
+    if (existsSync(candidate)) return candidate;
   }
-  // shim：从 shim 所在目录探测包内二进制（如 D:\nodejs\node_global → node_modules\opencode-ai\bin\opencode.exe）
-  const shimDir = dirname(lines[0]);
-  const candidate = join(shimDir, packageRelative);
-  if (existsSync(candidate)) return candidate;
-  throw new Error(`找不到 ${name} 的真实可执行文件（尝试过 ${candidate}）`);
+  // 兜底：npm 全局 prefix 下探测包内二进制
+  const npmPrefix = spawnSync("npm", ["config", "get", "prefix"], { encoding: "utf8", shell: true });
+  if (npmPrefix.status === 0) {
+    const candidate = join(npmPrefix.stdout.trim(), "node_modules", packageRelative);
+    if (existsSync(candidate)) return candidate;
+  }
+  throw new Error(`找不到 ${name} 的真实可执行文件`);
 }
-const CLAUDE = resolveExe("claude", "");
-const OPENCODE = resolveExe("opencode", join("node_modules", "opencode-ai", "bin", "opencode.exe"));
+const CLAUDE = resolveExe("claude", "claude\\package\\cli.js-placeholder");
+const OPENCODE = resolveExe("opencode", join("opencode-ai", "bin", "opencode.exe"));
 
 // ---------- 读取评测定义 ----------
 const { evals } = JSON.parse(readFileSync(join(WORKSPACE, "evals.json"), "utf8"));
@@ -192,31 +199,51 @@ for (const { ev, arm, run } of targets) {
   const outDir = join(runDir, "outputs");
   mkdirSync(outDir, { recursive: true });
 
-  // opencode 需要在运行目录放权限配置，用完即删
-  const permFile = join(outDir, "opencode.json");
-  if (cliName === "opencode") writeFileSync(permFile, '{"permission":"allow"}');
+  // 断点续跑：已有完整产物则跳过生成（page.html 需成规模，notes.md 非空）
+  const pageOk = (() => {
+    const p = join(outDir, "page.html");
+    return existsSync(p) && statSync(p).size > 3000;
+  })();
+  const notesOk = (() => {
+    const p = join(outDir, "notes.md");
+    return existsSync(p) && statSync(p).size > 100;
+  })();
 
-  console.log(`[${ev.name} / ${arm} / run-${run}] 生成中…`);
-  const t0 = Date.now();
-  const gen = runAgent(genPrompt(ev, arm), outDir);
-  if (gen.status !== 0) {
-    console.error(`  生成失败（exit ${gen.status}）: ${(gen.stderr || gen.stdout || "").slice(-500)}`);
-    failures.push(`${ev.name}/${arm}/run-${run} 生成失败`);
+  if (!(pageOk && notesOk)) {
+    // opencode 需要在运行目录放权限配置，用完即删
+    const permFile = join(outDir, "opencode.json");
+    if (cliName === "opencode") writeFileSync(permFile, '{"permission":"allow"}');
+
+    console.log(`[${ev.name} / ${arm} / run-${run}] 生成中…`);
+    const t0 = Date.now();
+    const gen = runAgent(genPrompt(ev, arm), outDir);
+    if (gen.status !== 0) {
+      console.error(`  生成失败（exit ${gen.status}）: ${(gen.stderr || gen.stdout || "").slice(-500)}`);
+      failures.push(`${ev.name}/${arm}/run-${run} 生成失败`);
+      if (existsSync(permFile)) unlinkSync(permFile);
+      continue;
+    }
+    const missing = ["page.html", "notes.md"].filter((f) => !existsSync(join(outDir, f)));
     if (existsSync(permFile)) unlinkSync(permFile);
-    continue;
+    if (missing.length) {
+      console.error(`  产物缺失: ${missing.join(", ")}`);
+      failures.push(`${ev.name}/${arm}/run-${run} 缺 ${missing.join(",")}`);
+      continue;
+    }
+    sanitizeOutputs(outDir);
+    console.log(`  生成完成，用时 ${Math.round((Date.now() - t0) / 1000)}s`);
+    await sleep(delayMs);
+  } else {
+    console.log(`[${ev.name} / ${arm} / run-${run}] 产物已存在，跳过生成`);
   }
-  const missing = ["page.html", "notes.md"].filter((f) => !existsSync(join(outDir, f)));
-  if (existsSync(permFile)) unlinkSync(permFile);
-  if (missing.length) {
-    console.error(`  产物缺失: ${missing.join(", ")}`);
-    failures.push(`${ev.name}/${arm}/run-${run} 缺 ${missing.join(",")}`);
-    continue;
-  }
-  sanitizeOutputs(outDir);
-  console.log(`  生成完成，用时 ${Math.round((Date.now() - t0) / 1000)}s`);
-  await sleep(delayMs);
 
   if (doJudge) {
+    // 已有评分则跳过
+    if (existsSync(join(runDir, "grading.json"))) {
+      console.log(`  评分已存在，跳过`);
+      okCount++;
+      continue;
+    }
     const jt0 = Date.now();
     const permFile2 = join(runDir, "opencode.json");
     if (cliName === "opencode") writeFileSync(permFile2, '{"permission":"allow"}');

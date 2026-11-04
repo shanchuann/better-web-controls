@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林屿 · 个人作品集</title>
+<style>
+  :root {
+    --bg: #F6F4EF;
+    --ink: #1B1B1E;
+    --muted: rgba(27, 27, 30, .60);
+    --faint: rgba(27, 27, 30, .38);
+    --line: rgba(27, 27, 30, .12);
+    --accent: #BE5A2A;
+    --glass: rgba(255, 255, 255, .72);
+    --nav-shadow: 0 10px 32px rgba(27, 27, 30, .10);
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  body.locked { overflow: hidden; }
+
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; border: none; background: none; cursor: pointer; }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 4px;
+  }
+
+  .wrap {
+    width: min(1080px, calc(100% - 48px));
+    margin: 0 auto;
+  }
+
+  .dot { color: var(--accent); }
+
+  /* ===== 悬浮吸顶导航 Floating · Sticky ===== */
+  .site-nav {
+    position: fixed;
+    top: 20px;
+    left: 0;
+    right: 0;
+    z-index: 50;
+  }
+
+  .nav-card {
+    width: min(1080px, calc(100% - 32px));
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    padding: 14px 22px;
+    background: var(--glass);
+    backdrop-filter: blur(16px) saturate(1.5);
+    -webkit-backdrop-filter: blur(16px) saturate(1.5);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--nav-shadow);
+    transition: padding .3s ease, box-shadow .3s ease;
+  }
+
+  .nav-card.scrolled { padding: 9px 22px; }
+
+  .brand {
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 34px;
+    list-style: none;
+    margin-left: auto;
+  }
+
+  .nav-links a {
+    position: relative;
+    font-size: 14.5px;
+    color: var(--muted);
+    padding: 6px 2px;
+    transition: color .25s ease;
+  }
+
+  .nav-links a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+  }
+
+  .nav-links a:hover { color: var(--ink); }
+  .nav-links a:hover::after { transform: scaleX(1); }
+
+  .nav-links a[aria-current="page"] {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .nav-cta {
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 9px 20px;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    transition: background .25s ease, color .25s ease;
+  }
+
+  .nav-cta:hover { background: var(--ink); color: #fff; }
+
+  .menu-btn {
+    display: none;
+    margin-left: auto;
+    width: 44px;
+    height: 44px;
+    margin-right: -10px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
+  .menu-btn svg { display: block; }
+
+  /* ===== 汉堡抽屉/全屏遮罩菜单 ===== */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: #161618;
+    color: #F5F3EE;
+    display: flex;
+    flex-direction: column;
+    padding: 28px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .35s ease, visibility .35s ease;
+  }
+
+  .overlay.open { opacity: 1; visibility: visible; }
+
+  .overlay-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .overlay-close {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+  }
+
+  .overlay-menu {
+    list-style: none;
+    margin: auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .overlay-menu a {
+    display: flex;
+    align-items: baseline;
+    gap: 18px;
+    font-size: clamp(34px, 8.5vw, 54px);
+    font-weight: 700;
+    line-height: 1.4;
+    color: rgba(245, 243, 238, .72);
+    transition: color .3s ease, transform .3s ease;
+    transform: translateY(16px);
+    opacity: 0;
+  }
+
+  .overlay.open .overlay-menu a {
+    transform: translateY(0);
+    opacity: 1;
+    transition-delay: calc(var(--i) * 60ms);
+  }
+
+  .overlay-menu a small {
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: .1em;
+    color: rgba(245, 243, 238, .38);
+  }
+
+  .overlay-menu a:hover {
+    color: #fff;
+    margin-left: 8px;
+  }
+
+  .overlay-foot {
+    font-size: 13px;
+    color: rgba(245, 243, 238, .38);
+    letter-spacing: .04em;
+  }
+
+  /* ===== 首屏 Hero：个人品牌形象类 ===== */
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    padding-top: 130px;
+  }
+
+  .hero-main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1.35fr .9fr;
+    gap: 56px;
+    align-items: center;
+    padding-bottom: 48px;
+  }
+
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13.5px;
+    letter-spacing: .18em;
+    color: var(--muted);
+  }
+
+  .hero-eyebrow::before {
+    content: "";
+    width: 28px;
+    height: 1.5px;
+    background: var(--accent);
+  }
+
+  .hero h1 {
+    margin-top: 22px;
+    font-size: clamp(40px, 6.4vw, 72px);
+    font-weight: 700;
+    line-height: 1.16;
+    letter-spacing: .015em;
+  }
+
+  .hero-desc {
+    margin-top: 24px;
+    max-width: 32em;
+    font-size: 16.5px;
+    line-height: 1.9;
+    color: var(--muted);
+  }
+
+  .hero-tags {
+    margin-top: 28px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .tag {
+    font-size: 13px;
+    padding: 7px 14px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--muted);
+  }
+
+  .hero-actions {
+    margin-top: 40px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .btn-solid {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 30px;
+    background: var(--ink);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 999px;
+    transition: background .25s ease, transform .25s ease;
+  }
+
+  .btn-solid:hover { background: var(--accent); transform: translateY(-2px); }
+  .btn-solid svg { transition: transform .25s ease; }
+  .btn-solid:hover svg { transform: translateX(3px); }
+
+  .btn-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    padding: 8px 2px;
+    border-bottom: 1.5px solid transparent;
+    transition: border-color .25s ease;
+  }
+
+  .btn-text:hover { border-color: var(--accent); }
+
+  /* 头像视觉 */
+  .hero-portrait { justify-self: end; }
+
+  .portrait-card {
+    position: relative;
+    width: min(340px, 100%);
+    aspect-ratio: 4 / 5;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(27, 27, 30, .14);
+  }
+
+  .portrait-card svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+
+  .portrait-label {
+    position: absolute;
+    left: 20px;
+    bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #F5F3EE;
+    font-size: 13px;
+    letter-spacing: .08em;
+  }
+
+  .portrait-label::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #7FB58A;
+  }
+
+  /* 底部数据行 */
+  .hero-stats {
+    border-top: 1px solid var(--line);
+    padding: 30px 0 40px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .stat { display: flex; align-items: baseline; gap: 12px; }
+  .stat b { font-size: clamp(26px, 3.4vw, 38px); font-weight: 700; letter-spacing: .02em; }
+  .stat span { font-size: 13.5px; color: var(--muted); }
+
+  /* ===== 轻提示 Toast ===== */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 36px;
+    transform: translate(-50%, 12px);
+    z-index: 200;
+    padding: 11px 22px;
+    background: rgba(27, 27, 30, .92);
+    color: #fff;
+    font-size: 14px;
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s ease, transform .3s ease;
+  }
+
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ===== 移动端降级 ===== */
+  @media (max-width: 800px) {
+    .nav-links, .nav-cta { display: none; }
+    .menu-btn { display: flex; }
+    .hero { padding-top: 104px; }
+    .hero-main { grid-template-columns: 1fr; gap: 40px; padding-bottom: 32px; }
+    .hero-portrait { justify-self: start; width: 100%; max-width: 320px; }
+    .hero h1 { font-size: clamp(36px, 9.4vw, 52px); }
+    .hero-actions { gap: 20px; flex-wrap: wrap; }
+    .hero-stats { grid-template-columns: 1fr; gap: 18px; padding: 24px 0 32px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+    html { scroll-behavior: auto; }
+  }
+</style>
+</head>
+<body>
+
+<header class="site-nav">
+  <nav class="nav-card" id="navCard" aria-label="主导航">
+    <a class="brand" href="#home">林屿<span class="dot">.</span>视觉设计</a>
+    <ul class="nav-links">
+      <li><a href="#home" aria-current="page">首页</a></li>
+      <li><a href="#works">作品</a></li>
+      <li><a href="#about">关于</a></li>
+      <li><a href="#services">服务</a></li>
+      <li><a href="#contact">联系</a></li>
+    </ul>
+    <a class="nav-cta" href="#contact">预约合作</a>
+    <button class="menu-btn" id="menuBtn" aria-label="打开菜单" aria-expanded="false" aria-controls="overlay">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 7h18M3 12h18M3 17h18"/></svg>
+    </button>
+  </nav>
+</header>
+
+<div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-label="站点菜单">
+  <div class="overlay-top">
+    <span class="brand">林屿<span class="dot">.</span>视觉设计</span>
+    <button class="overlay-close" id="overlayClose" aria-label="关闭菜单">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+  </div>
+  <ul class="overlay-menu">
+    <li><a href="#home" style="--i:0"><small>01</small>首页</a></li>
+    <li><a href="#works" style="--i:1"><small>02</small>作品</a></li>
+    <li><a href="#about" style="--i:2"><small>03</small>关于</a></li>
+    <li><a href="#services" style="--i:3"><small>04</small>服务</a></li>
+    <li><a href="#contact" style="--i:4"><small>05</small>联系</a></li>
+  </ul>
+  <p class="overlay-foot">© 2026 林屿 · 视觉设计师 · 预约合作 hello@linyu.design</p>
+</div>
+
+<main id="home">
+  <section class="hero">
+    <div class="wrap hero-main">
+      <div class="hero-copy">
+        <p class="hero-eyebrow">个人作品集 · 品牌视觉 / 编辑设计 / 插画</p>
+        <h1>把复杂的想法，<br>画成一眼就读懂<span class="dot">的</span>画面。</h1>
+        <p class="hero-desc">我是林屿，一名独立视觉设计师。八年来专注品牌视觉与编辑设计，服务过出版、科技与生活方式领域的 40+ 个团队——从标志、画册到完整品牌系统，让每个想法都有清晰的长相。</p>
+        <div class="hero-tags">
+          <span class="tag">品牌视觉</span>
+          <span class="tag">编辑与画册</span>
+          <span class="tag">插画</span>
+          <span class="tag">展会视觉</span>
+        </div>
+        <div class="hero-actions">
+          <a class="btn-solid" href="#works">查看作品
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn-text" href="#contact">联系我</a>
+        </div>
+      </div>
+      <div class="hero-portrait">
+        <div class="portrait-card">
+          <svg viewBox="0 0 340 425" aria-label="林屿肖像占位图" role="img">
+            <defs>
+              <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#E8DCC9"/>
+                <stop offset="1" stop-color="#C9B79B"/>
+              </linearGradient>
+            </defs>
+            <rect width="340" height="425" fill="url(#pg)"/>
+            <circle cx="170" cy="168" r="64" fill="none" stroke="#1B1B1E" stroke-width="2" opacity=".55"/>
+            <path d="M170 104 a64 64 0 0 1 0 128" fill="#1B1B1E" opacity=".8"/>
+            <text x="170" y="230" text-anchor="middle" font-family="Georgia, serif" font-size="30" fill="#1B1B1E" opacity=".7">林 屿</text>
+            <text x="170" y="350" text-anchor="middle" font-size="12" letter-spacing="6" fill="#1B1B1E" opacity=".45">PORTRAIT · 2026</text>
+          </svg>
+          <p class="portrait-label">目前可接受新项目 · 2026 冬季档期已开放</p>
+        </div>
+      </div>
+    </div>
+    <div class="wrap hero-stats">
+      <div class="stat"><b>8<span class="dot">年</span></b><span>视觉设计从业经验</span></div>
+      <div class="stat"><b>40<span class="dot">+</span></b><span>品牌与出版合作项目</span></div>
+      <div class="stat"><b>12<span class="dot">项</span></b><span>国内外设计奖项收录</span></div>
+    </div>
+  </section>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  var navCard = document.getElementById('navCard');
+  var menuBtn = document.getElementById('menuBtn');
+  var overlay = document.getElementById('overlay');
+  var overlayClose = document.getElementById('overlayClose');
+  var toast = document.getElementById('toast');
+  var toastTimer = null;
+
+  window.addEventListener('scroll', function () {
+    navCard.classList.toggle('scrolled', window.scrollY > 24);
+  }, { passive: true });
+
+  function openMenu() {
+    overlay.classList.add('open');
+    menuBtn.setAttribute('aria-expanded', 'true');
+    document.body.classList.add('locked');
+  }
+
+  function closeMenu() {
+    overlay.classList.remove('open');
+    menuBtn.setAttribute('aria-expanded', 'false');
+    document.body.classList.remove('locked');
+  }
+
+  menuBtn.addEventListener('click', openMenu);
+  overlayClose.addEventListener('click', closeMenu);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('open')) closeMenu();
+  });
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2400);
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.nav-links a, .overlay-menu a, .nav-cta, .btn-solid, .btn-text'), function (a) {
+    a.addEventListener('click', function (e) {
+      var target = a.getAttribute('href');
+      var exists = document.querySelector(target);
+      var inOverlay = overlay.contains(a);
+      if (inOverlay) closeMenu();
+      if (!exists) {
+        e.preventDefault();
+        showToast('“' + a.textContent.trim() + '”栏目将在完整站点中提供，当前为首屏演示');
+      }
+    });
+  });
+</script>
+</body>
+</html>

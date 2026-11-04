@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有使用浏览器原生 <select> 默认样式直接糊弄（自绘了下拉组件或对 select 做了成形样式）",
+      "passed": true,
+      "evidence": "outputs/page.html 全文未出现 <select> 元素，采用完全自绘下拉：第 44-127 行定义 .dropdown/.dropdown-btn/.dropdown-menu/.menu-item 等自定义样式，第 195-207 行为 button（id=ddBtn, aria-haspopup=\"listbox\"）+ div 下拉面板 + JS 渲染选项（第 280-304 行 renderOptions()），无任何原生控件默认样式。"
+    },
+    {
+      "text": "负责人筛选场景用了合适的下拉形态：单选用 Select；若体现多选则用 Multi-select 且选中项显示为可单独移除的标签",
+      "passed": true,
+      "evidence": "outputs/page.html 实现为单选 Select 形态：脚本第 277 行 `let selected = \"\";` 只存一个值，第 326-332 行点击菜单项即赋值 selected 并关闭下拉（单选行为）；触发按钮显示当前选中人（第 347-354 行 ddLabel 渲染头像+姓名），符合单选用 Select 的形态，未涉及多选场景，无需 Multi-select 标签。"
+    },
+    {
+      "text": "下拉说清了操作规则：选项来源、单选/多选、清空或重选方式",
+      "passed": true,
+      "evidence": "outputs/notes.md 第 7-9 行说明了操作规则：选项来源与形态（第 20 行'内置 10 条示例订单、6 位负责人的 mock 数据'作为下拉选项来源）、单选交互（第 8 行'选择后表格实时过滤，顶部统计同步显示总数与当前筛选条件'，第 7 行'选中高亮 + 勾号'，代码中 selected 为单值）、清空/重选方式（第 9 行'清除筛选：选中负责人后出现\"清除筛选\"按钮，一键恢复\"全部负责人\"'，且下拉内含'全部负责人'选项可重选，page.html 第 291-294 行）。"
+    },
+    {
+      "text": "notes.md 给出候选方案（Select / Multi-select / Combobox 等）对比与选型理由",
+      "passed": false,
+      "evidence": "outputs/notes.md 全文（共 20 行）只有功能、交互细节、数据三节，未出现 Select / Multi-select / Combobox 等候选方案的任何对比内容，也未说明为何选择该下拉形态的选型理由（仅第 7 行写'自定义下拉组件（非原生 select）'，无备选方案对比与理由）。"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "run": "without_skill",
+  "eval_id": 3
+}

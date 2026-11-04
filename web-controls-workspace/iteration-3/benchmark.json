@@ -1,0 +1,182 @@
+{
+  "iteration": "iteration-3",
+  "title": "同模型 3 次运行",
+  "date": "2026-11-04",
+  "summary": {
+    "with_skill": {
+      "passed": 106,
+      "total": 108,
+      "pass_rate": 0.9814814814814815
+    },
+    "without_skill": {
+      "passed": 90,
+      "total": 108,
+      "pass_rate": 0.8333333333333334
+    },
+    "delta_pp": 14.8
+  },
+  "per_eval": [
+    {
+      "id": 0,
+      "name": "eval-navbar",
+      "with_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 9,
+        "total": 12,
+        "pass_rate": 0.75,
+        "mean_pm": "75% ± 0%"
+      }
+    },
+    {
+      "id": 1,
+      "name": "eval-fixpage",
+      "with_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      }
+    },
+    {
+      "id": 2,
+      "name": "eval-carousel",
+      "with_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 10,
+        "total": 12,
+        "pass_rate": 0.8333333333333334,
+        "mean_pm": "83% ± 12%"
+      }
+    },
+    {
+      "id": 3,
+      "name": "eval-dropdown",
+      "with_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 9,
+        "total": 12,
+        "pass_rate": 0.75,
+        "mean_pm": "75% ± 20%"
+      }
+    },
+    {
+      "id": 4,
+      "name": "eval-confirm",
+      "with_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 11,
+        "total": 12,
+        "pass_rate": 0.9166666666666666,
+        "mean_pm": "92% ± 12%"
+      }
+    },
+    {
+      "id": 5,
+      "name": "eval-toast",
+      "with_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      }
+    },
+    {
+      "id": 6,
+      "name": "eval-chart",
+      "with_skill": {
+        "runs": 3,
+        "passed": 10,
+        "total": 12,
+        "pass_rate": 0.8333333333333334,
+        "mean_pm": "83% ± 12%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 8,
+        "total": 12,
+        "pass_rate": 0.6666666666666666,
+        "mean_pm": "67% ± 24%"
+      }
+    },
+    {
+      "id": 7,
+      "name": "eval-empty",
+      "with_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 11,
+        "total": 12,
+        "pass_rate": 0.9166666666666666,
+        "mean_pm": "92% ± 12%"
+      }
+    },
+    {
+      "id": 8,
+      "name": "eval-login",
+      "with_skill": {
+        "runs": 3,
+        "passed": 12,
+        "total": 12,
+        "pass_rate": 1,
+        "mean_pm": "100% ± 0%"
+      },
+      "without_skill": {
+        "runs": 3,
+        "passed": 8,
+        "total": 12,
+        "pass_rate": 0.6666666666666666,
+        "mean_pm": "67% ± 12%"
+      }
+    }
+  ]
+}

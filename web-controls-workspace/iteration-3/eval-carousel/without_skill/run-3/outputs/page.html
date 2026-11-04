@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青屿 · 陶瓷蓝牙音箱 — 商品详情</title>
+<style>
+  :root{
+    --accent:#b9552f;
+    --ink:#2b2622;
+    --ink-2:#6c6259;
+    --paper:#faf7f2;
+    --card:#ffffff;
+    --line:#e8e1d7;
+    --shadow:0 24px 60px -24px rgba(60,45,30,.28);
+    --shadow-soft:0 10px 30px -12px rgba(60,45,30,.22);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    font-family:"PingFang SC","Microsoft YaHei","Source Han Sans SC",system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 85% -10%, #f2e8dc 0%, transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+  }
+  a{color:inherit;text-decoration:none}
+  button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+
+  /* ---------- header ---------- */
+  .topbar{
+    max-width:1200px;margin:0 auto;padding:22px 32px 10px;
+    display:flex;align-items:center;justify-content:space-between;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.06em}
+  .brand .dot{width:14px;height:14px;border-radius:50%;background:var(--accent);
+    box-shadow:inset 0 0 0 2px #fff5, 0 2px 6px rgba(185,85,47,.4)}
+  .brand small{font-weight:400;color:var(--ink-2);letter-spacing:.28em;font-size:11px}
+  .crumb{font-size:12px;color:var(--ink-2)}
+  .crumb b{color:var(--ink);font-weight:600}
+
+  /* ---------- layout ---------- */
+  .page{
+    max-width:1200px;margin:24px auto 80px;padding:0 32px;
+    display:grid;grid-template-columns:minmax(0,1.15fr) minmax(300px,.85fr);gap:48px;
+    align-items:start;
+  }
+  @media (max-width:900px){
+    .page{grid-template-columns:1fr;gap:32px}
+  }
+
+  /* ---------- gallery ---------- */
+  .gallery{position:relative}
+  .stage{
+    position:relative;height:560px;perspective:1100px;cursor:grab;
+    border-radius:22px;
+    background:
+      radial-gradient(120% 90% at 50% 0%, #fff 0%, #f6efe6 55%, #ece2d4 100%);
+    box-shadow:var(--shadow);
+    touch-action:pan-y;user-select:none;overflow:hidden;
+  }
+  .stage.dragging{cursor:grabbing}
+  .stage::after{ /* soft floor shadow */
+    content:"";position:absolute;left:10%;right:10%;bottom:52px;height:26px;
+    border-radius:50%;background:radial-gradient(50% 100% at 50% 50%,rgba(70,50,30,.16),transparent 70%);
+    filter:blur(2px);pointer-events:none;z-index:0;
+  }
+  .slide{
+    position:absolute;inset:0;border-radius:22px;overflow:hidden;
+    background:#fbf8f3;display:flex;align-items:center;justify-content:center;
+    will-change:transform,opacity;
+    transition:transform .5s cubic-bezier(.22,1,.3,1),opacity .45s ease;
+  }
+  .slide.z-deep{transition:transform .5s cubic-bezier(.22,1,.3,1),opacity .45s ease}
+  .slide .cap-label{
+    position:absolute;left:26px;bottom:22px;z-index:2;
+    font-size:12px;letter-spacing:.22em;color:var(--ink-2);
+    background:#ffffffcc;backdrop-filter:blur(6px);
+    padding:8px 14px;border-radius:999px;border:1px solid var(--line);
+  }
+  .slide.z-deep .cap-label{opacity:0}
+  .slide.zoomed .art{transform:scale(2.1)}
+  .slide.zoomed{cursor:zoom-out}
+  .slide .zoom-hint{
+    position:absolute;right:22px;top:22px;z-index:2;font-size:11px;letter-spacing:.16em;
+    color:var(--ink-2);background:#ffffffb8;border:1px solid var(--line);
+    padding:7px 12px;border-radius:999px;pointer-events:none;transition:opacity .3s;
+  }
+  .slide.zoomed .zoom-hint{opacity:0}
+
+  .art{
+    position:absolute;inset:0;display:grid;place-items:center;
+    transition:transform .55s cubic-bezier(.2,.9,.35,1);
+    will-change:transform;
+  }
+
+  /* ---------- CSS art: speaker ---------- */
+  .spk-wrap{position:relative;display:flex;flex-direction:column;align-items:center}
+  .floor{
+    width:210px;height:24px;border-radius:50%;margin-top:18px;
+    background:radial-gradient(50% 100% at 50% 50%,rgba(70,50,30,.22),transparent 72%);
+    filter:blur(3px);
+  }
+  .spk{
+    width:210px;height:264px;border-radius:105px/34px;
+    position:relative;
+    background:
+      linear-gradient(180deg,#fdfaf6 0%,#f1e7dc 34%,var(--porcelain,#eee3d6) 60%,#e2d4c6 100%);
+    box-shadow:
+      inset -18px 0 30px -18px rgba(120,90,60,.28),
+      inset 18px 0 30px -18px #ffffff90,
+      inset 0 -30px 40px -22px rgba(120,90,60,.24);
+  }
+  .spk::before{ /* top cap ellipse */
+    content:"";position:absolute;left:0;right:0;top:-15px;height:44px;border-radius:50%;
+    background:linear-gradient(180deg,#fffdf9,#efe4d7);
+    box-shadow:inset 0 -6px 12px rgba(120,90,60,.16), inset 0 4px 8px #fff;
+  }
+  .button-disc{
+    position:absolute;left:50%;top:14px;transform:translateX(-50%);
+    width:64px;height:64px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#fff8ef,#e7dbcd 70%);
+    box-shadow:inset 0 4px 10px #fff, inset 0 -6px 12px rgba(120,90,60,.2), 0 4px 10px rgba(120,90,60,.18);
+    display:grid;place-items:center;z-index:2;
+  }
+  .button-disc i{
+    width:22px;height:22px;border-radius:50%;
+    background:radial-gradient(circle at 34% 30%,color-mix(in srgb,var(--accent) 78%,white),var(--accent));
+    box-shadow:0 2px 6px rgba(0,0,0,.25);
+  }
+  .weave{ /* fabric lower half */
+    position:absolute;left:6px;right:6px;top:52%;bottom:8px;border-radius:99px 99px 50% 50%/99px 99px 26px 26px;
+    background-image:
+      radial-gradient(circle at 3px 3px, rgba(255,255,255,.75) 1.1px, transparent 1.6px),
+      radial-gradient(circle at 7px 8px, rgba(90,70,50,.28) 1px, transparent 1.5px),
+      linear-gradient(180deg,transparent,color-mix(in srgb,var(--accent) 20%,#b3a28f) 30%, color-mix(in srgb,var(--accent) 46%,#8f7d69) 100%);
+    background-size:9px 9px,9px 9px,100% 100%;
+    box-shadow:inset 0 8px 14px -8px rgba(120,90,60,.35);
+  }
+  .brandline{
+    position:absolute;left:50%;top:18%;transform:translateX(-50%);z-index:2;
+    font-size:10px;letter-spacing:.42em;color:var(--ink-2);
+  }
+
+  /* slide 2 : 俯视 */
+  .topview{
+    width:300px;height:300px;border-radius:50%;position:relative;
+    background:
+      repeating-radial-gradient(circle at 50% 50%,
+        #f6ecdf 0 14px, #efe2d2 14px 15px, #fdf9f3 15px 30px);
+    box-shadow:
+      inset 0 -14px 30px rgba(120,90,60,.16),
+      inset 0 12px 22px #fff,
+      0 24px 50px -18px rgba(70,50,30,.3);
+  }
+  .topview::before{
+    content:"";position:absolute;inset:34px;border-radius:50%;
+    border:2px dashed color-mix(in srgb,var(--accent) 45%,#d8c8b6);
+  }
+  .topview .core{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:74px;height:74px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--accent) 70%,white),var(--accent) 70%);
+    box-shadow:inset 0 4px 10px #fff6, 0 6px 16px rgba(0,0,0,.22);
+  }
+  .topview .core::after{
+    content:"按住播放";position:absolute;top:104%;left:50%;transform:translateX(-50%);
+    white-space:nowrap;font-size:10px;letter-spacing:.3em;color:var(--ink-2);
+  }
+
+  /* slide 3 : 细节肌理 */
+  .texture{
+    position:absolute;inset:0;
+    background-image:
+      radial-gradient(circle at 6px 6px, rgba(255,255,255,.7) 3px, transparent 4px),
+      radial-gradient(circle at 16px 14px, rgba(90,70,50,.3) 2.5px, transparent 4px),
+      linear-gradient(135deg,color-mix(in srgb,var(--accent) 40%,#c9b7a3),color-mix(in srgb,var(--accent) 62%,#8f7d69));
+    background-size:22px 22px,22px 22px,100% 100%;
+    filter:saturate(.9);
+  }
+  .texture .loupe{
+    position:absolute;right:14%;top:16%;width:130px;height:130px;border-radius:50%;
+    background:radial-gradient(circle at 40% 35%,#fffdf8,#efe3d5);
+    box-shadow:0 18px 40px -12px rgba(70,50,30,.4), inset 0 4px 12px #fff;
+    display:grid;place-items:center;z-index:2;
+  }
+  .texture .loupe::before{
+    content:"2.4mm";position:absolute;bottom:-34px;left:50%;transform:translateX(-50%);
+    font-size:11px;letter-spacing:.2em;color:var(--ink-2);background:#fff;border:1px solid var(--line);
+    padding:5px 12px;border-radius:999px;white-space:nowrap;
+  }
+
+  /* slide 4 : 场景 */
+  .scene{position:absolute;inset:0;background:
+    radial-gradient(90% 70% at 70% 20%, #f6ead7 0%, transparent 60%),
+    linear-gradient(180deg,#f2e9db 0%,#f2e9db 62%,#d9c6ad 62%,#cdb697 100%);}
+  .scene .shelf{
+    position:absolute;left:12%;right:12%;bottom:26%;height:16px;border-radius:6px;
+    background:linear-gradient(180deg,#e8dbc8,#c9b294);
+    box-shadow:0 10px 24px rgba(70,50,30,.25);
+  }
+  .scene .spk{transform:scale(.62);transform-origin:bottom center;margin-bottom:-58px}
+  .scene .leaf{
+    position:absolute;left:14%;bottom:calc(26% + 16px);width:60px;height:60px;
+    background:radial-gradient(circle at 30% 70%,#9db27f,#6f8551 70%);
+    border-radius:60% 40% 55% 45%/55% 60% 40% 50%;
+    box-shadow:14px -8px 0 -6px #7f9661;
+  }
+  .scene .windowlight{
+    position:absolute;top:8%;right:12%;width:180px;height:240px;border-radius:12px;
+    background:linear-gradient(160deg,#fffdf3cc,#fff8e8aa 60%,transparent);
+    transform:skewX(-8deg);filter:blur(2px);
+  }
+
+  /* slide 5 : 配色 */
+  .palette{display:flex;gap:34px;align-items:flex-end}
+  .palette .mini{
+    width:120px;height:150px;border-radius:60px/22px;position:relative;
+    box-shadow:inset -10px 0 18px -10px rgba(120,90,60,.3), 0 18px 30px -14px rgba(70,50,30,.28);
+    background:linear-gradient(180deg,var(--m1) 0%,var(--m2) 100%);
+  }
+  .palette .mini::before{content:"";position:absolute;left:0;right:0;top:-9px;height:26px;border-radius:50%;
+    background:linear-gradient(180deg,#fffdf9,var(--m1));box-shadow:inset 0 -4px 8px rgba(120,90,60,.14)}
+  .palette .mini::after{
+    content:"";position:absolute;left:50%;top:36%;transform:translate(-50%,-50%);
+    width:30px;height:30px;border-radius:50%;background:radial-gradient(circle at 35% 30%,color-mix(in srgb,var(--accent) 70%,white),var(--accent));
+  }
+  .palette .mini:nth-child(1){--m1:#fbf7f1;--m2:#e9dfd2}
+  .palette .mini:nth-child(2){--m1:#e4ecdd;--m2:#c3cfb6}
+  .palette .mini:nth-child(3){--m1:#e8c7b4;--m2:#c68d6c}
+  .palette .tint{display:flex;gap:8px;margin-top:16px}
+  .palette .tint span{width:10px;height:10px;border-radius:50%;background:var(--m2)}
+
+  /* ---------- interaction rail ---------- */
+  .rail{
+    display:flex;align-items:center;justify-content:space-between;
+    margin-top:22px;gap:18px;
+  }
+  .thumbs{display:flex;gap:12px;flex:1}
+  .thumb{
+    width:64px;height:64px;border-radius:14px;overflow:hidden;position:relative;
+    background:#efe6d9;border:1px solid var(--line);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s;
+    display:grid;place-items:center;flex-shrink:0;
+  }
+  .thumb:hover{transform:translateY(-3px);box-shadow:var(--shadow-soft)}
+  .thumb.active{border-color:var(--ink);box-shadow:0 0 0 1px var(--ink)}
+  .thumb .mini-art{width:100%;height:100%}
+  .t1{background:linear-gradient(160deg,#fdfaf6,#e8dccd)}
+  .t1::after{content:"";width:40%;height:55%;border-radius:50%/34%;background:#e2d4c4;box-shadow:inset -4px 0 8px rgba(120,90,60,.2)}
+  .t2{background:repeating-radial-gradient(circle at 50% 50%,#f4e9db 0 7px,#e6d7c4 7px 8px,#fbf6ee 8px 15px)}
+  .t3{background-image:radial-gradient(circle at 3px 3px, rgba(255,255,255,.6) 1px, transparent 2px),linear-gradient(135deg,#c9a58e,#a5765c);background-size:6px 6px,100%}
+  .t4{background:linear-gradient(180deg,#f2e9db 55%,#cdb697 55%);position:relative}
+  .t4::after{content:"";position:absolute;left:30%;bottom:18%;width:40%;height:45%;border-radius:50%/40%;background:#e7dbc9}
+  .t5{background:linear-gradient(90deg,#fbf7f1 33%,#e4ecdd 33% 66%,#e8c7b4 66%)}
+  .pager{display:flex;align-items:center;gap:10px}
+  .arrow{
+    width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:#fff;
+    display:grid;place-items:center;transition:all .25s;
+  }
+  .arrow:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+  .counter{font-variant-numeric:tabular-nums;font-size:13px;color:var(--ink-2);min-width:52px;text-align:center;letter-spacing:.12em}
+  .counter b{color:var(--ink);font-weight:700;font-size:16px}
+
+  .ticks{display:flex;gap:6px;justify-content:center;margin-top:14px}
+  .ticks i{height:3px;width:26px;border-radius:2px;background:var(--line);transition:background .3s}
+  .ticks i.on{background:var(--accent)}
+
+  /* ---------- info panel ---------- */
+  .info{position:sticky;top:24px}
+  .badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;letter-spacing:.14em;
+    color:var(--accent);border:1px solid color-mix(in srgb,var(--accent) 40%,white);
+    background:color-mix(in srgb,var(--accent) 8%,white);padding:6px 12px;border-radius:999px;margin-bottom:14px}
+  .h1{font-size:30px;line-height:1.25;font-weight:700;letter-spacing:.02em}
+  .h1 small{display:block;font-size:13px;color:var(--ink-2);font-weight:400;letter-spacing:.28em;margin-top:8px}
+  .rating{display:flex;align-items:center;gap:10px;margin:16px 0 6px;font-size:13px;color:var(--ink-2)}
+  .stars{color:#e8a13c;letter-spacing:2px}
+  .rating b{color:var(--ink)}
+  .price-row{display:flex;align-items:baseline;gap:12px;padding:18px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin:14px 0}
+  .price{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums}
+  .price i{font-style:normal;font-size:16px;font-weight:600}
+  .price s{font-size:14px;color:var(--ink-2);font-weight:400}
+  .tag{font-size:11px;color:#fff;background:var(--accent);padding:3px 8px;border-radius:6px;letter-spacing:.08em}
+
+  .opt-label{font-size:12px;letter-spacing:.2em;color:var(--ink-2);margin:18px 0 10px}
+  .swatches{display:flex;gap:12px}
+  .swatch{
+    width:34px;height:34px;border-radius:50%;position:relative;color:transparent;
+    border:2px solid transparent;box-shadow:inset 0 0 0 2px #fff;
+    transition:transform .2s, border-color .2s;
+  }
+  .swatch:hover{transform:scale(1.08)}
+  .swatch.active{border-color:var(--ink)}
+  .sw-1{background:#efe3d5}
+  .sw-2{background:#c9d2ba}
+  .sw-3{background:#c68d6c}
+  .swatches .soldout{opacity:.4}
+  .opt-name{margin-top:10px;font-size:13px;color:var(--ink)}
+  .opt-name b{font-weight:700}
+
+  .ctas{display:flex;gap:14px;margin-top:22px}
+  .btn{flex:1;height:52px;border-radius:14px;font-size:15px;font-weight:600;letter-spacing:.1em;
+    transition:transform .18s ease, box-shadow .25s, background .25s;display:flex;align-items:center;justify-content:center;gap:8px}
+  .btn:active{transform:scale(.97)}
+  .btn-ghost{border:1px solid var(--ink);background:#fff}
+  .btn-ghost:hover{background:#fff;box-shadow:var(--shadow-soft)}
+  .btn-primary{background:var(--ink);color:#fff}
+  .btn-primary:hover{background:#463d34;box-shadow:0 14px 30px -12px rgba(43,38,34,.5)}
+  .promise{margin-top:20px;display:grid;gap:8px;font-size:12px;color:var(--ink-2)}
+  .promise span{display:flex;gap:8px;align-items:center}
+  .promise b{color:var(--ink);font-weight:600}
+  .specs{margin-top:24px;border-top:1px solid var(--line);padding-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;font-size:12.5px}
+  .specs div{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding-bottom:8px}
+  .specs span{color:var(--ink-2)}
+  .specs b{font-weight:600}
+
+  /* toast */
+  .toast{
+    position:fixed;left:50%;bottom:34px;transform:translate(-50%,20px);opacity:0;
+    background:var(--ink);color:#fff;font-size:13px;letter-spacing:.08em;
+    padding:12px 22px;border-radius:999px;pointer-events:none;
+    transition:all .35s cubic-bezier(.2,.9,.3,1.2);z-index:99;
+  }
+  .toast.show{transform:translate(-50%,0);opacity:1}
+
+  @media (max-width:640px){
+    .page{padding:0 16px}
+    .stage{height:440px}
+    .topbar{padding:16px 16px 6px}
+    .crumb{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .slide,.art,.thumb,.btn{transition:none}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><span class="dot"></span>青屿 <small>QINGYU STUDIO</small></div>
+  <div class="crumb">首页 / 音频 / <b> SWITCH 陶瓷蓝牙音箱</b></div>
+</header>
+
+<main class="page">
+
+  <!-- 画廊 -->
+  <section class="gallery" aria-label="商品图片浏览">
+    <div class="stage" id="stage">
+      <!-- 1 正面 -->
+      <div class="slide" data-i="0">
+        <div class="art">
+          <div class="spk-wrap">
+            <div class="spk">
+              <div class="brandline">QINGYU · 01</div>
+              <div class="button-disc"><i></i></div>
+              <div class="weave"></div>
+            </div>
+            <div class="floor"></div>
+          </div>
+        </div>
+        <span class="zoom-hint">单击放大 · 双击复位</span>
+        <span class="cap-label">正面 · 云雾白</span>
+      </div>
+      <!-- 2 俯视 -->
+      <div class="slide" data-i="1">
+        <div class="art"><div class="topview"><div class="core"></div></div></div>
+        <span class="zoom-hint">单击放大</span>
+        <span class="cap-label">俯视 · 恒温釉面</span>
+      </div>
+      <!-- 3 细节 -->
+      <div class="slide" data-i="2">
+        <div class="texture"></div>
+        <div class="art">
+          <div class="loupe"></div>
+        </div>
+        <span class="cap-label">细节 · 手工织物肌理</span>
+      </div>
+      <!-- 4 场景 -->
+      <div class="slide" data-i="3">
+        <div class="scene">
+          <div class="windowlight"></div>
+          <div class="shelf"></div>
+          <div class="leaf" style="left:16%"></div>
+          <div class="art" style="position:absolute;inset:0">
+            <div class="spk">
+              <div class="brandline">QINGYU · 01</div>
+              <div class="button-disc" style="transform:translateX(-50%) scale(.62);top:8px"><i style="width:14px;height:14px"></i></div>
+              <div class="weave"></div>
+            </div>
+          </div>
+        </div>
+        <span class="cap-label">场景 · 一隅之音</span>
+      </div>
+      <!-- 5 配色 -->
+      <div class="slide" data-i="4">
+        <div class="art">
+          <div class="palette">
+            <div class="mini"></div>
+            <div class="mini"></div>
+            <div class="mini"></div>
+          </div>
+        </div>
+        <span class="cap-label">配色 · 三色可选</span>
+      </div>
+    </div>
+
+    <!-- 缩略图 + 翻页 -->
+    <div class="rail">
+      <div class="thumbs" id="thumbs">
+        <button class="thumb t1" data-i="0" aria-label="正面"></button>
+        <button class="thumb t2" data-i="1" aria-label="俯视"></button>
+        <button class="thumb t3" data-i="2" aria-label="细节"></button>
+        <button class="thumb t4" data-i="3" aria-label="场景"></button>
+        <button class="thumb t5" data-i="4" aria-label="配色"></button>
+      </div>
+      <div class="pager">
+        <button class="arrow" id="prev" aria-label="上一张">←</button>
+        <span class="counter"><b id="cur">01</b> / 05</span>
+        <button class="arrow" id="next" aria-label="下一张">→</button>
+      </div>
+    </div>
+    <div class="ticks" id="ticks"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+  </section>
+
+  <!-- 信息面板 -->
+  <aside class="info">
+    <span class="badge">● 限量手作 · 首批 300 台</span>
+    <h1 class="h1">SWITCH 陶瓷蓝牙音箱<small>CERAMIC BLUETOOTH SPEAKER</small></h1>
+    <div class="rating"><span class="stars">★★★★★</span><b>4.9</b><span>1,208 条评价 · 6.2k+ 人付款</span></div>
+
+    <div class="price-row">
+      <div class="price"><i>¥</i>699<s> ¥899</s></div>
+      <span class="tag">限时 8 折</span>
+    </div>
+
+    <div class="opt-label">釉 色 / COLOR</div>
+    <div class="swatches" id="swatches">
+      <button class="swatch sw-1 active" data-c="#b9552f" title="陶土"></button>
+      <button class="swatch sw-2" data-c="#7f9661" title="苔原"></button>
+      <button class="swatch sw-3" data-c="#8a5a3c" title="焦糖"></button>
+    </div>
+    <div class="opt-name">当前：<b id="opt-name">陶土 · 陶土釉控制钮</b></div>
+
+    <div class="ctas">
+      <button class="btn btn-ghost" id="cart">加入购物车</button>
+      <button class="btn btn-primary" id="buy">立即购买</button>
+    </div>
+
+    <div class="promise">
+      <span>🚚 <b>顺丰包邮</b> 今天 16:00 前下单，明天发货</span>
+      <span>↩️ <b>30 天无理由</b> 非人为损坏免费换新</span>
+      <span>🛠 <b>2 年质保</b> 官方延保可加购</span>
+    </div>
+
+    <div class="specs">
+      <div><span>功率</span><b>20W 全频</b></div>
+      <div><span>续航</span><b>18 小时</b></div>
+      <div><span>蓝牙</span><b>5.3 / LDAC</b></div>
+      <div><span>材质</span><b>高岭瓷 + 织物</b></div>
+      <div><span>尺寸</span><b>Ø108 × 132 mm</b></div>
+      <div><span>重量</span><b>620 g</b></div>
+    </div>
+  </aside>
+</main>
+
+<div class="toast" id="toast">已加入购物车</div>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(stage.querySelectorAll('.slide'));
+  var thumbs  = Array.prototype.slice.call(document.querySelectorAll('.thumb'));
+  var ticks   = Array.prototype.slice.call(document.querySelectorAll('#ticks i'));
+  var curEl   = document.getElementById('cur');
+  var N       = slides.length;
+
+  /* order[0] 为最前的一张，依次向后 */
+  var order = [0,1,2,3,4].slice(0,N);
+
+  var MAX_DEPTH = Math.min(N, 4);
+  var isDragging = false, dragId = null, startX = 0, curDX = 0;
+  var movedDist = 0, lastT = 0, lastDX = 0, vel = 0;
+  var animLock = false;
+
+  function setTransform(el, depth, extraX, extraRot, lift){
+    var scale = 1 - depth * 0.055 + (lift||0);
+    var y = depth * 14 + (extraX!==0? Math.abs(extraX)*0.02:0);
+    var x = extraX;
+    var rot = extraRot;
+    var op = depth >= MAX_DEPTH ? 0 : 1 - depth * 0.16;
+    el.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) rotate(' + rot + 'deg) scale(' + scale + ')';
+    el.style.opacity = op;
+    el.style.zIndex = String(100 - depth);
+    el.style.transition = (isDragging? 'none' : '');
+  }
+
+  function render(lift){
+    for (var d=0; d<N; d++){
+      var idx = order[d];
+      var el = slides[idx];
+      setTransform(el, d, 0, 0, (lift && d<=1 ? lift : 0));
+      el.classList.toggle('z-deep', d>0);
+    }
+    // 缩略图 & 刻度 & 计数
+    var front = order[0];
+    thumbs.forEach(function(t){ t.classList.toggle('active', +t.dataset.i === front); });
+    ticks.forEach(function(t,k){ t.classList.toggle('on', k===front); });
+    curEl.textContent = ('0' + (front+1)).slice(-2);
+  }
+
+  function go(dir){ // dir: 1 下一张（当前卡片向左滑走），-1 上一张
+    if (animLock) return;
+    if (dir === 1){
+      var front = slides[order[0]];
+      animLock = true;
+      front.style.transition = 'transform .42s cubic-bezier(.5,0,.8,.4), opacity .42s';
+      front.style.transform = 'translate3d(-120%,0,0) rotate(-9deg) scale(.9)';
+      front.style.opacity = 0;
+      setTimeout(function(){
+        order.push(order.shift());
+        render();
+        animLock = false;
+      }, 300);
+    } else {
+      order.unshift(order.pop());
+      var back = slides[order[1]];
+      back.style.transition = 'none';
+      back.style.transform = 'translate3d(-30%,0,0) rotate(-4deg) scale(.96)';
+      back.style.opacity = .5;
+      requestAnimationFrame(function(){ render(); });
+    }
+  }
+
+  function jumpTo(i){
+    if (animLock) return;
+    var pos = order.indexOf(i);
+    if (pos === 0){ // 已经在最前：轻微弹一下
+      var f = slides[i];
+      f.style.transition='transform .3s cubic-bezier(.3,1.6,.4,1)';
+      f.style.transform='translate3d(0,-16px,0) scale(1.02)';
+      setTimeout(function(){ render(); }, 220);
+      return;
+    }
+    // 将 i 轮转到最前
+    while (order[0] !== i) order.unshift(order.pop());
+    render();
+  }
+
+  /* ---------- 拖拽 ---------- */
+  function onDown(e){
+    if (animLock) return;
+    var target = e.target;
+    if (findSlide(target).classList.contains('zoomed')) return; // 放大态不拖拽
+    isDragging = true; dragId = e.pointerId; stage.classList.add('dragging');
+    startX = e.clientX; curDX = 0; movedDist = 0; lastT = performance.now(); lastDX = 0; vel = 0;
+    try{ stage.setPointerCapture(dragId); }catch(_){}
+  }
+  function onMove(e){
+    if (!isDragging || e.pointerId !== dragId) return;
+    var dx = e.clientX - startX;
+    movedDist = Math.max(movedDist, Math.abs(dx));
+    var now = performance.now();
+    vel = (dx - lastDX) / Math.max(1, now - lastT);
+    lastDX = dx; lastT = now;
+    curDX = dx;
+    // 前卡跟随指针，下一张预告退出
+    var front = slides[order[0]];
+    front.style.transition = 'none';
+    front.style.transform = 'translate3d(' + dx + 'px,' + Math.abs(dx)*0.06 + 'px,0) rotate(' + (dx/26) + 'deg) scale(1)';
+    front.style.opacity = String(1 - Math.min(.7, Math.abs(dx)/420));
+    front.style.zIndex = 100;
+    // 后卡轻微前倾
+    if (order[1] !== undefined){
+      var back = slides[order[1]];
+      back.style.transition='none';
+      back.style.transform = 'translate3d(0,10px,0) scale(' + (0.945 + Math.min(.05, Math.abs(dx)/4000)) + ')';
+    }
+  }
+  function onUp(e){
+    if (!isDragging || e.pointerId !== dragId) return;
+    isDragging = false; stage.classList.remove('dragging');
+    var dx = curDX;
+    var enough = Math.abs(dx) > 90 || Math.abs(vel) > 0.6;
+    if (enough){
+      var dir = dx < 0 ? 1 : -1;
+      if (dir === 1){
+        go(1); // 前卡带惯性飞出
+        var f = slides[order[0]];
+        f.style.transition = 'transform .4s cubic-bezier(.4,0,.9,.4), opacity .4s';
+        f.style.transform = 'translate3d(' + (dx < 0 ? -120 : 120) + '%,0,0) rotate(' + (dx<0?-10:10) + 'deg) scale(.9)';
+        f.style.opacity = 0;
+      } else {
+        // 拖右 = 上一张：当前卡回中，后一张…（把最后一张从右侧带上来）
+        var bak;
+        order.unshift(order.pop());
+        render();
+        bak = slides[order[1]];
+        bak.style.transition='none';
+        bak.style.transform='translate3d(-24%,0,0) rotate(-4deg) scale(.94)';
+        bak.style.opacity=.6;
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){ render(); }); });
+      }
+    } else {
+      curDX = 0;
+      render(); // 橡皮筋回弹
+    }
+  }
+  stage.addEventListener('pointerdown', onDown);
+  stage.addEventListener('pointermove', onMove);
+  stage.addEventListener('pointerup', onUp);
+  stage.addEventListener('pointercancel', onUp);
+
+  /* 轻点顶卡 = 放大；拖拽过则不触发 */
+  stage.addEventListener('click', function(e){
+    if (movedDist > 8) return;
+    var s = findSlide(e.target);
+    if (!s) return;
+    if (s.classList.contains('zoomed')){
+      s.classList.remove('zoomed');
+      s.querySelector('.art').style.transform='';
+    } else if (order[0] === slides.indexOf(s)){
+      var r = s.getBoundingClientRect();
+      var px = ((e.clientX - r.left)/r.width*100).toFixed(1);
+      var py = ((e.clientY - r.top)/r.height*100).toFixed(1);
+      var art = s.querySelector('.art');
+      art.style.transformOrigin = px + '% ' + py + '%';
+      s.classList.add('zoomed');
+    }
+  });
+
+  function findSlide(el){
+    while (el && el !== stage){
+      if (el.classList && el.classList.contains('slide')) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  /* ---------- 控件 ---------- */
+  document.getElementById('next').addEventListener('click', function(){ go(1); });
+  document.getElementById('prev').addEventListener('click', function(){
+    if (animLock) return;
+    var front = slides[order[0]];
+    order.unshift(order.pop());
+    var bak = slides[order[1]];
+    bak.style.transition='none';
+    bak.style.transform='translate3d(-26%,0,0) rotate(-3deg) scale(.95)';
+    bak.style.opacity=.55;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ render(); }); });
+  });
+  thumbs.forEach(function(t){
+    t.addEventListener('click', function(){ jumpTo(+t.dataset.i); });
+  });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'ArrowRight') go(1);
+    if (e.key === 'ArrowLeft'){
+      if (animLock) return;
+      order.unshift(order.pop());
+      requestAnimationFrame(function(){ render(); });
+    }
+  });
+
+  /* ---------- 配色联动 ---------- */
+  var optName = document.getElementById('opt-name');
+  var names = {'#b9552f':'陶土 · 陶土釉控制钮','#7f9661':'苔原 · 苔绿釉控制钮','#8a5a3c':'焦糖 · 焦糖釉控制钮'};
+  document.getElementById('swatches').addEventListener('click', function(e){
+    var b = e.target.closest('.swatch'); if (!b) return;
+    document.documentElement.style.setProperty('--accent', b.dataset.c);
+    optName.textContent = names[b.dataset.c];
+    Array.prototype.forEach.call(document.querySelectorAll('.swatch'), function(s){ s.classList.toggle('active', s===b); });
+  });
+
+  /* ---------- toast ---------- */
+  var toast = document.getElementById('toast'), toastTimer;
+  function showToast(msg){
+    toast.textContent = msg; toast.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toast.classList.remove('show'); }, 1800);
+  }
+  document.getElementById('cart').addEventListener('click', function(){ showToast('已加入购物车 · 云雾白'); });
+  document.getElementById('buy').addEventListener('click', function(){ showToast('正在前往结算…'); });
+
+  render();
+})();
+</script>
+</body>
+</html>

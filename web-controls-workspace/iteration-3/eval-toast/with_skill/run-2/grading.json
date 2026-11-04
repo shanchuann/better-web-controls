@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "使用了轻提示 Toast（出现几秒自动消失），而不是 alert()/弹窗 Modal 这类打断式反馈",
+      "passed": true,
+      "evidence": "outputs/page.html:125-159 定义 .toast/.toast-wrap 组件，211-243 行 JS 中 toast() 函数通过 setTimeout(..., 2500) 后加 'leave' 类并 animationend 移除节点，即约 2.5 秒自动消失；全文无 alert() 调用、无 Modal 遮罩结构。notes.md:29 也写明最终选型为“轻提示 TOAST”，并在 notes.md:17-19 排除了 Alert/Modal。"
+    },
+    {
+      "text": "Toast 说清了位置（如右上角/底部居中）与消失时机（约 2-3 秒自动消失）",
+      "passed": true,
+      "evidence": "outputs/page.html:126-130 `.toast-wrap { position: fixed; top: 20px; right: 20px; ... }` 明确固定在右上角；page.html:227-231 注释及代码“约 2.5 秒后自动消失，不打断操作，setTimeout(..., 2500)”给出消失时机。notes.md:31 的 Prompt 规格同样写明“右上角出现，约 2.5 秒自动消失”，notes.md:35-36 实现要点重述位置与 2.5 秒淡出。"
+    },
+    {
+      "text": "没有用阻塞式交互（保存后页面仍可继续操作）",
+      "passed": true,
+      "evidence": "outputs/page.html 中 Toast 采用非模态固定定位（.toast-wrap 为 position:fixed 且容器 pointer-events:none，137-150 行 .toast 自身可点击但无强制关闭要求），无遮罩层；保存后仅按钮短暂进入成功态（236-242 行 2.5 秒后按钮恢复“保存设置”并重新启用），页面输入框、开关在保存后仍可继续操作，无任何阻塞。"
+    },
+    {
+      "text": "若选了带操作的轻提示 Snackbar，附带可立即执行的按钮（如“查看”）也视为合格",
+      "passed": true,
+      "evidence": "notes.md:16、23-25 明确说明本场景选的是纯成功 Toast 而非带操作的 SNACKBAR（“保存成功没有撤销/重试诉求，用它会多出一个无意义按钮位”），故该条件性断言的前提（选择带操作的 Snackbar）不成立；即便按 Snackbar 口径衡量，保存反馈也已以合格的非阻塞轻提示形式实现（page.html:221-243）。"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 5
+}

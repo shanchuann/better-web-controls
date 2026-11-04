@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>订单管理</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    background: #f5f6f8;
+    color: #1f2329;
+    padding: 24px;
+  }
+  .container { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 16px; }
+
+  /* 筛选栏 */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .toolbar label { font-size: 14px; color: #646a73; }
+
+  /* 自定义下拉 */
+  .dropdown { position: relative; width: 240px; }
+  .dropdown-btn {
+    width: 100%;
+    padding: 8px 32px 8px 12px;
+    font-size: 14px;
+    color: #1f2329;
+    background: #fff;
+    border: 1px solid #d0d3d9;
+    border-radius: 6px;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .dropdown-btn:hover { border-color: #3370ff; }
+  .dropdown-btn:focus-visible {
+    outline: none;
+    border-color: #3370ff;
+    box-shadow: 0 0 0 2px rgba(51,112,255,.15);
+  }
+  .dropdown-btn .arrow {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    color: #8f959e;
+    transition: transform .15s;
+    pointer-events: none;
+  }
+  .dropdown.open .arrow { transform: translateY(-50%) rotate(180deg); }
+  .dropdown-btn .placeholder { color: #8f959e; }
+  .dropdown-btn .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    width: 100%;
+    background: #fff;
+    border: 1px solid #e0e2e6;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.10);
+    padding: 4px;
+    z-index: 100;
+    display: none;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .dropdown.open .dropdown-menu { display: block; }
+  .dropdown-option {
+    padding: 8px 10px;
+    font-size: 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .dropdown-option:hover, .dropdown-option.active { background: #f2f3f5; }
+  .dropdown-option .check { color: #3370ff; visibility: hidden; }
+  .dropdown-option.selected .check { visibility: visible; }
+  .dropdown-option .cnt { font-size: 12px; color: #8f959e; }
+  .dropdown-option .dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: 1px;
+  }
+
+  /* 统计 */
+  .stat { font-size: 13px; color: #646a73; margin-left: auto; }
+  .stat b { color: #1f2329; }
+
+  /* 订单表格 */
+  .card {
+    background: #fff;
+    border: 1px solid #e5e6eb;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f0f1f3; }
+  th {
+    background: #fafbfc;
+    font-weight: 600;
+    color: #646a73;
+    font-size: 13px;
+  }
+  tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: #fafbfc; }
+  .owner { display: inline-flex; align-items: center; gap: 6px; }
+  .avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+  .tag.pending   { background: #fff7e6; color: #d46b08; }
+  .tag.done      { background: #e8f7ef; color: #1a7f4b; }
+  .tag.cancelled { background: #f2f3f5; color: #8f959e; }
+
+  .empty {
+    padding: 48px 0;
+    text-align: center;
+    color: #8f959e;
+    font-size: 14px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>订单管理</h1>
+
+  <div class="toolbar">
+    <label for="ownerBtn">负责人</label>
+    <div class="dropdown" id="dropdown">
+      <button class="dropdown-btn" id="ownerBtn" aria-haspopup="listbox" aria-expanded="false">
+        <span id="ownerLabel" class="placeholder">全部负责人</span>
+        <span class="arrow">▼</span>
+      </button>
+      <div class="dropdown-menu" id="ownerMenu" role="listbox" aria-label="选择负责人"></div>
+    </div>
+    <span class="stat">共 <b id="statCount">0</b> 条订单</span>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>订单号</th><th>客户</th><th>金额</th><th>负责人</th><th>状态</th><th>创建日期</th>
+        </tr>
+      </thead>
+      <tbody id="orderBody"></tbody>
+    </table>
+    <div class="empty" id="emptyTip">该负责人名下暂无订单</div>
+  </div>
+</div>
+
+<script>
+var OWNERS = [
+  { name: "全部", fullName: "全部负责人" },
+  { name: "张伟",   color: "#3370ff" },
+  { name: "李娜",   color: "#00b578" },
+  { name: "王强",   color: "#ff7d00" },
+  { name: "刘敏",   color: "#9254de" },
+  { name: "陈晨",   color: "#eb5a8b" }
+];
+
+var ORDERS = [
+  { id: "SO-2024-1001", customer: "华辰科技",   amount: 12800, owner: "张伟", status: "pending",   date: "2024-05-06" },
+  { id: "SO-2024-1002", customer: "蓝海贸易",   amount: 5600,  owner: "李娜", status: "done",      date: "2024-05-08" },
+  { id: "SO-2024-1003", customer: "星辰制造",   amount: 23000, owner: "张伟", status: "pending",   date: "2024-05-12" },
+  { id: "SO-2024-1004", customer: "恒信物流",   amount: 8900,  owner: "王强", status: "cancelled", date: "2024-05-15" },
+  { id: "SO-2024-1005", customer: "云帆软件",   amount: 15600, owner: "刘敏", status: "done",      date: "2024-05-18" },
+  { id: "SO-2024-1006", customer: "瑞祥百货",   amount: 4200,  owner: "李娜", status: "pending",   date: "2024-05-20" },
+  { id: "SO-2024-1007", customer: "宏图能源",   amount: 31000, owner: "陈晨", status: "done",      date: "2024-05-22" },
+  { id: "SO-2024-1008", customer: "明达教育",   amount: 7300,  owner: "王强", status: "pending",   date: "2024-05-25" },
+  { id: "SO-2024-1009", customer: "远洋渔业",   amount: 18900, owner: "刘敏", status: "done",      date: "2024-05-28" },
+  { id: "SO-2024-1010", customer: "百川建材",   amount: 26400, owner: "张伟", status: "done",      date: "2024-06-02" }
+];
+
+var STATUS_TEXT = { pending: "待处理", done: "已完成", cancelled: "已取消" };
+
+var dropdown = document.getElementById("dropdown");
+var btn = document.getElementById("ownerBtn");
+var label = document.getElementById("ownerLabel");
+var menu = document.getElementById("ownerMenu");
+var tbody = document.getElementById("orderBody");
+var emptyTip = document.getElementById("emptyTip");
+var statCount = document.getElementById("statCount");
+
+var current = "全部";
+
+function ownerCount(name) {
+  return name === "全部" ? ORDERS.length : ORDERS.filter(function (o) { return o.owner === name; }).length;
+}
+
+function colorOf(name) {
+  var o = OWNERS.find(function (x) { return x.name === name; });
+  return o ? (o.color || "#8f959e") : "#8f959e";
+}
+
+function renderMenu() {
+  menu.innerHTML = "";
+  OWNERS.forEach(function (o) {
+    var item = document.createElement("div");
+    item.className = "dropdown-option" + (o.name === current ? " selected" : "");
+    item.setAttribute("role", "option");
+    var left = document.createElement("span");
+    if (o.color) {
+      var dot = document.createElement("span");
+      dot.className = "dot";
+      dot.style.background = o.color;
+      left.appendChild(dot);
+    }
+    left.appendChild(document.createTextNode(o.fullName || o.name));
+    var right = document.createElement("span");
+    var cnt = document.createElement("span");
+    cnt.className = "cnt";
+    cnt.textContent = ownerCount(o.name) + " 条";
+    right.appendChild(cnt);
+    var check = document.createElement("span");
+    check.className = "check";
+    check.textContent = "✓";
+    right.appendChild(check);
+    item.appendChild(left);
+    item.appendChild(right);
+    item.addEventListener("click", function () {
+      current = o.name;
+      label.innerHTML = "";
+      label.classList.remove("placeholder");
+      if (o.name === "全部") {
+        label.textContent = "全部负责人";
+      } else {
+        var dot2 = document.createElement("span");
+        dot2.className = "dot";
+        dot2.style.background = o.color;
+        label.appendChild(dot2);
+        label.appendChild(document.createTextNode(o.name));
+      }
+      closeDropdown();
+      renderTable();
+      renderMenu();
+    });
+    menu.appendChild(item);
+  });
+}
+
+function fmtAmount(n) {
+  return "¥" + n.toLocaleString("zh-CN");
+}
+
+function renderTable() {
+  var list = current === "全部" ? ORDERS : ORDERS.filter(function (o) { return o.owner === current; });
+  statCount.textContent = list.length;
+  emptyTip.style.display = list.length ? "none" : "block";
+  tbody.innerHTML = "";
+  list.forEach(function (o) {
+    var tr = document.createElement("tr");
+    [o.id, o.customer, fmtAmount(o.amount)].forEach(function (v) {
+      var td = document.createElement("td");
+      td.textContent = v;
+      tr.appendChild(td);
+    });
+    var tdOwner = document.createElement("td");
+    var wrap = document.createElement("span");
+    wrap.className = "owner";
+    var av = document.createElement("span");
+    av.className = "avatar";
+    av.style.background = colorOf(o.owner);
+    av.textContent = o.owner.charAt(0);
+    wrap.appendChild(av);
+    wrap.appendChild(document.createTextNode(o.owner));
+    tdOwner.appendChild(wrap);
+    tr.appendChild(tdOwner);
+    var tdStatus = document.createElement("td");
+    var tag = document.createElement("span");
+    tag.className = "tag " + o.status;
+    tag.textContent = STATUS_TEXT[o.status];
+    tdStatus.appendChild(tag);
+    tr.appendChild(tdStatus);
+    var tdDate = document.createElement("td");
+    tdDate.textContent = o.date;
+    tr.appendChild(tdDate);
+    tbody.appendChild(tr);
+  });
+}
+
+function openDropdown() {
+  dropdown.classList.add("open");
+  btn.setAttribute("aria-expanded", "true");
+}
+function closeDropdown() {
+  dropdown.classList.remove("open");
+  btn.setAttribute("aria-expanded", "false");
+}
+
+btn.addEventListener("click", function (e) {
+  e.stopPropagation();
+  dropdown.classList.contains("open") ? closeDropdown() : openDropdown();
+});
+document.addEventListener("click", function (e) {
+  if (!dropdown.contains(e.target)) closeDropdown();
+});
+document.addEventListener("keydown", function (e) {
+  if (e.key === "Escape") closeDropdown();
+});
+
+renderMenu();
+renderTable();
+</script>
+</body>
+</html>

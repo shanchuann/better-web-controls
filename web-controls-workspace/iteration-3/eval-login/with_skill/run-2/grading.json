@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "没有按默认模板瞎猜：使用了具体成形的登录页样式（居中卡片式 Centered Card / 左右分屏 Split Screen / 沉浸背景 Immersive Background / 多角色Tab Role-based Tabs / 分步登录 Step-by-step 之一）",
+      "passed": true,
+      "evidence": "notes.md 二、候选对比中列出 5 种候选样式并明确选 'B. Split Screen 左右分屏式'，最终选型为 'Split Screen 左右分屏式登录页（6:4，移动端折叠单栏）'；page.html 以代码实现该样式：注释'左侧品牌面板（Split Screen 左侧 60%）'、.brand{flex:0 0 60%} 与 .form-side{flex:1} 构成左右分屏结构"
+    },
+    {
+      "text": "说清了布局要素：布局类型 + 背景 + 卡片（或无卡片）+ 品牌气质",
+      "passed": true,
+      "evidence": "notes.md 五、最终选型逐项写明：布局'左侧 60% 为陶橙沉浸品牌面板…右侧 40% 暖白底 (#FAF7F4) 无卡片表单'；背景'右侧纯暖白，仅靠留白与左对齐排版建立层级'；卡片'右侧不使用卡片，表单直接叠放在暖白背景上，层级靠留白与对齐建立'；气质'陶橙（terracotta…）是暖色、有手作感的颜色 → 视觉语言用暖白底、衬线大标题、克制的微交互…保证\"高级\"而非\"花哨\"'"
+    },
+    {
+      "text": "陶橙色品牌色落实到了具体设计（背景渐变/按钮/主色而非仅文字提及）",
+      "passed": true,
+      "evidence": "page.html :root 定义 --clay-800:#7B3018、--clay-600:#C75A2E、--clay-500:#AE4A1F、--clay-400:#E08A4F、--focus-ring:rgba(199,90,46,.28)；.brand 的 background:linear-gradient(160deg,var(--clay-800) 0%,#A44A22 46%,var(--clay-600) 74%,var(--clay-400) 130%) 将渐变铺满左面板（另有 SVG 噪点纹理 ::before）；.btn-primary{background:var(--clay-500)} 实心陶橙主按钮，链接/聚焦态（input:focus border-color:var(--clay-600)、accent-color:var(--clay-500)）均使用品牌色，不止文字提及"
+    },
+    {
+      "text": "notes.md 给出候选样式对比与选型理由",
+      "passed": true,
+      "evidence": "notes.md 二、'候选对比（登录页 5 种，来自 layouts.md）'以表格逐项给出 A-E 五种候选的'布局·背景·卡片/适用场景/对本需求的契合度'对比；三、'判断依据与默认假设'给出选 B 的理由（'品牌色需要被\"看见\"，且 SaaS 登录页需要信任背书 → 选 B'）、不选 D（'需求未提到多身份，无判断依据'）与不选 E（'字段在 4 个以内不要分步'）的具体依据"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1
+  },
+  "run": "with_skill",
+  "eval_id": 8
+}

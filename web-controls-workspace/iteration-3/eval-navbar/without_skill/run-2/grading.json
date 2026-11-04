@@ -1,0 +1,32 @@
+{
+  "expectations": [
+    {
+      "text": "输出为可直接打开的单文件 HTML，包含 nav 导航元素和首屏区块",
+      "passed": true,
+      "evidence": "outputs/page.html：单文件，无外部依赖；page.html:375 有 <header class=\"nav\"> 内含 <nav class=\"nav-menu\">；page.html:397 <main class=\"hero\" id=\"top\"> 首屏区块（min-height:100vh）。notes.md:4 亦写明“单文件 HTML，全部 CSS/JS 内嵌，无外部依赖，双击即可打开”"
+    },
+    {
+      "text": "导航栏采用具体成形的形式（悬浮吸顶 Floating+Sticky / 抽屉 / 侧边栏等），而非普通的静态水平菜单拼装饰",
+      "passed": true,
+      "evidence": "outputs/page.html:36-52 .nav 为 position:fixed 悬浮吸顶，带 background:rgba(12,12,14,0.72) 与 backdrop-filter:blur(16px) 毛玻璃；page.html:326-352 ≤820px 时切换为汉堡按钮 + fixed 下拉菜单面板（.nav-menu.open 过渡展开）；notes.md:8-10 描述了 fixed+毛玻璃与汉堡下拉方案"
+    },
+    {
+      "text": "导航在页面滚动时保持条理（吸顶/悬浮有阴影、留白、圆角等悬浮感处理，或做了移动端适配）",
+      "passed": true,
+      "evidence": "outputs/page.html:54-57 .nav.scrolled 滚动超过 24px 后加底部分隔线并加深底色（border-bottom-color:var(--line); background:rgba(12,12,14,0.88)）；page.html:419-423 JS 监听 scroll 切换 .scrolled 类；page.html:326-370 移动端适配：汉堡按钮 + 下拉面板带 backdrop-filter、透明度/位移过渡，aria-expanded 状态同步且点击链接后自动收起"
+    },
+    {
+      "text": "notes.md 给出了 2 种以上候选方案对比并写明最终选型理由",
+      "passed": false,
+      "evidence": "outputs/notes.md 全文（20 行）仅包含“结构/导航栏/首屏/其他”最终实现说明，只描述了单一方案（fixed+毛玻璃和移动端汉堡下拉），未见任何候选方案对比或选型理由章节"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 1,
+    "total": 4,
+    "pass_rate": 0.75
+  },
+  "run": "without_skill",
+  "eval_id": 0
+}

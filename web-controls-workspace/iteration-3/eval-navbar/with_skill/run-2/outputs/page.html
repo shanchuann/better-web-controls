@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>林一舟 · 个人作品集</title>
+<style>
+  :root{
+    --bg:#F7F6F2;
+    --ink:#1B1912;
+    --muted:#777263;
+    --line:rgba(27,25,18,.14);
+    --accent:#B4552D;
+    --card:#FFFDF9;
+    --nav-h:64px;
+    --radius:20px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+  }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .serif{font-family:"Songti SC","STSong","SimSun",Georgia,serif}
+  ::selection{background:var(--accent);color:#fff}
+
+  /* ============ 悬浮吸顶导航 Floating · Sticky ============ */
+  .nav{
+    position:fixed;top:16px;left:0;right:0;z-index:100;
+    display:flex;justify-content:center;
+    padding:0 20px;pointer-events:none;
+  }
+  .nav-inner{
+    pointer-events:auto;
+    display:flex;align-items:center;gap:32px;
+    width:100%;max-width:1040px;
+    padding:12px 12px 12px 24px;
+    background:rgba(255,253,249,.72);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border:1px solid var(--line);
+    border-radius:999px;
+    box-shadow:0 1px 2px rgba(27,25,18,.04),0 8px 24px rgba(27,25,18,.06);
+    transition:padding .3s ease, box-shadow .3s ease;
+  }
+  .nav.scrolled .nav-inner{
+    padding:8px 10px 8px 24px;
+    box-shadow:0 2px 4px rgba(27,25,18,.05),0 12px 32px rgba(27,25,18,.10);
+  }
+  .brand{
+    display:flex;align-items:baseline;gap:10px;
+    text-decoration:none;color:var(--ink);white-space:nowrap;
+  }
+  .brand .name{font-size:20px;font-weight:700;letter-spacing:.06em}
+  .brand .tag{font-size:11px;color:var(--muted);letter-spacing:.28em;font-family:Georgia,serif}
+  .links{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .links a{
+    position:relative;
+    padding:8px 16px;border-radius:999px;
+    color:var(--muted);text-decoration:none;font-size:14.5px;letter-spacing:.04em;
+    transition:color .2s ease,background .2s ease;
+  }
+  .links a:hover{color:var(--ink);background:rgba(27,25,18,.05)}
+  .links a.active{color:var(--ink);font-weight:600}
+  .links a.active::after{
+    content:"";position:absolute;left:50%;bottom:1px;transform:translateX(-50%);
+    width:5px;height:5px;border-radius:50%;background:var(--accent);
+  }
+  :is(a,button):focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+  .nav-inner:focus-within{outline:none}
+
+  /* 按钮三步公式：主按钮全页仅一个（实心），导航 CTA 为线状胶囊 */
+  .btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:10px 22px;border-radius:999px;
+    font-size:14.5px;letter-spacing:.04em;text-decoration:none;
+    cursor:pointer;transition:transform .15s ease,box-shadow .2s ease,background .2s ease,color .2s ease;
+    white-space:nowrap;
+  }
+  .btn-solid{background:var(--ink);color:var(--bg);border:1px solid var(--ink)}
+  .btn-solid:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(27,25,18,.18)}
+  .btn-solid:active{transform:translateY(0)}
+  .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--line)}
+  .btn-outline:hover{border-color:var(--ink);background:rgba(27,25,18,.04)}
+  .btn-text{background:none;border:none;color:var(--muted);padding:10px 4px;font-size:14.5px;
+    display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-family:inherit;letter-spacing:.04em}
+  .btn-text:hover{color:var(--accent)}
+  .btn-text .arrow{transition:transform .2s ease}
+  .btn-text:hover .arrow{transform:translateX(3px)}
+
+  /* 汉堡按钮（仅移动端） */
+  .menu-btn{
+    display:none;margin-left:auto;
+    width:42px;height:42px;border-radius:50%;
+    border:1px solid var(--line);background:transparent;cursor:pointer;
+    flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  }
+  .menu-btn span{display:block;width:16px;height:1.5px;background:var(--ink);transition:transform .25s ease,opacity .25s ease}
+  .menu-btn[aria-expanded="true"] span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+  .menu-btn[aria-expanded="true"] span:nth-child(2){opacity:0}
+  .menu-btn[aria-expanded="true"] span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+  /* ============ 全屏遮罩菜单 Full-screen Overlay（移动端） ============ */
+  .overlay{
+    position:fixed;inset:0;z-index:90;
+    background:rgba(247,246,242,.97);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    opacity:0;visibility:hidden;transition:opacity .3s ease,visibility .3s ease;
+  }
+  .overlay.open{opacity:1;visibility:visible}
+  .overlay a{
+    font-size:34px;color:var(--ink);text-decoration:none;padding:10px 24px;
+    opacity:0;transform:translateY(14px);
+    transition:opacity .35s ease,transform .35s ease;
+  }
+  .overlay.open a{opacity:1;transform:translateY(0)}
+  .overlay.open a:nth-child(1){transition-delay:.05s}
+  .overlay.open a:nth-child(2){transition-delay:.12s}
+  .overlay.open a:nth-child(3){transition-delay:.19s}
+  .overlay.open a:nth-child(4){transition-delay:.26s}
+  .overlay a.active-tag{color:var(--accent)}
+  .overlay a:hover{color:var(--accent)}
+  .overlay .contact-mini{margin-top:24px;color:var(--muted);font-size:13px;letter-spacing:.2em}
+  body.locked{overflow:hidden}
+
+  /* ============ 首屏 Hero（个人品牌形象类） ============ */
+  main{padding:0 24px}
+  section{scroll-margin-top:120px}
+  .hero{
+    max-width:1040px;margin:0 auto;
+    min-height:100svh;
+    display:flex;align-items:center;
+    padding:140px 0 80px;
+  }
+  .hero-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:48px;align-items:center;width:100%}
+  .kicker{
+    display:inline-flex;align-items:center;gap:10px;
+    font-size:13px;color:var(--muted);letter-spacing:.3em;margin-bottom:28px;
+  }
+  .kicker::before{content:"";width:28px;height:1px;background:var(--accent)}
+  .hero h1{
+    font-size:clamp(38px,5.6vw,64px);
+    line-height:1.22;letter-spacing:.02em;font-weight:600;
+    margin-bottom:24px;
+  }
+  .hero h1 em{font-style:normal;color:var(--accent)}
+  .hero .sub{max-width:34em;font-size:17px;color:var(--muted);margin-bottom:40px}
+  .hero-cta{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:52px}
+  .stats{display:flex;gap:0;border-top:1px solid var(--line);padding-top:22px;max-width:480px}
+  .stats div{padding-right:32px;margin-right:32px;border-right:1px solid var(--line)}
+  .stats div:last-child{border-right:none;margin-right:0;padding-right:0}
+  .stats b{display:block;font-size:22px;font-weight:700;letter-spacing:.02em}
+  .stats small{font-size:12.5px;color:var(--muted);letter-spacing:.08em}
+  .avatar-wrap{position:relative;display:flex;justify-content:center}
+  .avatar{
+    width:min(280px,64vw);aspect-ratio:1;border-radius:50%;
+    background:radial-gradient(circle at 32% 28%,#E8DFCF 0%,#D6C9B2 55%,#B9A98B 100%);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 24px 60px rgba(27,25,18,.14),inset 0 0 0 1px rgba(255,255,255,.4);
+  }
+  .avatar span{
+    font-size:88px;color:rgba(27,25,18,.82);
+    font-family:"Songti SC","STSong","SimSun",Georgia,serif;font-weight:700;
+  }
+  .avatar-ring{
+    position:absolute;inset:-14px;border-radius:50%;
+    border:1px dashed rgba(27,25,18,.25);
+    animation:spin 48s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .avatar-badge{
+    position:absolute;bottom:6%;right:6%;
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:10px 16px;font-size:12.5px;letter-spacing:.06em;color:var(--ink);
+    box-shadow:0 10px 28px rgba(27,25,18,.10);
+  }
+  .avatar-badge b{display:block;font-size:13.5px}
+
+  /* ============ 极简分区占位（使锚点与 scrollspy 生效） ============ */
+  .section{max-width:1040px;margin:0 auto;padding:96px 0;border-top:1px solid var(--line)}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:40px;gap:24px;flex-wrap:wrap}
+  .section-head h2{font-size:34px;font-weight:600;letter-spacing:.03em}
+  .section-head .num{font-size:12px;color:var(--muted);letter-spacing:.3em;font-family:Georgia,serif}
+  .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:28px 26px 30px;transition:transform .25s ease,box-shadow .25s ease;
+  }
+  .card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(27,25,18,.09)}
+  .card .ph{
+    aspect-ratio:16/10;border-radius:12px;margin-bottom:20px;
+    display:flex;align-items:center;justify-content:center;
+    color:rgba(27,25,18,.34);font-size:12px;letter-spacing:.24em;font-family:Georgia,serif;
+  }
+  .card:nth-child(1) .ph{background:linear-gradient(135deg,#EDE6D6,#DCCDB2)}
+  .card:nth-child(2) .ph{background:linear-gradient(135deg,#E4E0D6,#C7C2B4)}
+  .card:nth-child(3) .ph{background:linear-gradient(135deg,#EFE0D8,#D9B7A4)}
+  .card h3{font-size:18px;font-weight:600;margin-bottom:6px}
+  .card p{font-size:14px;color:var(--muted)}
+  .about-cols{display:grid;grid-template-columns:1fr 1fr;gap:48px}
+  .about-cols .lead{font-size:20px;line-height:1.8}
+  .about-cols .lead em{font-style:normal;color:var(--accent)}
+  .about-cols ul{list-style:none;color:var(--muted);font-size:15px}
+  .about-cols li{padding:12px 0;border-bottom:1px solid var(--line);display:flex;gap:12px}
+  .about-cols li::before{content:"—";color:var(--accent)}
+  .contact{text-align:center}
+  .contact .mail{
+    display:inline-block;margin:18px 0 30px;
+    font-size:clamp(22px,3.4vw,34px);text-decoration:none;color:var(--ink);
+    border-bottom:1px solid var(--accent);padding-bottom:4px;letter-spacing:.03em;
+    transition:color .2s ease;
+  }
+  .contact .mail:hover{color:var(--accent)}
+  .contact p{color:var(--muted);font-size:15px;margin-bottom:34px}
+  footer{
+    max-width:1040px;margin:0 auto;padding:28px 0 36px;
+    border-top:1px solid var(--line);
+    display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+    color:var(--muted);font-size:13px;letter-spacing:.06em;
+  }
+  footer .serif{letter-spacing:.28em;font-size:12px}
+
+  @media (max-width:860px){
+    .links,.nav-cta{display:none}
+    .menu-btn{display:flex}
+    .hero{padding:120px 0 64px;min-height:auto}
+    .hero-grid{grid-template-columns:1fr;gap:40px}
+    .avatar-wrap{order:-1}
+    .avatar{width:180px}
+    .avatar span{font-size:56px}
+    .cards{grid-template-columns:1fr}
+    .about-cols{grid-template-columns:1fr;gap:32px}
+    .section{padding:64px 0}
+    .stats div{padding-right:20px;margin-right:20px}
+    .stats b{font-size:18px}
+  }
+</style>
+</head>
+<body id="top">
+
+<!-- 悬浮吸顶导航 Floating · Sticky：圆角浮起卡，滚动收缩 -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a class="brand" href="#top" aria-label="回到顶部">
+      <span class="name serif">林一舟</span>
+      <span class="tag">PORTFOLIO</span>
+    </a>
+    <nav class="links" aria-label="主导航">
+      <a href="#works">作品</a>
+      <a href="#about">关于</a>
+      <a href="#contact">联系</a>
+    </nav>
+    <!-- 线状胶囊按钮：次操作，不与首屏唯一的实心主按钮争夺注意力 -->
+    <a class="btn btn-outline nav-cta" href="#contact">联系我</a>
+    <button class="menu-btn" id="menuBtn" aria-expanded="false" aria-controls="overlay" aria-label="打开菜单">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- 全屏遮罩菜单 Full-screen Overlay（移动端常用形态，作品集常见） -->
+<div class="overlay" id="overlay" aria-hidden="true">
+  <a href="#works">作品</a>
+  <a href="#about">关于</a>
+  <a href="#contact">联系</a>
+  <a href="mailto:hi@linyizhou.design">hi@linyizhou.design</a>
+  <p class="contact-mini">PRODUCT DESIGNER · 2026</p>
+</div>
+
+<main>
+  <!-- 首屏 Hero：回答"你是谁、擅长什么" -->
+  <section class="hero" id="hero">
+    <div class="hero-grid">
+      <div>
+        <p class="kicker">PRODUCT DESIGNER · 个人作品集</p>
+        <h1 class="serif">我是林一舟，<br>把<em>复杂业务</em>画成<br>一眼看得懂的设计。</h1>
+        <p class="sub">八年产品设计经验，专注 B 端工具与数据密集型界面。让用户少思考一步，是我衡量每一次设计是否合格的标准。</p>
+        <div class="hero-cta">
+          <!-- 全页唯一实心主按钮 -->
+          <a class="btn btn-solid" href="#works">查看作品</a>
+          <a class="btn-text" href="#about">更多介绍 <span class="arrow">→</span></a>
+        </div>
+        <div class="stats">
+          <div><b>8 年</b><small>设计经验</small></div>
+          <div><b>20+</b><small>合作团队</small></div>
+          <div><b>40 项</b><small>上线作品</small></div>
+        </div>
+      </div>
+      <div class="avatar-wrap">
+        <div class="avatar-ring" aria-hidden="true"></div>
+        <div class="avatar" role="img" aria-label="林一舟的头像占位"><span>林</span></div>
+        <div class="avatar-badge"><b>目前开放合作</b>远程 / 上海</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 以下为极简占位分区：使导航锚点与 scrollspy 生效，验收后替换为真实内容 -->
+  <section class="section" id="works">
+    <div>
+      <div class="section-head">
+        <h2 class="serif">作品</h2><span class="num">01 / WORKS</span>
+      </div>
+      <div class="cards">
+        <div class="card"><div class="ph">16:10 COVER</div><h3>云协同工作台</h3><p>为 300 人团队重构协作流，任务定位时间下降 40%。</p></div>
+        <div class="card"><div class="ph">16:10 COVER</div><h3>数据监测大屏</h3><p>三层信息架构：结果、趋势、原因，一键定位异常。</p></div>
+        <div class="card"><div class="ph">16:10 COVER</div><h3>设计师组件库</h3><p>沉淀 120+ 组件规范，团队产出效率翻倍。</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="about">
+    <div>
+      <div class="section-head">
+        <h2 class="serif">关于</h2><span class="num">02 / ABOUT</span>
+      </div>
+      <div class="about-cols">
+        <p class="lead">我常年在<em>复杂系统</em>和<em>清晰表达</em>之间工作：先弄懂业务链路，再决定界面上留什么、删什么。</p>
+        <ul>
+          <li>2023 — 独立设计顾问，服务金融与制造行业</li>
+          <li>2019 — 大型电商，资深产品设计师</li>
+          <li>2016 — 入行，专注 B 端界面设计</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section contact" id="contact">
+    <div>
+      <div class="section-head" style="justify-content:center">
+        <h2 class="serif">联系</h2><span class="num">03 / CONTACT</span>
+      </div>
+      <p>有项目想聊？通常 48 小时内回复。</p>
+      <a class="mail serif" href="mailto:hi@linyizhou.design">hi@linyizhou.design</a><br>
+      <a class="btn btn-outline" href="mailto:hi@linyizhou.design">写一封邮件</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span>© 2026 林一舟 · 保留所有权利</span>
+  <span class="serif">DESIGNED WITH RESTRAINT</span>
+</footer>
+
+<script>
+  var nav = document.getElementById('nav');
+  var menuBtn = document.getElementById('menuBtn');
+  var overlay = document.getElementById('overlay');
+  var navLinks = Array.prototype.slice.call(document.querySelectorAll('.links a'));
+  var overlayLinks = Array.prototype.slice.call(document.querySelectorAll('.overlay a[href^="#"]'));
+  var sections = ['works','about','contact'].map(function(id){return document.getElementById(id);});
+
+  /* 滚动收缩 Shrink：下滚后导航卡轻微变矮、阴影加深 */
+  function onScroll(){ nav.classList.toggle('scrolled', window.scrollY > 24); }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  /* Scrollspy 锚点导航：滚到哪一项，导航哪一项高亮 */
+  var current = '';
+  function markActive(id){
+    if (id === current) return;
+    current = id;
+    navLinks.forEach(function(a){ a.classList.toggle('active', a.getAttribute('href') === '#' + id); });
+  }
+  if ('IntersectionObserver' in window){
+    var spy = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if (e.isIntersecting) markActive(e.target.id); });
+    }, {rootMargin:'-25% 0px -60% 0px'});
+    sections.forEach(function(s){ spy.observe(s); });
+  }
+
+  /* 汉堡 + 全屏遮罩：点击开合、点击菜单项关闭、Esc 关闭 */
+  function setMenu(open){
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? '关闭菜单' : '打开菜单');
+    overlay.classList.toggle('open', open);
+    overlay.setAttribute('aria-hidden', String(!open));
+    document.body.classList.toggle('locked', open);
+  }
+  menuBtn.addEventListener('click', function(){ setMenu(!overlay.classList.contains('open')); });
+  overlayLinks.forEach(function(a){ a.addEventListener('click', function(){ setMenu(false); }); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && overlay.classList.contains('open')) setMenu(false);
+  });
+</script>
+</body>
+</html>
